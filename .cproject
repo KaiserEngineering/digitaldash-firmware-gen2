@@ -88,6 +88,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry excluding="tests" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="lvgl"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>

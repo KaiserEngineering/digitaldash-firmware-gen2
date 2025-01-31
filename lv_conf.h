@@ -27,7 +27,7 @@
  *====================*/
 
 /** Color depth: 1 (I1), 8 (L8), 16 (RGB565), 24 (RGB888), 32 (XRGB8888) */
-#define LV_COLOR_DEPTH 16
+#define LV_COLOR_DEPTH 24
 
 /*=========================
    STDLIB WRAPPER SETTINGS
@@ -143,7 +143,7 @@
  * and can't be drawn in chunks. */
 
 /** The target buffer size for simple layer chunks. */
-#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (24 * 1024)    /**< [bytes]*/
+#define LV_DRAW_LAYER_SIMPLE_BUF_SIZE    (512 * 1024)    /**< [bytes]*/
 
 /* Limit the max allocated memory for simple and transformed layers.
  * It should be at least `LV_DRAW_LAYER_SIMPLE_BUF_SIZE` sized but if transformed layers are also used
@@ -1216,7 +1216,7 @@
 #define LV_USE_RENESAS_GLCDC    0
 
 /** Driver for ST LTDC */
-#define LV_USE_ST_LTDC    0
+#define LV_USE_ST_LTDC    1
 #if LV_USE_ST_LTDC
     /* Only used for partial. */
     #define LV_ST_LTDC_USE_DMA2D_FLUSH 0

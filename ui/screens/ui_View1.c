@@ -9,7 +9,8 @@ void ui_View1_screen_init(void)
 {
     ui_View1 = lv_obj_create(NULL);
     lv_obj_remove_flag(ui_View1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_image_src(ui_View1, &ui_img_galaxy_png, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_View1, lv_color_hex(0x202038), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_View1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Guage1 = lv_image_create(ui_View1);
     lv_image_set_src(ui_Guage1, &ui_img_gauge125_png);

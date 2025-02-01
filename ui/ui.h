@@ -33,21 +33,14 @@ extern lv_obj_t * ui_Needle2;
 extern lv_obj_t * ui_Needle3;
 // CUSTOM VARIABLES
 
-// SCREEN: ui_View2
-void ui_View2_screen_init(void);
-extern lv_obj_t * ui_View2;
-// CUSTOM VARIABLES
-
 // EVENTS
 
 extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_flare_png);    // assets/Flare.png
-LV_IMG_DECLARE(ui_img_galaxy_png);    // assets/Galaxy.png
 LV_IMG_DECLARE(ui_img_gauge125_png);    // assets/gauge125.png
 LV_IMG_DECLARE(ui_img_needle125_png);    // assets/needle125.png
-LV_IMG_DECLARE(ui_img_blue_purple_gradient_png);    // assets/Blue Purple Gradient.png
 
 // UI INIT
 void ui_init(void);

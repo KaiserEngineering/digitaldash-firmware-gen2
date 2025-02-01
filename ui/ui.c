@@ -27,12 +27,6 @@ lv_obj_t * ui_Needle2;
 lv_obj_t * ui_Needle3;
 // CUSTOM VARIABLES
 
-
-// SCREEN: ui_View2
-void ui_View2_screen_init(void);
-lv_obj_t * ui_View2;
-// CUSTOM VARIABLES
-
 // EVENTS
 lv_obj_t * ui____initial_actions0;
 
@@ -59,7 +53,6 @@ void ui_init(void)
     lv_disp_set_theme(dispp, theme);
     ui_Splash_screen_init();
     ui_View1_screen_init();
-    ui_View2_screen_init();
     ui____initial_actions0 = lv_obj_create(NULL);
     lv_disp_load_scr(ui_Splash);
 }

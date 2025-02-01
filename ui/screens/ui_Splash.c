@@ -9,15 +9,16 @@ void ui_Splash_screen_init(void)
 {
     ui_Splash = lv_obj_create(NULL);
     lv_obj_remove_flag(ui_Splash, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_image_src(ui_Splash, &ui_img_flare_png, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Label1 = lv_label_create(ui_Splash);
-    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label1, 0);
-    lv_obj_set_y(ui_Label1, -100);
-    lv_obj_set_align(ui_Label1, LV_ALIGN_CENTER);
-    lv_label_set_text(ui_Label1, "KE");
-    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_SplashMessage = lv_label_create(ui_Splash);
+    lv_obj_set_width(ui_SplashMessage, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_SplashMessage, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_SplashMessage, 0);
+    lv_obj_set_y(ui_SplashMessage, -125);
+    lv_obj_set_align(ui_SplashMessage, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_SplashMessage, "KE FORD FOCUS DIGITAL DASH");
+    lv_obj_set_style_text_font(ui_SplashMessage, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 
 }

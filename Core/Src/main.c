@@ -114,6 +114,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
+  lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2U * 50);
@@ -128,13 +129,17 @@ int main(void)
 
   ui_init();
 
+  HAL_Delay(3500);
+
+  _ui_screen_change(&ui_View1, LV_SCR_LOAD_ANIM_FADE_IN, 500, 0, NULL);
+  //lv_screen_load(ui_View1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	lv_task_handler();
 	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
 	HAL_Delay(50);

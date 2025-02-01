@@ -129,7 +129,7 @@ int main(void)
 
   ui_init();
 
-  HAL_Delay(3500);
+  HAL_Delay(1000);
 
   _ui_screen_change(&ui_View1, LV_SCR_LOAD_ANIM_FADE_IN, 500, 0, NULL);
   //lv_screen_load(ui_View1);

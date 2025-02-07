@@ -8,6 +8,34 @@ SET(SOURCES screens/ui_splash.c
     images/ui_img_splash_png.c
     images/ui_img_flare_png.c
     images/ui_img_gauge200_png.c
-    images/ui_img_needle200_png.c)
+    images/ui_img_needle200_png.c
+    images/ui_img_1303014416.c
+    images/ui_img_132361813.c
+    images/ui_img_1604144407.c
+    images/ui_img_1255446660.c
+    images/ui_img_527364531.c
+    images/ui_img_1609093710.c
+    images/ui_img_881011581.c
+    images/ui_img_554364648.c
+    images/ui_img_1282446777.c
+    images/ui_img_200717598.c
+    images/ui_img_1303017489.c
+    images/ui_img_132358740.c
+    images/ui_img_1604145430.c
+    images/ui_img_1255445637.c
+    images/ui_img_527363508.c
+    images/ui_img_1609092687.c
+    images/ui_img_881010558.c
+    images/ui_img_554365671.c
+    images/ui_img_1282447800.c
+    images/ui_img_200718621.c
+    images/ui_img_1303016466.c
+    images/ui_img_132359763.c
+    images/ui_img_1604142357.c
+    images/ui_img_1255448710.c
+    images/ui_img_527366581.c
+    images/ui_img_1609095760.c
+    images/ui_img_881013631.c
+    images/ui_img_554362598.c)
 
 add_library(ui ${SOURCES})

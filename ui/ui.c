@@ -7,11 +7,14 @@
 #include "ui_helpers.h"
 
 ///////////////////// VARIABLES ////////////////////
+void SplashAnim_Animation(lv_obj_t * TargetObject, int delay);
 
 
 // SCREEN: ui_splash
 void ui_splash_screen_init(void);
+void ui_event_splash(lv_event_t * e);
 lv_obj_t * ui_splash;
+lv_obj_t * ui_Image1;
 // CUSTOM VARIABLES
 
 
@@ -63,6 +66,7 @@ lv_obj_t * ui_gauge4;
 lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
+const lv_image_dsc_t * ui_imgset_2088225200[28] = {&ui_img_1303014416, &ui_img_132361813, &ui_img_1604144407, &ui_img_1255446660, &ui_img_527364531, &ui_img_1609093710, &ui_img_881011581, &ui_img_554364648, &ui_img_1282446777, &ui_img_200717598, &ui_img_1303017489, &ui_img_132358740, &ui_img_1604145430, &ui_img_1255445637, &ui_img_527363508, &ui_img_1609092687, &ui_img_881010558, &ui_img_554365671, &ui_img_1282447800, &ui_img_200718621, &ui_img_1303016466, &ui_img_132359763, &ui_img_1604142357, &ui_img_1255448710, &ui_img_527366581, &ui_img_1609095760, &ui_img_881013631, &ui_img_554362598};
 const lv_image_dsc_t * ui_imgset_gauge[1] = {&ui_img_gauge200_png};
 const lv_image_dsc_t * ui_imgset_needle[1] = {&ui_img_needle200_png};
 
@@ -72,8 +76,41 @@ const lv_image_dsc_t * ui_imgset_needle[1] = {&ui_img_needle200_png};
 #endif
 
 ///////////////////// ANIMATIONS ////////////////////
+void SplashAnim_Animation(lv_obj_t * TargetObject, int delay)
+{
+    ui_anim_user_data_t * PropertyAnimation_0_user_data = lv_malloc(sizeof(ui_anim_user_data_t));
+    PropertyAnimation_0_user_data->target = TargetObject;
+    PropertyAnimation_0_user_data->imgset = (lv_img_dsc_t **)ui_imgset_2088225200;
+    PropertyAnimation_0_user_data->imgset_size = sizeof(ui_imgset_2088225200) / (sizeof(lv_image_dsc_t *));
+    PropertyAnimation_0_user_data->val = -1;
+    lv_anim_t PropertyAnimation_0;
+    lv_anim_init(&PropertyAnimation_0);
+    lv_anim_set_time(&PropertyAnimation_0, 2500);
+    lv_anim_set_user_data(&PropertyAnimation_0, PropertyAnimation_0_user_data);
+    lv_anim_set_custom_exec_cb(&PropertyAnimation_0, _ui_anim_callback_set_image_frame);
+    lv_anim_set_values(&PropertyAnimation_0, 0, 50);
+    lv_anim_set_path_cb(&PropertyAnimation_0, lv_anim_path_linear);
+    lv_anim_set_delay(&PropertyAnimation_0, delay + 0);
+    lv_anim_set_deleted_cb(&PropertyAnimation_0, _ui_anim_callback_free_user_data);
+    lv_anim_set_playback_time(&PropertyAnimation_0, 0);
+    lv_anim_set_playback_delay(&PropertyAnimation_0, 0);
+    lv_anim_set_repeat_count(&PropertyAnimation_0, 1);
+    lv_anim_set_repeat_delay(&PropertyAnimation_0, 0);
+    lv_anim_set_early_apply(&PropertyAnimation_0, true);
+    lv_anim_set_get_value_cb(&PropertyAnimation_0, &_ui_anim_callback_get_image_frame);
+    lv_anim_start(&PropertyAnimation_0);
+
+}
 
 ///////////////////// FUNCTIONS ////////////////////
+void ui_event_splash(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_SCREEN_LOADED) {
+        SplashAnim_Animation(ui_Image1, 0);
+    }
+}
 
 ///////////////////// SCREENS ////////////////////
 

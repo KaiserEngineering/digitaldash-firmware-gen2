@@ -11,6 +11,13 @@ void ui_splash_screen_init(void)
     lv_obj_remove_flag(ui_splash, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_style_bg_image_src(ui_splash, &ui_img_splash_png, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_Image1 = lv_image_create(ui_splash);
+    lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image1, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
+    lv_obj_add_event_cb(ui_splash, ui_event_splash, LV_EVENT_ALL, NULL);
 
 }

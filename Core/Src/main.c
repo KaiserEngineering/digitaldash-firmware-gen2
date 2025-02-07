@@ -19,7 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma2d.h"
+#include "flash.h"
 #include "gpu2d.h"
+#include "gtzc.h"
 #include "hspi.h"
 #include "i2c.h"
 #include "icache.h"
@@ -39,6 +41,7 @@
 #include "demos/lv_demos.h"
 #include "lvgl_port_display.h"
 #include <string.h>
+#include "stm32u5g9j_discovery_hspi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,6 +68,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void SystemPower_Config(void);
+static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -101,6 +105,9 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
+  /* MPU Configuration--------------------------------------------------------*/
+  //MPU_Config();
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -113,6 +120,8 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
+  /* GTZC initialisation */
+  MX_GTZC_Init();
 
   /* USER CODE BEGIN SysInit */
 
@@ -129,10 +138,26 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_GPU2D_Init();
+  MX_FLASH_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
+
+
+  BSP_HSPI_NOR_Init_t hspi_init;
+  hspi_init.InterfaceMode = MX66UW1G45G_OPI_MODE;
+  hspi_init.TransferRate = MX66UW1G45G_DTR_TRANSFER;
+
+  if( BSP_HSPI_NOR_Init(0, &hspi_init) != BSP_ERROR_NONE )
+  {
+	  while(1){}
+  }
+
+  if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
+  {
+	while(1){}
+  }
 
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2U * 50);
   if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4) != HAL_OK)
@@ -185,7 +210,7 @@ int main(void)
 			oil = 32.5;
 
 
-		if( HAL_GetTick() < 5000) {
+		if( HAL_GetTick() < 3000) {
 			switch_screen(ui_splash);
 		} else if( boost > 10 ){
 			switch_screen(ui_view2);
@@ -344,6 +369,65 @@ static void SystemPower_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+ /* MPU Configuration */
+
+void MPU_Config(void)
+{
+  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+  MPU_Attributes_InitTypeDef MPU_AttributesInit = {0};
+
+  /* Disables the MPU */
+  HAL_MPU_Disable();
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.BaseAddress = 0x08000000;
+  MPU_InitStruct.LimitAddress = 0x083FFFFF;
+  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER0;
+  MPU_InitStruct.AccessPermission = MPU_REGION_PRIV_RO;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  MPU_AttributesInit.Number = MPU_REGION_NUMBER0;
+  MPU_AttributesInit.Attributes = MPU_DEVICE_nGnRnE | MPU_WRITE_THROUGH
+                              | MPU_TRANSIENT | MPU_R_ALLOCATE;
+
+  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+  MPU_InitStruct.BaseAddress = 0x20000000;
+  MPU_InitStruct.LimitAddress = 0x202EFFFF;
+  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  MPU_AttributesInit.Number = MPU_REGION_NUMBER1;
+  MPU_AttributesInit.Attributes = MPU_DEVICE_nGnRnE | MPU_WRITE_BACK
+                              | MPU_TRANSIENT | MPU_RW_ALLOCATE;
+
+  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER2;
+  MPU_InitStruct.BaseAddress = 0xA0000000;
+  MPU_InitStruct.LimitAddress = 0xA7FFFFFF;
+  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER2;
+  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  MPU_AttributesInit.Number = MPU_REGION_NUMBER2;
+  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
+  /* Enables the MPU */
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

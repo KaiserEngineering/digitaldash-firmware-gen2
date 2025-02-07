@@ -15,10 +15,13 @@ extern "C" {
 #include "ui_helpers.h"
 #include "ui_events.h"
 
+void SplashAnim_Animation(lv_obj_t * TargetObject, int delay);
 
 // SCREEN: ui_splash
 void ui_splash_screen_init(void);
+void ui_event_splash(lv_event_t * e);
 extern lv_obj_t * ui_splash;
+extern lv_obj_t * ui_Image1;
 // CUSTOM VARIABLES
 
 // SCREEN: ui_view1
@@ -72,6 +75,34 @@ LV_IMG_DECLARE(ui_img_splash_png);    // assets/splash.png
 LV_IMG_DECLARE(ui_img_flare_png);    // assets/Flare.png
 LV_IMG_DECLARE(ui_img_gauge200_png);    // assets/gauge200.png
 LV_IMG_DECLARE(ui_img_needle200_png);    // assets/needle200.png
+LV_IMG_DECLARE(ui_img_1303014416);    // assets/ezgif-frame-038.png
+LV_IMG_DECLARE(ui_img_132361813);    // assets/ezgif-frame-039.png
+LV_IMG_DECLARE(ui_img_1604144407);    // assets/ezgif-frame-040.png
+LV_IMG_DECLARE(ui_img_1255446660);    // assets/ezgif-frame-041.png
+LV_IMG_DECLARE(ui_img_527364531);    // assets/ezgif-frame-042.png
+LV_IMG_DECLARE(ui_img_1609093710);    // assets/ezgif-frame-043.png
+LV_IMG_DECLARE(ui_img_881011581);    // assets/ezgif-frame-044.png
+LV_IMG_DECLARE(ui_img_554364648);    // assets/ezgif-frame-045.png
+LV_IMG_DECLARE(ui_img_1282446777);    // assets/ezgif-frame-046.png
+LV_IMG_DECLARE(ui_img_200717598);    // assets/ezgif-frame-047.png
+LV_IMG_DECLARE(ui_img_1303017489);    // assets/ezgif-frame-048.png
+LV_IMG_DECLARE(ui_img_132358740);    // assets/ezgif-frame-049.png
+LV_IMG_DECLARE(ui_img_1604145430);    // assets/ezgif-frame-050.png
+LV_IMG_DECLARE(ui_img_1255445637);    // assets/ezgif-frame-051.png
+LV_IMG_DECLARE(ui_img_527363508);    // assets/ezgif-frame-052.png
+LV_IMG_DECLARE(ui_img_1609092687);    // assets/ezgif-frame-053.png
+LV_IMG_DECLARE(ui_img_881010558);    // assets/ezgif-frame-054.png
+LV_IMG_DECLARE(ui_img_554365671);    // assets/ezgif-frame-055.png
+LV_IMG_DECLARE(ui_img_1282447800);    // assets/ezgif-frame-056.png
+LV_IMG_DECLARE(ui_img_200718621);    // assets/ezgif-frame-057.png
+LV_IMG_DECLARE(ui_img_1303016466);    // assets/ezgif-frame-058.png
+LV_IMG_DECLARE(ui_img_132359763);    // assets/ezgif-frame-059.png
+LV_IMG_DECLARE(ui_img_1604142357);    // assets/ezgif-frame-060.png
+LV_IMG_DECLARE(ui_img_1255448710);    // assets/ezgif-frame-061.png
+LV_IMG_DECLARE(ui_img_527366581);    // assets/ezgif-frame-062.png
+LV_IMG_DECLARE(ui_img_1609095760);    // assets/ezgif-frame-063.png
+LV_IMG_DECLARE(ui_img_881013631);    // assets/ezgif-frame-064.png
+LV_IMG_DECLARE(ui_img_554362598);    // assets/ezgif-frame-065.png
 
 // UI INIT
 void ui_init(void);

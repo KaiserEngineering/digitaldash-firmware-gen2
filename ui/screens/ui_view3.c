@@ -38,6 +38,9 @@ void ui_view3_screen_init(void)
     lv_obj_set_align(ui_value5, LV_ALIGN_CENTER);
     lv_label_set_text(ui_value5, "52");
     lv_obj_set_style_text_font(ui_value5, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_transform_scale(ui_value5, 256, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_transform_pivot_x(ui_value5, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_transform_pivot_y(ui_value5, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_gauge4 = lv_obj_create(ui_view3);
     lv_obj_remove_style_all(ui_gauge4);

@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dcache.h"
 #include "dma2d.h"
 #include "flash.h"
 #include "gpu2d.h"
@@ -95,7 +96,7 @@ static uint8_t screen_active(struct _lv_obj_t * scr)
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
 	 HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-	 HAL_SPI_Receive_IT(&hspi1, rx_buffer, sizeof(rx_buffer));
+	 //HAL_SPI_Receive_IT(&hspi1, rx_buffer, sizeof(rx_buffer));
 }
 /* USER CODE END 0 */
 
@@ -147,6 +148,8 @@ int main(void)
   MX_GPU2D_Init();
   MX_FLASH_Init();
   MX_SPI1_Init();
+  MX_DCACHE1_Init();
+  MX_DCACHE2_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
@@ -192,6 +195,8 @@ int main(void)
 	float slider = 50;
 	uint8_t gauge = 0;
 	uint8_t alert_active = 0;
+
+	_ui_flag_modify(ui_alertContainer, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
 
   /* USER CODE END 2 */
 

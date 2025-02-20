@@ -19,7 +19,11 @@ static void event_cb(lv_event_t * e)
     lv_obj_t * needle = lv_event_get_target(e);
     lv_img_set_angle(needle, (data->pid_value*10)-600);
     lv_obj_t * value = lv_obj_get_child(needle, 0);
+    lv_obj_t * min = lv_obj_get_child(needle, 1);
+    lv_obj_t * max = lv_obj_get_child(needle, 2);
     lv_label_set_text_fmt(value, "%.1f°F", data->pid_value);
+    lv_label_set_text_fmt(min, "%.1f", data->pid_value-5);
+    lv_label_set_text_fmt(max, "%.1f", data->pid_value+5);
 }
 
 lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA * pid)
@@ -35,6 +39,18 @@ lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA
     lv_obj_remove_flag(gauge, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
                        LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+
+    lv_obj_t * pid_label = lv_label_create(parent);
+    lv_obj_set_width(pid_label, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(pid_label, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(pid_label, 0);
+    lv_obj_set_y(pid_label, -30);
+    lv_obj_set_align(pid_label, LV_ALIGN_CENTER);
+    lv_label_set_text(pid_label, "IAT");
+    lv_obj_remove_flag(pid_label, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                       LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                       LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+    lv_obj_set_style_text_font(pid_label, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t * needle;
     needle = lv_image_create(gauge);
@@ -62,6 +78,30 @@ lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
                        LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
     lv_obj_set_style_text_font(value, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * min = lv_label_create(needle);
+    lv_obj_set_width(min, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(min, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(min, -75);
+    lv_obj_set_y(min, -20);
+    lv_obj_set_align(min, LV_ALIGN_CENTER);
+    lv_label_set_text(min, "65.2");
+    lv_obj_remove_flag(min, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                       LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                       LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+    lv_obj_set_style_text_font(min, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_t * max = lv_label_create(needle);
+    lv_obj_set_width(max, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(max, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(max, 75);
+    lv_obj_set_y(max, -20);
+    lv_obj_set_align(max, LV_ALIGN_CENTER);
+    lv_label_set_text(max, "104.4");
+    lv_obj_remove_flag(max, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                       LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                       LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+    lv_obj_set_style_text_font(max, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     return needle;
 }

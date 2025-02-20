@@ -45,6 +45,7 @@
 #include <string.h>
 #include "stm32u5g9j_discovery_hspi.h"
 #include "themes.h"
+#include "lib_pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,6 +107,8 @@ static void add_data(int32_t val)
 
     lv_chart_refresh(ui_Chart1);
 }
+
+PID_DATA iat;
 
 /* USER CODE END 0 */
 
@@ -198,7 +201,6 @@ int main(void)
   uint8_t i = 0;
   uint32_t delay = HAL_GetTick();
 
-	float iat = 38;
 	float boost = -10.2;
 	float oil = 65.6;
 	float slider = 50;
@@ -213,7 +215,8 @@ int main(void)
 
 	//lv_obj_add_event_cb(btn, event_cb, LV_EVENT_ALL, info_label);
 
-	needle = add_stock_st_gauge(-250, 0, ui_view1);
+	needle = add_stock_st_gauge(-250, 0, ui_view1, &iat);
+
     //lv_obj_send_event(mbox, LV_EVENT_VALUE_CHANGED, &btn_id);
 
   /* USER CODE END 2 */
@@ -228,9 +231,9 @@ int main(void)
 		delay = HAL_GetTick() + 4;
 		//lv_slider_set_value(ui_bar, i, LV_ANIM_OFF);
 		//i = i + 5;
-		iat = iat + 0.05;
-		if( iat > 150 )
-			iat = 30;
+		iat.pid_value = iat.pid_value + 0.05;
+		if( iat.pid_value > 150 )
+			iat.pid_value = 30;
 
 		boost = boost + 0.01;
 		if( boost > 25 )

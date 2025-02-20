@@ -1,3 +1,6 @@
 [submodule "lvgl"]
 	path = lvgl
 	url = https://github.com/lvgl/lvgl.git
+[submodule "lib/lib_pid"]
+	path = lib/lib_pid
+	url = https://github.com/KaiserEngineering/lib_pid.git

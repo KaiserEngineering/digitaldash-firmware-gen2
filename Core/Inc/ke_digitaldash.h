@@ -43,15 +43,14 @@ typedef enum {
 }digitaldash_background;
 
 typedef struct {
-    uint32_t pid;                // PID to monitor
+	PID_DATA * pid;              // PID to monitor
     digitaldash_compare compare; // Comparison type
     float thresh;                // Value to compare against
 }digitaldash_trigger;
 
 typedef struct {
     digitaldash_trigger trigger; // Trigger for when an alert should appear
-    char* message;               // Alert message
-    uint8_t message_len;         // Message length, must be less than MAX_ALERT_LENGTH
+    char msg[MAX_ALERT_LENGTH];  // Alert message
 }digitaldash_alert;
 
 typedef struct {

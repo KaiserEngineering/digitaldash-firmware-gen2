@@ -143,12 +143,34 @@ void log_minmax( PID_DATA* pid )
 		pid->pid_min = pid->pid_value;
 }
 
+uint8_t compare_values(float a, float b, digitaldash_compare comparison)
+{
+	switch (comparison) {
+		case DD_LESS_THAN:
+			return a < b;
+		case DD_LESS_THAN_OR_EQUAL_TO:
+			return a <= b;
+		case DD_GREATER_THAN:
+			return a > b;
+		case DD_GREATER_THAN_OR_EQUAL_TO:
+			return a >= b;
+		case DD_EQUAL:
+			return a == b;
+		case DD_NOT_EQUAL:
+			return a != b;
+		default:
+			return 0;  // Return false by default if comparison is invalid
+	}
+}
+
 PID_DATA iat;
 PID_DATA boost;
 PID_DATA oil;
 
 digitaldash FordFocusSTRS;
 lv_obj_t * ui_view[MAX_VIEWS];
+lv_obj_t * ui_alert[MAX_ALERTS];
+lv_obj_t * ui_alert_container[MAX_ALERTS];
 
 /* USER CODE END 0 */
 
@@ -242,6 +264,10 @@ int main(void)
   FordFocusSTRS.view[0].gauge[2].pid = &oil;
   FordFocusSTRS.view[0].gauge[1].theme = THEME_STOCK_ST;
 
+  strcpy(FordFocusSTRS.alert[0].msg, "Max oil pressure reached");
+  FordFocusSTRS.alert[0].trigger.pid = &oil;
+  FordFocusSTRS.alert[0].trigger.compare = DD_GREATER_THAN;
+  FordFocusSTRS.alert[0].trigger.thresh = 160;
 
   BSP_HSPI_NOR_Init_t hspi_init;
   hspi_init.InterfaceMode = MX66UW1G45G_OPI_MODE;
@@ -328,9 +354,41 @@ int main(void)
 	  }
   }
 
+  ui_alert_container[0] = lv_obj_create(ui_view[0]);
+  lv_obj_remove_style_all(ui_alert_container[0]);
+  lv_obj_set_width(ui_alert_container[0], 500);
+  lv_obj_set_height(ui_alert_container[0], 85);
+  lv_obj_set_x(ui_alert_container[0], 0);
+  lv_obj_set_y(ui_alert_container[0], -50);
+  lv_obj_set_align(ui_alert_container[0], LV_ALIGN_CENTER);
+  //lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);     /// Flags
+  lv_obj_remove_flag(ui_alert_container[0],
+                     LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                     LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
+                     LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
+  lv_obj_set_style_radius(ui_alert_container[0], 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_bg_color(ui_alert_container[0], lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_bg_opa(ui_alert_container[0], 225, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_border_color(ui_alert_container[0], lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_border_opa(ui_alert_container[0], 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_border_width(ui_alert_container[0], 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_color(ui_alert_container[0], lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_opa(ui_alert_container[0], 225, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_width(ui_alert_container[0], 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_spread(ui_alert_container[0], 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_offset_x(ui_alert_container[0], 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_shadow_offset_y(ui_alert_container[0], 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+  ui_alert[0] = lv_label_create(ui_alert_container[0]);
+  lv_obj_set_width(ui_alert[0], LV_SIZE_CONTENT);   /// 1
+  lv_obj_set_height(ui_alert[0], LV_SIZE_CONTENT);    /// 1
+  lv_obj_set_align(ui_alert[0], LV_ALIGN_CENTER);
+  lv_label_set_text(ui_alert[0], FordFocusSTRS.alert[0].msg);
+
   lv_screen_load(ui_view[0]);
 
   uint8_t gauge = 0;
+  uint8_t alert_active = 1;
 
   /* USER CODE END 2 */
 
@@ -370,20 +428,19 @@ int main(void)
 		*/
 
 
-		/*
-		if( oil.pid_value > 8000 )
+
+		if( compare_values(FordFocusSTRS.alert[0].trigger.pid->pid_value, FordFocusSTRS.alert[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) )
 		{
 			if( alert_active == 0 ) {
 				alert_active = 1;
-				_ui_flag_modify(ui_alertContainer, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_REMOVE);
+				lv_obj_remove_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
 			}
 		} else {
 			if( alert_active == 1 ) {
 				alert_active = 0;
-				_ui_flag_modify(ui_alertContainer, LV_OBJ_FLAG_HIDDEN, _UI_MODIFY_FLAG_ADD);
+				lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
 			}
 		}
-		*/
 
 		/*
 		lv_obj_send_event(FordFocusSTRS.view[0].gauge[0].obj, LV_EVENT_REFRESH, &iat);

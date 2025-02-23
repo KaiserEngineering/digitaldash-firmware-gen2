@@ -135,6 +135,14 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 	 //HAL_SPI_Receive_IT(&hspi1, rx_buffer, sizeof(rx_buffer));
 }
 
+void log_minmax( PID_DATA* pid )
+{
+	if( pid->pid_value >= pid->pid_max )
+		pid->pid_max = pid->pid_value;
+	if( pid->pid_value <= pid->pid_min )
+		pid->pid_min = pid->pid_value;
+}
+
 PID_DATA iat;
 PID_DATA boost;
 PID_DATA oil;
@@ -348,6 +356,10 @@ int main(void)
 		oil.pid_value = oil.pid_value + 0.2;
 		if( oil.pid_value > 198 )
 			oil.pid_value = 32.5;
+
+		log_minmax(&iat);
+		log_minmax(&boost);
+		log_minmax(&oil);
 
 
 		/*

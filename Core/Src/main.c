@@ -166,6 +166,9 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 PID_DATA iat;
 PID_DATA boost;
 PID_DATA oil;
+PID_DATA coolant;
+PID_DATA rpm;
+PID_DATA speed;
 
 digitaldash FordFocusSTRS;
 lv_obj_t * ui_view[MAX_VIEWS];
@@ -229,7 +232,7 @@ int main(void)
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
-  FordFocusSTRS.num_views = 1;
+  FordFocusSTRS.num_views = 2;
 
   // View 1
   FordFocusSTRS.view[0].enabled = 1;
@@ -264,10 +267,60 @@ int main(void)
   FordFocusSTRS.view[0].gauge[2].pid = &oil;
   FordFocusSTRS.view[0].gauge[1].theme = THEME_STOCK_ST;
 
+  // View 2
+  FordFocusSTRS.view[1].enabled = 1;
+  FordFocusSTRS.view[1].view_index = 1;
+  FordFocusSTRS.view[1].num_gauges = 3;
+  FordFocusSTRS.view[1].background = BACKGROUND_BLACK;
+
+  // View 2 - Gauge 1
+  strcpy(coolant.label, "Coolant");
+  strcpy(coolant.unit_label, PID_UNITS_FAHRENHEIT_LABEL);
+  coolant.lower_limit = 0;
+  coolant.upper_limit = 150;
+  coolant.precision = 1;
+  FordFocusSTRS.view[1].gauge[0].pid = &coolant;
+  FordFocusSTRS.view[1].gauge[0].theme = THEME_STOCK_ST;
+
+  // View 2 - Gauge 2
+  strcpy(rpm.label, "Tach");
+  strcpy(rpm.unit_label, PID_UNITS_RPM_LABEL);
+  rpm.lower_limit = 0;
+  rpm.upper_limit = 8000;
+  rpm.precision = 0;
+  FordFocusSTRS.view[1].gauge[1].pid = &rpm;
+  FordFocusSTRS.view[1].gauge[1].theme = THEME_STOCK_ST;
+
+  // View 2 - Gauge 3
+  strcpy(speed.label, "Speed");
+  strcpy(speed.unit_label, PID_UNITS_MPH_LABEL);
+  speed.lower_limit = 0;
+  speed.upper_limit = 120;
+  speed.precision = 0;
+  FordFocusSTRS.view[1].gauge[2].pid = &speed;
+  FordFocusSTRS.view[1].gauge[1].theme = THEME_STOCK_ST;
+
+  // Alert 1
   strcpy(FordFocusSTRS.alert[0].msg, "Max oil pressure reached");
   FordFocusSTRS.alert[0].trigger.pid = &oil;
   FordFocusSTRS.alert[0].trigger.compare = DD_GREATER_THAN;
   FordFocusSTRS.alert[0].trigger.thresh = 160;
+
+  // Dynamic 1
+  FordFocusSTRS.dynamic[0].enabled = 1;
+  FordFocusSTRS.dynamic[0].priority = DD_MEDIUM_PRIORITY;
+  FordFocusSTRS.dynamic[0].trigger.compare = DD_GREATER_THAN;
+  FordFocusSTRS.dynamic[0].trigger.pid = &oil;
+  FordFocusSTRS.dynamic[0].trigger.thresh = 100;
+  FordFocusSTRS.dynamic[0].view_index = 0;
+
+  // Dynamic 2
+  FordFocusSTRS.dynamic[1].enabled = 1;
+  FordFocusSTRS.dynamic[1].priority = DD_HIGH_PRIORITY;
+  FordFocusSTRS.dynamic[1].trigger.compare = DD_GREATER_THAN;
+  FordFocusSTRS.dynamic[1].trigger.pid = &oil;
+  FordFocusSTRS.dynamic[1].trigger.thresh = 100;
+  FordFocusSTRS.dynamic[1].view_index = 1;
 
   BSP_HSPI_NOR_Init_t hspi_init;
   hspi_init.InterfaceMode = MX66UW1G45G_OPI_MODE;
@@ -350,7 +403,7 @@ int main(void)
 	  }
 
 	  for( uint8_t i = 0; i < FordFocusSTRS.view[idx].num_gauges; i++) {
-		  FordFocusSTRS.view[idx].gauge[i].obj = add_stock_st_gauge(x_pos[i], 0, ui_view[0], FordFocusSTRS.view[0].gauge[i].pid);
+		  FordFocusSTRS.view[idx].gauge[i].obj = add_stock_st_gauge(x_pos[i], 0, ui_view[idx], FordFocusSTRS.view[idx].gauge[i].pid);
 	  }
   }
 
@@ -384,6 +437,7 @@ int main(void)
   lv_obj_set_height(ui_alert[0], LV_SIZE_CONTENT);    /// 1
   lv_obj_set_align(ui_alert[0], LV_ALIGN_CENTER);
   lv_label_set_text(ui_alert[0], FordFocusSTRS.alert[0].msg);
+  lv_obj_set_style_text_font(ui_alert[0], &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
 
   lv_screen_load(ui_view[0]);
 
@@ -410,23 +464,27 @@ int main(void)
 	if( oil.pid_value > 198 )
 		oil.pid_value = 32.5;
 
+	coolant.pid_value = coolant.pid_value + 0.15;
+	if( coolant.pid_value > 198 )
+		coolant.pid_value = 12;
+
+	rpm.pid_value = rpm.pid_value + 10;
+	if( rpm.pid_value > 8000 )
+		rpm.pid_value = 0;
+
+	speed.pid_value = speed.pid_value + 1;
+	if( speed.pid_value > 120 )
+		speed.pid_value = 0;
+
 	log_minmax(&iat);
 	log_minmax(&boost);
 	log_minmax(&oil);
 
-
-		/*
-		if( HAL_GetTick() < 2750) {
-			switch_screen(ui_splash);
-		} else if( boost.pid_value > 10 ){
-			switch_screen(ui_view2);
-		} else if( boost.pid_value > 0 ) {
-			switch_screen(ui_view3);
+		if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
+			switch_screen(ui_view[FordFocusSTRS.dynamic[0].view_index]);
 		} else {
-			switch_screen(ui_view1);
+			switch_screen(ui_view[1]);
 		}
-		*/
-
 
 
 		if( compare_values(FordFocusSTRS.alert[0].trigger.pid->pid_value, FordFocusSTRS.alert[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) )
@@ -467,9 +525,27 @@ int main(void)
 			lv_obj_send_event(FordFocusSTRS.view[0].gauge[2].obj, LV_EVENT_REFRESH, &oil);
 		}
 		break;
+
+		case 3:
+		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[0].obj, LV_OBJ_FLAG_HIDDEN)) {
+			lv_obj_send_event(FordFocusSTRS.view[1].gauge[0].obj, LV_EVENT_REFRESH, &coolant);
+		}
+		break;
+
+		case 4:
+		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[1].obj, LV_OBJ_FLAG_HIDDEN)) {
+			lv_obj_send_event(FordFocusSTRS.view[1].gauge[1].obj, LV_EVENT_REFRESH, &rpm);
+		}
+		break;
+
+		case 5:
+		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[2].obj, LV_OBJ_FLAG_HIDDEN)) {
+			lv_obj_send_event(FordFocusSTRS.view[1].gauge[2].obj, LV_EVENT_REFRESH, &speed);
+		}
+		break;
 	}
 
-	gauge = (gauge >= 2) ? 0 : gauge + 1;
+	gauge = (gauge >= 5) ? 0 : gauge + 1;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

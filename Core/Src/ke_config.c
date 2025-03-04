@@ -1121,13 +1121,13 @@ bool verify_view_background(VIEW_BACKGROUND background)
         return 1;
 }
 
-static GAUGE_THEME load_view_gauge_theme(uint8_t idx)
+static GAUGE_THEME load_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge)
 {
     GAUGE_THEME load_view_gauge_theme_val = DEFAULT_VIEW_GAUGE_THEME;
 
     if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
     {
-        load_view_gauge_theme_val = (uint8_t)read(map_view_gauge_theme_byte1[idx]);
+        load_view_gauge_theme_val = (uint8_t)read(map_view_gauge_theme_byte1[idx_view][idx_gauge]);
     }
     return load_view_gauge_theme_val;
 }
@@ -1196,10 +1196,10 @@ static float load_alert_threshold(uint8_t idx)
 
     if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
     {
-        load_alert_threshold_val = (uint32_t)read(EEPROM_threshold1);
-        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 8) | (uint32_t)read(EEPROM_ALERT_THRESHOLD2);
-        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 16) | (uint32_t)read(EEPROM_ALERT_THRESHOLD3);
-        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 24) | (uint32_t)read(EEPROM_ALERT_THRESHOLD4);
+        load_alert_threshold_val = (uint32_t)read(map_alert_threshold_byte1[idx]);
+        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 8) | (uint32_t)read(map_alert_threshold_byte2[idx]);
+        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 16) | (uint32_t)read(map_alert_threshold_byte3[idx]);
+        load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 24) | (uint32_t)read(map_alert_threshold_byte4[idx]);
     }
     return load_alert_threshold_val;
 }
@@ -1279,10 +1279,10 @@ static float load_dynamic_threshold(uint8_t idx)
 
     if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
     {
-        load_dynamic_threshold_val = (uint32_t)read(EEPROM_Threshold1);
-        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 8) | (uint32_t)read(EEPROM_DYNAMIC_THRESHOLD2);
-        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 16) | (uint32_t)read(EEPROM_DYNAMIC_THRESHOLD3);
-        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 24) | (uint32_t)read(EEPROM_DYNAMIC_THRESHOLD4);
+        load_dynamic_threshold_val = (uint32_t)read(map_dynamic_threshold_byte1[idx]);
+        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 8) | (uint32_t)read(map_dynamic_threshold_byte2[idx]);
+        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 16) | (uint32_t)read(map_dynamic_threshold_byte3[idx]);
+        load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 24) | (uint32_t)read(map_dynamic_threshold_byte4[idx]);
     }
     return load_dynamic_threshold_val;
 }

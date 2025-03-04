@@ -1168,7 +1168,7 @@ static char load_alert_message(uint8_t idx)
 
 bool verify_alert_message(char message)
 {
-
+    return 1; // TODO - String checking
 }
 
 static ALERT_COMPARISON load_alert_compare(uint8_t idx)

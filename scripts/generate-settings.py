@@ -133,6 +133,9 @@ def write_verify_source( file, prefix, cmd, depth ):
     elif cmd["type"] == "pointer":
         file.write("    if (" + input + " != " +  str(cmd["limit"]) + ")\n" )
         file.write("        return 1;" )
+
+    elif cmd["type"] == "string":
+        file.write("    return 1; // TODO - String checking" )
        
 
     file.write("\n}\n\n")

@@ -197,6 +197,27 @@ bool verify_dynamic_enable(DYNAMIC_STATE enable);
 DYNAMIC_STATE get_dynamic_enable(uint8_t idx_dynamic);
 bool set_dynamic_enable(uint8_t idx_dynamic,DYNAMIC_STATE enable, bool save);
 
+
+/********************************************************************************
+*                                    Priority                                   
+*
+* @param idx_dynamic    index of the dynamic
+* @param priority    Priority of the dynamic gauges, if both gauges comparisons are met then highest priority wins
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
+typedef enum
+{
+    DYNAMIC_PRIORITY_LOW,
+    DYNAMIC_PRIORITY_MEDIUM,
+    DYNAMIC_PRIORITY_HIGH,
+    DYNAMIC_PRIORITY_RESERVED
+} DYNAMIC_PRIORITY;
+
+bool verify_dynamic_priority(DYNAMIC_PRIORITY priority);
+DYNAMIC_PRIORITY get_dynamic_priority(uint8_t idx_dynamic);
+bool set_dynamic_priority(uint8_t idx_dynamic,DYNAMIC_PRIORITY priority, bool save);
+
 #ifdef __cplusplus
 }
 #endif

@@ -35,6 +35,7 @@
 #define DEFAULT_ALERT_MESSAGE "This is an alert"
 #define DEFAULT_ALERT_COMPARE COMPARISON_GREATER_THAN
 #define DEFAULT_DYNAMIC_ENABLE DYNAMIC_STATE_DISABLED
+#define DEFAULT_DYNAMIC_PRIORITY DYNAMIC_PRIORITY_LOW
 
 // EEPROM Memory Map - view enable
 #define EEPROM_VIEW_ENABLE1_BYTE1 (uint16_t)0x0000
@@ -945,6 +946,14 @@ static const uint16_t map_dynamic_enable_byte1[NUM_DYNAMIC] = {
     EEPROM_DYNAMIC_ENABLE2_BYTE1
     };
 
+// EEPROM Memory Map - dynamic priority
+#define EEPROM_DYNAMIC_PRIORITY1_BYTE1 (uint16_t)0x0A18
+#define EEPROM_DYNAMIC_PRIORITY2_BYTE1 (uint16_t)0x0A19
+static const uint16_t map_dynamic_priority_byte1[NUM_DYNAMIC] = {
+    EEPROM_DYNAMIC_PRIORITY1_BYTE1,
+    EEPROM_DYNAMIC_PRIORITY2_BYTE1
+    };
+
 
 static VIEW_STATE view_enable[MAX_VIEWS] = {DEFAULT_VIEW_ENABLE};
 static uint8_t view_num_gauges[GAUGES_PER_VIEW] = {DEFAULT_VIEW_NUM_GAUGES};
@@ -954,6 +963,7 @@ static ALERT_STATE alert_enable[MAX_ALERTS] = {DEFAULT_ALERT_ENABLE};
 static char alert_message[MAX_ALERTS][ALERT_MESSAGE_LEN] = {DEFAULT_ALERT_MESSAGE};
 static COMPARISON alert_compare[MAX_ALERTS] = {DEFAULT_ALERT_COMPARE};
 static DYNAMIC_STATE dynamic_enable[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_ENABLE};
+static DYNAMIC_PRIORITY dynamic_priority[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_PRIORITY};
 
 
 static VIEW_STATE load_view_enable(uint8_t idx)
@@ -1097,6 +1107,25 @@ static DYNAMIC_STATE load_dynamic_enable(uint8_t idx)
 bool verify_dynamic_enable(DYNAMIC_STATE enable)
 {
     if (enable >= DYNAMIC_STATE_RESERVED)
+        return 0;
+    else
+        return 1;
+}
+
+static DYNAMIC_PRIORITY load_dynamic_priority(uint8_t idx)
+{
+    DYNAMIC_PRIORITY load_dynamic_priority_val = DEFAULT_DYNAMIC_PRIORITY;
+
+    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    {
+        load_dynamic_priority_val = (uint8_t)read(map_dynamic_priority_byte1[idx]);
+    }
+    return load_dynamic_priority_val;
+}
+
+bool verify_dynamic_priority(DYNAMIC_PRIORITY priority)
+{
+    if (priority >= DYNAMIC_PRIORITY_RESERVED)
         return 0;
     else
         return 1;

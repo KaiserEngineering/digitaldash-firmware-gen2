@@ -128,6 +128,23 @@
             ],
             "limit": "Reserved",
             "EEBytes": 1
+        },
+        {
+            "index" : true,
+            "count" : "num_dynamic",
+            "cmd": "priority",
+            "name": "Priority",
+            "desc": "Priority of the dynamic gauges, if both gauges comparisons are met then highest priority wins",
+            "type": "list",
+            "dataType": "DYNAMIC_PRIORITY",
+            "default": "Low",
+            "options": [
+                "Low",
+                "Medium",
+                "High"
+            ],
+            "limit": "Reserved",
+            "EEBytes": 1
         }
     ],
     "gauge": [

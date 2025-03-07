@@ -191,7 +191,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* MPU Configuration--------------------------------------------------------*/
-  //MPU_Config();
+//  MPU_Config();
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -232,13 +232,15 @@ int main(void)
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
+  HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
+
   FordFocusSTRS.num_views = 2;
 
   // View 1
   FordFocusSTRS.view[0].enabled = 1;
   FordFocusSTRS.view[0].view_index = 0;
   FordFocusSTRS.view[0].num_gauges = 3;
-  FordFocusSTRS.view[0].background = BACKGROUND_BLACK;
+  FordFocusSTRS.view[0].background = BACKGROUND_FLARE;
 
   // View 1 - Gauge 1
   strcpy(iat.label, "IAT");
@@ -271,7 +273,7 @@ int main(void)
   FordFocusSTRS.view[1].enabled = 1;
   FordFocusSTRS.view[1].view_index = 1;
   FordFocusSTRS.view[1].num_gauges = 3;
-  FordFocusSTRS.view[1].background = BACKGROUND_GREEN;
+  FordFocusSTRS.view[1].background = BACKGROUND_FLARE;
 
   // View 2 - Gauge 1
   strcpy(coolant.label, "Coolant");
@@ -483,13 +485,6 @@ int main(void)
 	oil.pid_value = oil.pid_value + 0.2;
 	if( oil.pid_value > 255 )
 		oil.pid_value = 0;
-
-	lv_color_t color = {0};
-    color.red = 0;
-    color.green = (uint8_t)(oil.pid_value);
-  	color.blue = 0;
-	lv_obj_set_style_bg_color(ui_view[0], color, LV_PART_MAIN | LV_STATE_DEFAULT);
-	lv_obj_set_style_bg_color(ui_view[1], color, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 	coolant.pid_value = coolant.pid_value + 0.15;
 	if( coolant.pid_value > 198 )

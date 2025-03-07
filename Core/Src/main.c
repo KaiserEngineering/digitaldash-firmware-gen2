@@ -90,6 +90,8 @@ LV_IMG_DECLARE(ui_img_527366581);    // assets/ezgif-frame-062.png
 LV_IMG_DECLARE(ui_img_1609095760);    // assets/ezgif-frame-063.png
 LV_IMG_DECLARE(ui_img_881013631);    // assets/ezgif-frame-064.png
 LV_IMG_DECLARE(ui_img_554362598);    // assets/ezgif-frame-065.png
+
+static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[2][MY_DISP_HOR_RES*MY_DISP_VER_RES*3];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -240,7 +242,7 @@ int main(void)
   FordFocusSTRS.view[0].enabled = 1;
   FordFocusSTRS.view[0].view_index = 0;
   FordFocusSTRS.view[0].num_gauges = 3;
-  FordFocusSTRS.view[0].background = BACKGROUND_FLARE;
+  FordFocusSTRS.view[0].background = BACKGROUND_USER1;
 
   // View 1 - Gauge 1
   strcpy(iat.label, "IAT");
@@ -273,7 +275,7 @@ int main(void)
   FordFocusSTRS.view[1].enabled = 1;
   FordFocusSTRS.view[1].view_index = 1;
   FordFocusSTRS.view[1].num_gauges = 3;
-  FordFocusSTRS.view[1].background = BACKGROUND_FLARE;
+  FordFocusSTRS.view[1].background = BACKGROUND_USER1;
 
   // View 2 - Gauge 1
   strcpy(coolant.label, "Coolant");
@@ -333,6 +335,13 @@ int main(void)
 	  while(1){}
   }
 
+  /*
+  if( BSP_HSPI_NOR_Write(0, ui_img_flare_png.data, (uint32_t)&backgrounds_external[0], sizeof(backgrounds_external[0])) != BSP_ERROR_NONE )
+  {
+	while(1){}
+  }
+  */
+
   if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
   {
 	while(1){}
@@ -366,10 +375,24 @@ int main(void)
 	  const lv_image_dsc_t * img = NULL;
 	  lv_color_t color = {0};
 
+	  lv_image_dsc_t ext_background = {
+	    .header.cf = LV_COLOR_FORMAT_RGB888,
+	    .header.magic = LV_IMAGE_HEADER_MAGIC,
+	    .header.w = 800,
+	    .header.h = 200,
+	    .data_size = sizeof(backgrounds_external[0]),
+	    .data = backgrounds_external[0],
+	  };
+
 	  switch( FordFocusSTRS.view[idx].background )
 	  {
 		  case BACKGROUND_FLARE:
-			  img = &ui_img_flare_png;
+			  //img = &ui_img_flare_png;
+			  is_image = 1;
+			  break;
+
+		  case BACKGROUND_USER1:
+			  img = &ext_background;
 			  is_image = 1;
 			  break;
 

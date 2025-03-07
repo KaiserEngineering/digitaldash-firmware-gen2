@@ -324,11 +324,6 @@ int main(void)
   FordFocusSTRS.dynamic[1].trigger.thresh = 260;
   FordFocusSTRS.dynamic[1].view_index = 1;
 
-  //MX25LM51245G_WriteEnable(&hxspi1, MX25LM51245G_OPI_MODE, MX25LM51245G_DTR_TRANSFER);
-  //MX25LM51245G_WriteCfgRegister(&hxspi1, MX25LM51245G_OPI_MODE, MX25LM51245G_DTR_TRANSFER)
-  //MX25LM51245G_EnableMemoryMappedModeDTR(&hxspi1, MX25LM51245G_OPI_MODE);
-
-
   BSP_HSPI_NOR_Init_t hspi_init;
   hspi_init.InterfaceMode = MX25LM51245G_OPI_MODE;
   hspi_init.TransferRate = MX25LM51245G_DTR_TRANSFER;

@@ -26,9 +26,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32u5g9j_discovery_conf.h"
 #include "stm32u5g9j_discovery_errno.h"
-#include "mx66uw1g45g.h"
+#include "mx25lm51245g.h"
 
 /** @addtogroup BSP
   * @{
@@ -75,10 +74,10 @@ typedef struct
 /** @defgroup STM32U5G9J_DK2_HSPI_NOR_Exported_Types HSPI NOR Exported Types
   * @{
   */
-#define BSP_HSPI_NOR_Info_t                MX66UW1G45G_Info_t
-#define BSP_HSPI_NOR_Interface_t           MX66UW1G45G_Interface_t
-#define BSP_HSPI_NOR_Transfer_t            MX66UW1G45G_Transfer_t
-#define BSP_HSPI_NOR_Erase_t               MX66UW1G45G_Erase_t
+#define BSP_HSPI_NOR_Info_t                MX25LM51245G_Info_t
+#define BSP_HSPI_NOR_Interface_t           MX25LM51245G_Interface_t
+#define BSP_HSPI_NOR_Transfer_t            MX25LM51245G_Transfer_t
+#define BSP_HSPI_NOR_Erase_t               MX25LM51245G_Erase_t
 
 typedef struct
 {
@@ -176,21 +175,21 @@ typedef struct
 #define HSPI_NOR_INSTANCES_NUMBER         1U
 
 /* Definition for HSPI modes */
-#define BSP_HSPI_NOR_SPI_MODE (BSP_HSPI_NOR_Interface_t)MX66UW1G45G_SPI_MODE /* 1 Cmd, 1 Address and 1 Data Lines */
-#define BSP_HSPI_NOR_OPI_MODE (BSP_HSPI_NOR_Interface_t)MX66UW1G45G_OPI_MODE /* 8 Cmd, 8 Address and 8 Data Lines */
+#define BSP_HSPI_NOR_SPI_MODE (BSP_HSPI_NOR_Interface_t)MX25LM51245G_SPI_MODE /* 1 Cmd, 1 Address and 1 Data Lines */
+#define BSP_HSPI_NOR_OPI_MODE (BSP_HSPI_NOR_Interface_t)MX25LM51245G_OPI_MODE /* 8 Cmd, 8 Address and 8 Data Lines */
 
 /* Definition for HSPI transfer rates */
-#define BSP_HSPI_NOR_STR_TRANSFER  (BSP_HSPI_NOR_Transfer_t)MX66UW1G45G_STR_TRANSFER   /* Single Transfer Rate */
-#define BSP_HSPI_NOR_DTR_TRANSFER  (BSP_HSPI_NOR_Transfer_t)MX66UW1G45G_DTR_TRANSFER   /* Double Transfer Rate */
+#define BSP_HSPI_NOR_STR_TRANSFER  (BSP_HSPI_NOR_Transfer_t)MX25LM51245G_STR_TRANSFER   /* Single Transfer Rate */
+#define BSP_HSPI_NOR_DTR_TRANSFER  (BSP_HSPI_NOR_Transfer_t)MX25LM51245G_DTR_TRANSFER   /* Double Transfer Rate */
 
 /* HSPI erase types */
-#define BSP_HSPI_NOR_ERASE_4K             MX66UW1G45G_ERASE_4K
-#define BSP_HSPI_NOR_ERASE_64K            MX66UW1G45G_ERASE_64K
-#define BSP_HSPI_NOR_ERASE_CHIP           MX66UW1G45G_ERASE_BULK
+#define BSP_HSPI_NOR_ERASE_4K             MX25LM51245G_ERASE_4K
+#define BSP_HSPI_NOR_ERASE_64K            MX25LM51245G_ERASE_64K
+#define BSP_HSPI_NOR_ERASE_CHIP           MX25LM51245G_ERASE_BULK
 
 /* HSPI block sizes */
-#define BSP_HSPI_NOR_BLOCK_4K             MX66UW1G45G_SUBSECTOR_4K
-#define BSP_HSPI_NOR_BLOCK_64K            MX66UW1G45G_SECTOR_64K
+#define BSP_HSPI_NOR_BLOCK_4K             MX25LM51245G_SUBSECTOR_4K
+#define BSP_HSPI_NOR_BLOCK_64K            MX25LM51245G_SECTOR_64K
 /**
   * @}
   */

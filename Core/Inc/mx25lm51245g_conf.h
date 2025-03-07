@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file    mx66uw1g45g_conf.h
+  * @file    mx25lm51245g_conf.h
   * @author  MCD Application Team
-  * @brief   MX66UW1G45G OctoSPI memory configuration template file.
+  * @brief   MX25LM51245G OctoSPI memory configuration template file.
   *          This file should be copied to the application folder and renamed
-  *          to mx66uw1g45g_conf.h
+  *          to mx25lm51245g_conf.h
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2017-2019 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,8 +19,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MX66UW1G45G_CONF_H
-#define MX66UW1G45G_CONF_H
+#ifndef MX25LM51245G_CONF_H
+#define MX25LM51245G_CONF_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +32,7 @@ extern "C" {
 /** @addtogroup BSP
   * @{
   */
-#define CONF_OSPI_ODS                MX66UW1G45G_CR_ODS_24   /* MX66UW1G45G Output Driver Strength */
+#define CONF_OSPI_ODS                MX25LM51245G_CR_ODS_24   /* MX25LM51245G Output Driver Strength */
 
 #define DUMMY_CYCLES_READ            8U
 #define DUMMY_CYCLES_READ_OCTAL      6U
@@ -48,4 +48,4 @@ extern "C" {
 }
 #endif
 
-#endif /* MX66UW1G45G_CONF_H */
+#endif /* MX25LM51245G_CONF_H */

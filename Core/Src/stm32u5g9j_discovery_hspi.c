@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    stm32u5g9j_discovery_hspi.c
   * @author  MCD Application Team
-  * @brief   This file includes a standard driver for the MX66UW1G45G
+  * @brief   This file includes a standard driver for the MX25LM51245G
   *          HSPI memories mounted on the STM32U5G9J-DK2 board.
   ******************************************************************************
   * @attention
@@ -20,17 +20,17 @@
                      ##### How to use this driver #####
   ==============================================================================
   [..]
-   (#) This driver is used to drive the MX66UW1G45G Octal NOR
+   (#) This driver is used to drive the MX25LM51245G Octal NOR
        external memories mounted on STM32U5G9J-DK2 board.
 
-   (#) This driver need specific component driver (MX66UW1G45G) to be included with.
+   (#) This driver need specific component driver (MX25LM51245G) to be included with.
 
-   (#) MX66UW1G45G Initialization steps:
+   (#) MX25LM51245G Initialization steps:
        (++) Initialize the HSPI external memory using the BSP_HSPI_NOR_Init() function. This
             function includes the MSP layer hardware resources initialization and the
             HSPI interface with the external memory.
 
-   (#) MX66UW1G45G Octal NOR memory operations
+   (#) MX25LM51245G Octal NOR memory operations
        (++) HSPI memory can be accessed with read/write operations once it is
             initialized.
             Read/write operation can be performed with AHB access using the functions
@@ -85,8 +85,8 @@
 static XSPI_HandleTypeDef hhspi_nor[HSPI_NOR_INSTANCES_NUMBER] = {0};
 static HSPI_NOR_Ctx_t HSPI_Nor_Ctx[HSPI_NOR_INSTANCES_NUMBER]  = {{
     HSPI_ACCESS_NONE,
-    MX66UW1G45G_SPI_MODE,
-    MX66UW1G45G_STR_TRANSFER
+    MX25LM51245G_SPI_MODE,
+    MX25LM51245G_STR_TRANSFER
   }
 };
 /**
@@ -165,7 +165,7 @@ int32_t BSP_HSPI_NOR_Init(uint32_t Instance, BSP_HSPI_NOR_Init_t *Init)
 #endif /* USE_HAL_XSPI_REGISTER_CALLBACKS */
 
       /* Get Flash information of one memory */
-      (void)MX66UW1G45G_GetFlashInfo(&pInfo);
+      (void)MX25LM51245G_GetFlashInfo(&pInfo);
 
       /* Fill config structure */
       hspi_init.ClockPrescaler = 0x00;
@@ -190,8 +190,8 @@ int32_t BSP_HSPI_NOR_Init(uint32_t Instance, BSP_HSPI_NOR_Init_t *Init)
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
       /* Check if memory is ready */
-      else if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                               HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+      else if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                               HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -449,8 +449,8 @@ int32_t BSP_HSPI_NOR_Read(uint32_t Instance, uint8_t *pData, uint32_t ReadAddr, 
   {
     if (HSPI_Nor_Ctx[Instance].TransferRate == BSP_HSPI_NOR_STR_TRANSFER)
     {
-      if (MX66UW1G45G_ReadSTR(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              MX66UW1G45G_4BYTES_SIZE, pData, ReadAddr, Size) != MX66UW1G45G_OK)
+      if (MX25LM51245G_ReadSTR(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              MX25LM51245G_4BYTES_SIZE, pData, ReadAddr, Size) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -461,7 +461,7 @@ int32_t BSP_HSPI_NOR_Read(uint32_t Instance, uint8_t *pData, uint32_t ReadAddr, 
     }
     else
     {
-      if (MX66UW1G45G_ReadDTR(&hhspi_nor[Instance], pData, ReadAddr, Size) != MX66UW1G45G_OK)
+      if (MX25LM51245G_ReadDTR(&hhspi_nor[Instance], pData, ReadAddr, Size) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -500,7 +500,7 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
   else
   {
     /* Calculation of the size between the write address and the end of the page */
-    current_size = MX66UW1G45G_PAGE_SIZE - (WriteAddr % MX66UW1G45G_PAGE_SIZE);
+    current_size = MX25LM51245G_PAGE_SIZE - (WriteAddr % MX25LM51245G_PAGE_SIZE);
 
     /* Check if the size of the data is less than the remaining place in the page */
     if (current_size > Size)
@@ -517,13 +517,13 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
     do
     {
       /* Check if Flash busy ? */
-      if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                          HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+      if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                          HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }/* Enable write operations */
-      else if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                       HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+      else if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                       HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -532,9 +532,9 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
         if (HSPI_Nor_Ctx[Instance].TransferRate == BSP_HSPI_NOR_STR_TRANSFER)
         {
           /* Issue page program command */
-          if (MX66UW1G45G_PageProgram(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                      MX66UW1G45G_4BYTES_SIZE, (uint8_t *)data_addr, current_addr,
-                                      current_size) != MX66UW1G45G_OK)
+          if (MX25LM51245G_PageProgram(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                      MX25LM51245G_4BYTES_SIZE, (uint8_t *)data_addr, current_addr,
+                                      current_size) != MX25LM51245G_OK)
           {
             ret = BSP_ERROR_COMPONENT_FAILURE;
           }
@@ -542,8 +542,8 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
         else
         {
           /* Issue page program command */
-          if (MX66UW1G45G_PageProgramDTR(&hhspi_nor[Instance], (uint8_t *)data_addr, current_addr,
-                                         current_size) != MX66UW1G45G_OK)
+          if (MX25LM51245G_PageProgramDTR(&hhspi_nor[Instance], (uint8_t *)data_addr, current_addr,
+                                         current_size) != MX25LM51245G_OK)
           {
             ret = BSP_ERROR_COMPONENT_FAILURE;
           }
@@ -552,8 +552,8 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
         if (ret == BSP_ERROR_NONE)
         {
           /* Configure automatic polling mode to wait for end of program */
-          if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                              HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+          if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                              HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
           {
             ret = BSP_ERROR_COMPONENT_FAILURE;
           }
@@ -562,9 +562,9 @@ int32_t BSP_HSPI_NOR_Write(uint32_t Instance, uint8_t *pData, uint32_t WriteAddr
             /* Update the address and size variables for next page programming */
             current_addr += current_size;
             data_addr += current_size;
-            current_size = ((current_addr + MX66UW1G45G_PAGE_SIZE) > end_addr)
+            current_size = ((current_addr + MX25LM51245G_PAGE_SIZE) > end_addr)
                            ? (end_addr - current_addr)
-                           : MX66UW1G45G_PAGE_SIZE;
+                           : MX25LM51245G_PAGE_SIZE;
           }
         }
       }
@@ -594,19 +594,19 @@ int32_t BSP_HSPI_NOR_Erase_Block(uint32_t Instance, uint32_t BlockAddress, BSP_H
   else
   {
     /* Check Flash busy ? */
-    if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                        HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+    if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                        HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Enable write operations */
-    else if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                     HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                     HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Issue Block Erase command */
-    else if (MX66UW1G45G_BlockErase(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                    HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_4BYTES_SIZE,
-                                    BlockAddress, BlockSize) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_BlockErase(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                    HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_4BYTES_SIZE,
+                                    BlockAddress, BlockSize) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
@@ -637,18 +637,18 @@ int32_t BSP_HSPI_NOR_Erase_Chip(uint32_t Instance)
   else
   {
     /* Check Flash busy ? */
-    if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                        HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+    if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                        HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Enable write operations */
-    else if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                     HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                     HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Issue Chip erase command */
-    else if (MX66UW1G45G_ChipErase(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_ChipErase(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
@@ -679,25 +679,25 @@ int32_t BSP_HSPI_NOR_GetStatus(uint32_t Instance)
   }
   else
   {
-    if (MX66UW1G45G_ReadSecurityRegister(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                         HSPI_Nor_Ctx[Instance].TransferRate, reg) != MX66UW1G45G_OK)
+    if (MX25LM51245G_ReadSecurityRegister(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                         HSPI_Nor_Ctx[Instance].TransferRate, reg) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Check the value of the register */
-    else if ((reg[0] & (MX66UW1G45G_SECR_P_FAIL | MX66UW1G45G_SECR_E_FAIL)) != 0U)
+    else if ((reg[0] & (MX25LM51245G_SECR_P_FAIL | MX25LM51245G_SECR_E_FAIL)) != 0U)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
-    else if ((reg[0] & (MX66UW1G45G_SECR_PSB | MX66UW1G45G_SECR_ESB)) != 0U)
+    else if ((reg[0] & (MX25LM51245G_SECR_PSB | MX25LM51245G_SECR_ESB)) != 0U)
     {
       ret = BSP_ERROR_HSPI_SUSPENDED;
     }
-    else if (MX66UW1G45G_ReadStatusRegister(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                            HSPI_Nor_Ctx[Instance].TransferRate, reg) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_ReadStatusRegister(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                            HSPI_Nor_Ctx[Instance].TransferRate, reg) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }/* Check the value of the register */
-    else if ((reg[0] & MX66UW1G45G_SR_WIP) != 0U)
+    else if ((reg[0] & MX25LM51245G_SR_WIP) != 0U)
     {
       ret = BSP_ERROR_BUSY;
     }
@@ -728,7 +728,7 @@ int32_t BSP_HSPI_NOR_GetInfo(uint32_t Instance, BSP_HSPI_NOR_Info_t *pInfo)
   }
   else
   {
-    (void)MX66UW1G45G_GetFlashInfo(pInfo);
+    (void)MX25LM51245G_GetFlashInfo(pInfo);
   }
 
   /* Return BSP status */
@@ -753,8 +753,8 @@ int32_t BSP_HSPI_NOR_EnableMemoryMappedMode(uint32_t Instance)
   {
     if (HSPI_Nor_Ctx[Instance].TransferRate == BSP_HSPI_NOR_STR_TRANSFER)
     {
-      if (MX66UW1G45G_EnableMemoryMappedModeSTR(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                                MX66UW1G45G_4BYTES_SIZE) != MX66UW1G45G_OK)
+      if (MX25LM51245G_EnableMemoryMappedModeSTR(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                                MX25LM51245G_4BYTES_SIZE) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -765,8 +765,8 @@ int32_t BSP_HSPI_NOR_EnableMemoryMappedMode(uint32_t Instance)
     }
     else
     {
-      if (MX66UW1G45G_EnableMemoryMappedModeDTR(&hhspi_nor[Instance],
-                                                HSPI_Nor_Ctx[Instance].InterfaceMode) != MX66UW1G45G_OK)
+      if (MX25LM51245G_EnableMemoryMappedModeDTR(&hhspi_nor[Instance],
+                                                HSPI_Nor_Ctx[Instance].InterfaceMode) != MX25LM51245G_OK)
       {
         ret = BSP_ERROR_COMPONENT_FAILURE;
       }
@@ -832,8 +832,8 @@ int32_t BSP_HSPI_NOR_ReadID(uint32_t Instance, uint8_t *Id)
   {
     ret = BSP_ERROR_WRONG_PARAM;
   }
-  else if (MX66UW1G45G_ReadID(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              HSPI_Nor_Ctx[Instance].TransferRate, Id) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ReadID(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              HSPI_Nor_Ctx[Instance].TransferRate, Id) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -951,8 +951,8 @@ int32_t BSP_HSPI_NOR_SuspendErase(uint32_t Instance)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_Suspend(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                               HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_Suspend(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                               HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -988,8 +988,8 @@ int32_t BSP_HSPI_NOR_ResumeErase(uint32_t Instance)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_Resume(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_Resume(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -1025,8 +1025,8 @@ int32_t BSP_HSPI_NOR_EnterDeepPowerDown(uint32_t Instance)
   {
     ret = BSP_ERROR_WRONG_PARAM;
   }
-  else if (MX66UW1G45G_EnterPowerDown(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                      HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_EnterPowerDown(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                      HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -1055,8 +1055,8 @@ int32_t BSP_HSPI_NOR_LeaveDeepPowerDown(uint32_t Instance)
   {
     ret = BSP_ERROR_WRONG_PARAM;
   }
-  else if (MX66UW1G45G_NoOperation(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_NoOperation(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -1212,33 +1212,33 @@ static int32_t HSPI_NOR_ResetMemory(uint32_t Instance)
   int32_t ret = BSP_ERROR_NONE;
 
 
-  if (MX66UW1G45G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
-                              BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+  if (MX25LM51245G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
+                              BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
-                                   BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
+                                   BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                   BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                   BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                   BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                   BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                   BSP_HSPI_NOR_DTR_TRANSFER) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ResetEnable(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                   BSP_HSPI_NOR_DTR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
-  else if (MX66UW1G45G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                   BSP_HSPI_NOR_DTR_TRANSFER) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_ResetMemory(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                   BSP_HSPI_NOR_DTR_TRANSFER) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -1249,7 +1249,7 @@ static int32_t HSPI_NOR_ResetMemory(uint32_t Instance)
     HSPI_Nor_Ctx[Instance].TransferRate  = BSP_HSPI_NOR_STR_TRANSFER; /* After reset S/W setting to STR mode        */
 
     /* After SWreset CMD, wait in case SWReset occurred during erase operation */
-    HAL_Delay(MX66UW1G45G_RESET_MAX_TIME);
+    HAL_Delay(MX25LM51245G_RESET_MAX_TIME);
   }
 
   /* Return BSP status */
@@ -1267,35 +1267,35 @@ static int32_t HSPI_NOR_EnterDOPIMode(uint32_t Instance)
   uint8_t reg[2];
 
   /* Enable write operations */
-  if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Write Configuration register 2 (with new dummy cycles) */
-  else if (MX66UW1G45G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                         HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_CR2_REG3_ADDR,
-                                         MX66UW1G45G_CR2_DC_6_CYCLES) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                         HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_CR2_REG3_ADDR,
+                                         MX25LM51245G_CR2_DC_6_CYCLES) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Enable write operations */
-  else if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Write Configuration register 2 (with Octal I/O SPI protocol) */
-  else if (MX66UW1G45G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                         HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_CR2_REG1_ADDR,
-                                         MX66UW1G45G_CR2_DOPI) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                         HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_CR2_REG1_ADDR,
+                                         MX25LM51245G_CR2_DOPI) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   else
   {
     /* Wait that the configuration is effective and check that memory is ready */
-    HAL_Delay(MX66UW1G45G_WRITE_REG_MAX_TIME);
+    HAL_Delay(MX25LM51245G_WRITE_REG_MAX_TIME);
 
     /* Reconfigure the memory type of the peripheral */
     hhspi_nor[Instance].Init.MemoryType            = HAL_XSPI_MEMTYPE_MACRONIX;
@@ -1305,18 +1305,18 @@ static int32_t HSPI_NOR_EnterDOPIMode(uint32_t Instance)
       ret = BSP_ERROR_PERIPH_FAILURE;
     }
     /* Check Flash busy ? */
-    else if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                             BSP_HSPI_NOR_DTR_TRANSFER) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                             BSP_HSPI_NOR_DTR_TRANSFER) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
     /* Check the configuration has been correctly done */
-    else if (MX66UW1G45G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE, BSP_HSPI_NOR_DTR_TRANSFER,
-                                          MX66UW1G45G_CR2_REG1_ADDR, reg) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE, BSP_HSPI_NOR_DTR_TRANSFER,
+                                          MX25LM51245G_CR2_REG1_ADDR, reg) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
-    else if (reg[0] != MX66UW1G45G_CR2_DOPI)
+    else if (reg[0] != MX25LM51245G_CR2_DOPI)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
@@ -1341,49 +1341,49 @@ static int32_t HSPI_NOR_EnterSOPIMode(uint32_t Instance)
   uint8_t reg[2];
 
   /* Enable write operations */
-  if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Write Configuration register 2 (with new dummy cycles) */
-  else if (MX66UW1G45G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                         HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_CR2_REG3_ADDR,
-                                         MX66UW1G45G_CR2_DC_6_CYCLES) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                         HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_CR2_REG3_ADDR,
+                                         MX25LM51245G_CR2_DC_6_CYCLES) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Enable write operations */
-  else if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                   HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   /* Write Configuration register 2 (with Octal I/O SPI protocol) */
-  else if (MX66UW1G45G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                         HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_CR2_REG1_ADDR,
-                                         MX66UW1G45G_CR2_SOPI) != MX66UW1G45G_OK)
+  else if (MX25LM51245G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                         HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_CR2_REG1_ADDR,
+                                         MX25LM51245G_CR2_SOPI) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
   else
   {
     /* Wait that the configuration is effective and check that memory is ready */
-    HAL_Delay(MX66UW1G45G_WRITE_REG_MAX_TIME);
+    HAL_Delay(MX25LM51245G_WRITE_REG_MAX_TIME);
 
     /* Check Flash busy ? */
-    if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
-                                        BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+    if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE,
+                                        BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
     /* Check the configuration has been correctly done */
-    else if (MX66UW1G45G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE, BSP_HSPI_NOR_STR_TRANSFER,
-                                          MX66UW1G45G_CR2_REG1_ADDR, reg) != MX66UW1G45G_OK)
+    else if (MX25LM51245G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_OPI_MODE, BSP_HSPI_NOR_STR_TRANSFER,
+                                          MX25LM51245G_CR2_REG1_ADDR, reg) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
-    else if (reg[0] != MX66UW1G45G_CR2_SOPI)
+    else if (reg[0] != MX25LM51245G_CR2_SOPI)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
@@ -1408,8 +1408,8 @@ static int32_t HSPI_NOR_ExitOPIMode(uint32_t Instance)
   uint8_t reg[2];
 
   /* Enable write operations */
-  if (MX66UW1G45G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                              HSPI_Nor_Ctx[Instance].TransferRate) != MX66UW1G45G_OK)
+  if (MX25LM51245G_WriteEnable(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                              HSPI_Nor_Ctx[Instance].TransferRate) != MX25LM51245G_OK)
   {
     ret = BSP_ERROR_COMPONENT_FAILURE;
   }
@@ -1418,16 +1418,16 @@ static int32_t HSPI_NOR_ExitOPIMode(uint32_t Instance)
     /* Write Configuration register 2 (with SPI protocol) */
     reg[0] = 0;
     reg[1] = 0;
-    if (MX66UW1G45G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
-                                      HSPI_Nor_Ctx[Instance].TransferRate, MX66UW1G45G_CR2_REG1_ADDR,
-                                      reg[0]) != MX66UW1G45G_OK)
+    if (MX25LM51245G_WriteCfg2Register(&hhspi_nor[Instance], HSPI_Nor_Ctx[Instance].InterfaceMode,
+                                      HSPI_Nor_Ctx[Instance].TransferRate, MX25LM51245G_CR2_REG1_ADDR,
+                                      reg[0]) != MX25LM51245G_OK)
     {
       ret = BSP_ERROR_COMPONENT_FAILURE;
     }
     else
     {
       /* Wait that the configuration is effective and check that memory is ready */
-      HAL_Delay(MX66UW1G45G_WRITE_REG_MAX_TIME);
+      HAL_Delay(MX25LM51245G_WRITE_REG_MAX_TIME);
 
       if (HSPI_Nor_Ctx[Instance].TransferRate == BSP_HSPI_NOR_DTR_TRANSFER)
       {
@@ -1443,14 +1443,14 @@ static int32_t HSPI_NOR_ExitOPIMode(uint32_t Instance)
       if (ret == BSP_ERROR_NONE)
       {
         /* Check Flash busy ? */
-        if (MX66UW1G45G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
-                                            BSP_HSPI_NOR_STR_TRANSFER) != MX66UW1G45G_OK)
+        if (MX25LM51245G_AutoPollingMemReady(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE,
+                                            BSP_HSPI_NOR_STR_TRANSFER) != MX25LM51245G_OK)
         {
           ret = BSP_ERROR_COMPONENT_FAILURE;
         }
         /* Check the configuration has been correctly done */
-        else if (MX66UW1G45G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE, BSP_HSPI_NOR_STR_TRANSFER,
-                                              MX66UW1G45G_CR2_REG1_ADDR, reg) != MX66UW1G45G_OK)
+        else if (MX25LM51245G_ReadCfg2Register(&hhspi_nor[Instance], BSP_HSPI_NOR_SPI_MODE, BSP_HSPI_NOR_STR_TRANSFER,
+                                              MX25LM51245G_CR2_REG1_ADDR, reg) != MX25LM51245G_OK)
         {
           ret = BSP_ERROR_COMPONENT_FAILURE;
         }

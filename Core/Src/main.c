@@ -324,11 +324,15 @@ int main(void)
   FordFocusSTRS.dynamic[1].trigger.thresh = 260;
   FordFocusSTRS.dynamic[1].view_index = 1;
 
-  BSP_HSPI_NOR_Init_t hspi_init;
-  hspi_init.InterfaceMode = MX66UW1G45G_OPI_MODE;
-  hspi_init.TransferRate = MX66UW1G45G_DTR_TRANSFER;
+  //MX25LM51245G_WriteEnable(&hxspi1, MX25LM51245G_OPI_MODE, MX25LM51245G_DTR_TRANSFER);
+  //MX25LM51245G_WriteCfgRegister(&hxspi1, MX25LM51245G_OPI_MODE, MX25LM51245G_DTR_TRANSFER)
+  //MX25LM51245G_EnableMemoryMappedModeDTR(&hxspi1, MX25LM51245G_OPI_MODE);
 
-  /*
+
+  BSP_HSPI_NOR_Init_t hspi_init;
+  hspi_init.InterfaceMode = MX25LM51245G_OPI_MODE;
+  hspi_init.TransferRate = MX25LM51245G_DTR_TRANSFER;
+
   if( BSP_HSPI_NOR_Init(0, &hspi_init) != BSP_ERROR_NONE )
   {
 	  while(1){}
@@ -338,7 +342,7 @@ int main(void)
   {
 	while(1){}
   }
-  */
+
 
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2U * 50);
   if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4) != HAL_OK)

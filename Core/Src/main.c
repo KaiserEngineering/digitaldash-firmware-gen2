@@ -91,7 +91,7 @@ LV_IMG_DECLARE(ui_img_1609095760);    // assets/ezgif-frame-063.png
 LV_IMG_DECLARE(ui_img_881013631);    // assets/ezgif-frame-064.png
 LV_IMG_DECLARE(ui_img_554362598);    // assets/ezgif-frame-065.png
 
-static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[2][MY_DISP_HOR_RES*MY_DISP_VER_RES*3];
+static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[1][UI_HOR_RES*UI_VER_RES*3];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -193,7 +193,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* MPU Configuration--------------------------------------------------------*/
-//  MPU_Config();
+  //MPU_Config();
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();

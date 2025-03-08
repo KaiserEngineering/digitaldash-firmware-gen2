@@ -21,7 +21,7 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "lvgl_port_display.h"
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;
@@ -44,14 +44,14 @@ void MX_LTDC_Init(void)
   hltdc.Init.VSPolarity = LTDC_VSPOLARITY_AL;
   hltdc.Init.DEPolarity = LTDC_DEPOLARITY_AL;
   hltdc.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
-  hltdc.Init.HorizontalSync = 66;
-  hltdc.Init.VerticalSync = 16;
-  hltdc.Init.AccumulatedHBP = 86;
-  hltdc.Init.AccumulatedVBP = 26;
-  hltdc.Init.AccumulatedActiveW = 886;
-  hltdc.Init.AccumulatedActiveH = 346;
-  hltdc.Init.TotalWidth = 931;
-  hltdc.Init.TotalHeigh = 362;
+  hltdc.Init.HorizontalSync = HSYNC - 1;
+  hltdc.Init.VerticalSync = VSYNC - 1;
+  hltdc.Init.AccumulatedHBP = HSYNC + HBP - 1;
+  hltdc.Init.AccumulatedVBP = VSYNC + VBP - 1;
+  hltdc.Init.AccumulatedActiveW = HSYNC + HBP + ACT_HOR_RES - 1;
+  hltdc.Init.AccumulatedActiveH = VSYNC + VBP + ACT_VER_RES - 1;
+  hltdc.Init.TotalWidth = HSYNC + HBP + ACT_HOR_RES + HFP - 1;
+  hltdc.Init.TotalHeigh = VSYNC + VBP + ACT_VER_RES + VFP - 1;
   hltdc.Init.Backcolor.Blue = 0;
   hltdc.Init.Backcolor.Green = 0;
   hltdc.Init.Backcolor.Red = 0;
@@ -106,7 +106,7 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* ltdcHandle)
     PeriphClkInit.PLL3.PLL3Q = 2;
     PeriphClkInit.PLL3.PLL3R = 4;
     PeriphClkInit.PLL3.PLL3RGE = RCC_PLLVCIRANGE_1;
-    PeriphClkInit.PLL3.PLL3FRACN = 0;
+    PeriphClkInit.PLL3.PLL3FRACN = 0.0;
     PeriphClkInit.PLL3.PLL3ClockOut = RCC_PLL3_DIVR;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {

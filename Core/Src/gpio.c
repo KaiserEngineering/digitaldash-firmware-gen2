@@ -38,8 +38,6 @@
      PC15-OSC32_OUT (PC15)   ------> RCC_OSC32_OUT
      PH0-OSC_IN (PH0)   ------> RCC_OSC_IN
      PH1-OSC_OUT (PH1)   ------> RCC_OSC_OUT
-     PA11   ------> USB_OTG_HS_DM
-     PA12   ------> USB_OTG_HS_DP
      PA13 (JTMS/SWDIO)   ------> DEBUG_JTMS-SWDIO
      PA14 (JTCK/SWCLK)   ------> DEBUG_JTCK-SWCLK
      PB3 (JTDO/TRACESWO)   ------> DEBUG_JTDO-SWO
@@ -63,7 +61,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, RED_LED_Pin|GREEN_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, CAN_STBY_Pin|GREEN_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : TP_IRQ_Pin */
   GPIO_InitStruct.Pin = TP_IRQ_Pin;
@@ -90,15 +88,8 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BLKT_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : RED_LED_Pin GREEN_LED_Pin */
-  GPIO_InitStruct.Pin = RED_LED_Pin|GREEN_LED_Pin;
+  /*Configure GPIO pins : CAN_STBY_Pin GREEN_LED_Pin */
+  GPIO_InitStruct.Pin = CAN_STBY_Pin|GREEN_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

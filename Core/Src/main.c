@@ -20,6 +20,7 @@
 #include "main.h"
 #include "dcache.h"
 #include "dma2d.h"
+#include "fdcan.h"
 #include "flash.h"
 #include "gpu2d.h"
 #include "gtzc.h"
@@ -46,6 +47,11 @@
 #include "themes.h"
 #include "lib_pid.h"
 #include "ke_digitaldash.h"
+#include "lib_unit_conversion.h"
+#include "lib_obdii.h"
+#include "lib_CAN_bus_sniffer.h"
+#include "lib_vehicle_data.h"
+#include "lib_pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -229,6 +235,7 @@ int main(void)
   MX_SPI1_Init();
   MX_DCACHE1_Init();
   MX_DCACHE2_Init();
+  MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
@@ -704,26 +711,19 @@ void MPU_Config(void)
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER1;
-  MPU_InitStruct.BaseAddress = 0x20000000;
-  MPU_InitStruct.LimitAddress = 0x202EFFFF;
+  MPU_InitStruct.BaseAddress = 0xA0000000;
+  MPU_InitStruct.LimitAddress = 0xA3FFFFFF;
   MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER1;
-  MPU_InitStruct.AccessPermission = MPU_REGION_PRIV_RW;
+  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   MPU_AttributesInit.Number = MPU_REGION_NUMBER1;
-  MPU_AttributesInit.Attributes = MPU_DEVICE_nGnRnE | MPU_WRITE_BACK
-                              | MPU_TRANSIENT | MPU_RW_ALLOCATE;
-
   HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
 
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER2;
-  MPU_InitStruct.BaseAddress = 0xA0000000;
-  MPU_InitStruct.LimitAddress = 0xA7FFFFFF;
   MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER2;
-  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
-
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   MPU_AttributesInit.Number = MPU_REGION_NUMBER2;
   HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);

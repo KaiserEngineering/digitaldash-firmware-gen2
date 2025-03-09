@@ -72,8 +72,8 @@ void Error_Handler(void);
 #define USB_FAULT_EXTI_IRQn EXTI4_IRQn
 #define BLKT_EN_Pin GPIO_PIN_15
 #define BLKT_EN_GPIO_Port GPIOB
-#define RED_LED_Pin GPIO_PIN_2
-#define RED_LED_GPIO_Port GPIOD
+#define CAN_STBY_Pin GPIO_PIN_2
+#define CAN_STBY_GPIO_Port GPIOD
 #define GREEN_LED_Pin GPIO_PIN_4
 #define GREEN_LED_GPIO_Port GPIOD
 

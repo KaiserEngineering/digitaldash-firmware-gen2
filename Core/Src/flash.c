@@ -69,11 +69,6 @@ void MX_FLASH_Init(void)
   {
     Error_Handler();
   }
-  FLASH_BBSecInitStruct.Bank = FLASH_BANK_2;
-  if (HAL_FLASHEx_ConfigBBAttributes(&FLASH_BBSecInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
   if (HAL_FLASH_Lock() != HAL_OK)
   {
     Error_Handler();

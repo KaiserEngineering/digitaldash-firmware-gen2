@@ -108,7 +108,20 @@ static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used))
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+PID_DATA iat;
+PID_DATA boost;
+PID_DATA oil;
+PID_DATA coolant;
+PID_DATA rpm;
+PID_DATA speed;
 
+digitaldash FordFocusSTRS;
+lv_obj_t * ui_view[MAX_VIEWS];
+lv_obj_t * ui_alert[MAX_ALERTS];
+lv_obj_t * ui_alert_container[MAX_ALERTS];
+
+volatile uint32_t can_tx_mailbox_status = 0;
+volatile uint32_t can_rx_mailbox_status = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -171,17 +184,114 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 	}
 }
 
-PID_DATA iat;
-PID_DATA boost;
-PID_DATA oil;
-PID_DATA coolant;
-PID_DATA rpm;
-PID_DATA speed;
+void HAL_CAN_TxMailbox0CompleteCallback( CAN_HandleTypeDef *hcan )
+{
+    can_tx_mailbox_status &= ~CAN_TX_MAILBOX0;
+}
 
-digitaldash FordFocusSTRS;
-lv_obj_t * ui_view[MAX_VIEWS];
-lv_obj_t * ui_alert[MAX_ALERTS];
-lv_obj_t * ui_alert_container[MAX_ALERTS];
+void HAL_CAN_TxMailbox1CompleteCallback( CAN_HandleTypeDef *hcan )
+{
+    can_tx_mailbox_status &= ~CAN_TX_MAILBOX1;
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback( CAN_HandleTypeDef *hcan )
+{
+    can_tx_mailbox_status &= ~CAN_TX_MAILBOX2;
+}
+
+HAL_StatusTypeDef can_filter( CAN_HandleTypeDef *pcan, uint32_t id, uint32_t mask, uint32_t format, uint32_t filterBank, uint32_t FIFO  )
+{
+	/* Verify correct format */
+    if ( (format == CAN_ID_STD) || (format == CAN_ID_EXT) )
+    {
+        /* Declare a CAN filter configuration */
+        CAN_FilterTypeDef  sFilterConfig;
+
+        /* Verify the filter bank is possible */
+        if ( ( filterBank >= 0 ) && ( filterBank <= 13 ) )
+            sFilterConfig.FilterBank = filterBank;
+        else
+            return -1;
+
+        sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+        sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+
+        if (format == CAN_ID_STD) {
+            sFilterConfig.FilterIdHigh = ((id << 5) | (id >> (32 - 5))) & 0xFFFF;
+            sFilterConfig.FilterIdLow =  (id >> (11-3)) & 0xFFF8;
+            sFilterConfig.FilterMaskIdHigh = ((mask << 5) | (mask >> (32-5))) & 0xFFFF;
+            sFilterConfig.FilterMaskIdLow = (mask >> (11-3)) & 0xFFF8;
+        } else { // format == CANExtended
+            sFilterConfig.FilterIdHigh = id >> 13; // EXTID[28:13]
+            sFilterConfig.FilterIdLow = (0xFFFF & (id << 3)) | (1 << 2); // EXTID[12:0] + IDE
+            sFilterConfig.FilterMaskIdHigh = mask >> 13;
+            sFilterConfig.FilterMaskIdLow = (0xFFFF & (mask << 3)) | (1 << 2);
+        }
+
+        sFilterConfig.FilterFIFOAssignment = FIFO;
+        sFilterConfig.FilterActivation = ENABLE;
+        sFilterConfig.FilterBank = filterBank;
+        sFilterConfig.SlaveStartFilterBank = 0x12;
+
+        return HAL_CAN_ConfigFilter(pcan, &sFilterConfig);
+    }
+    return HAL_ERROR;
+}
+
+void process_can_packet( CAN_HandleTypeDef *hcan, uint32_t fifo )
+{
+    HAL_ResumeTick();
+    flash_led( DEBUG_LED_1 );
+    CAN_RxHeaderTypeDef rx_header;
+    uint8_t rx_buf[8];
+    HAL_CAN_GetRxMessage( hcan, fifo, &rx_header, rx_buf );
+
+    if( rx_header.IDE == CAN_ID_STD )
+        DigitalDash_Add_CAN_Packet( rx_header.StdId ,rx_buf);
+
+    can_rx_mailbox_status |= fifo;
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback( CAN_HandleTypeDef *hcan )
+{
+    process_can_packet( hcan, CAN_RX_FIFO0 );
+}
+
+void HAL_CAN_RxFifo1MsgPendingCallback( CAN_HandleTypeDef *hcan )
+{
+    process_can_packet( hcan, CAN_RX_FIFO1 );
+}
+
+static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
+{
+
+	CAN_TxHeaderTypeDef Header = {
+	           .DLC                = len,
+	           .ExtId              = 0x7E0,
+	           .StdId              = 0x7E0,
+	           .IDE                = CAN_ID_STD,
+	           .RTR                = CAN_RTR_DATA,
+	           .TransmitGlobalTime = DISABLE
+	};
+
+    uint32_t pTxMailbox = 0;
+
+    /* Copy the buffer */
+    uint8_t tx_buf[8];
+    memcpy(tx_buf, data, 8);
+
+    /* TODO check for free mailbox */
+    if( HAL_CAN_AddTxMessage( ECU_CAN, &Header, tx_buf, &pTxMailbox ) == HAL_OK )
+    {
+    	/* Log which mailbox sent the packet */
+    	can_tx_mailbox_status |= pTxMailbox;
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
 /* USER CODE END 0 */
 

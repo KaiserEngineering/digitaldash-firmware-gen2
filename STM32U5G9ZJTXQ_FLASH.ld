@@ -138,6 +138,14 @@ SECTIONS
   } >RAM AT> FLASH
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);
+  
+  .noinit (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.noinit)
+    . = ALIGN(4);
+  } > RAM
+  
   .bss :
   {
     /* This is used by the startup in order to initialize the .bss section */

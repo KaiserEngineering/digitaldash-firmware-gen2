@@ -355,7 +355,6 @@ int main(void)
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
-  HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_SET);
 
   sniffer.filter = &add_can_filter;
@@ -613,6 +612,9 @@ int main(void)
   lv_label_set_text(ui_alert[0], FordFocusSTRS.alert[0].msg);
   lv_obj_set_style_text_font(ui_alert[0], &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+  // Hide the alert by default
+  lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
+
   lv_screen_load(ui_view[0]);
 
   uint8_t gauge = 0;
@@ -628,6 +630,10 @@ int main(void)
 		  | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) ) {
 	  Error_Handler();
   }
+
+  lv_timer_handler();
+  HAL_Delay(1);
+  HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 

@@ -234,7 +234,7 @@
     #if LV_USE_NEMA_VG
         /*Define application's resolution used for VG related buffer allocation */
         #define LV_NEMA_GFX_MAX_RESX 800
-        #define LV_NEMA_GFX_MAX_RESY 480
+        #define LV_NEMA_GFX_MAX_RESY 165
     #endif
 #endif
 

@@ -47,11 +47,8 @@
 #include "themes.h"
 #include "lib_pid.h"
 #include "ke_digitaldash.h"
-#include "lib_unit_conversion.h"
-#include "lib_obdii.h"
-#include "lib_CAN_bus_sniffer.h"
-#include "lib_vehicle_data.h"
-#include "lib_pid.h"
+#include "lib_digital_dash.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

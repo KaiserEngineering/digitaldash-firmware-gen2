@@ -61,7 +61,7 @@ void HAL_GPU2D_MspInit(GPU2D_HandleTypeDef* gpu2dHandle)
     __HAL_RCC_DCACHE2_CLK_ENABLE();
 
     /* GPU2D interrupt Init */
-    HAL_NVIC_SetPriority(GPU2D_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(GPU2D_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(GPU2D_IRQn);
   /* USER CODE BEGIN GPU2D_MspInit 1 */
 

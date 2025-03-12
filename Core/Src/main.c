@@ -149,7 +149,7 @@ static PID_DATA engine_speed_req = { .pid = MODE1_ENGINE_SPEED, .mode = MODE1, .
 static PTR_PID_DATA engine_speed;
 #endif
 
-CAN_Filter_Count = 0;
+uint32_t CAN_Filter_Count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -211,44 +211,39 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 	}
 }
 
-HAL_StatusTypeDef can_filter( FDCAN_HandleTypeDef *pfdcan, uint32_t id, uint32_t mask, uint32_t format, uint32_t filterIndex, uint32_t FIFO  )
+HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, uint32_t FIFO  )
 {
-	/* Verify correct format */
-    if ( (format == FDCAN_STANDARD_ID) || (format == FDCAN_EXTENDED_ID) )
-    {
-    	//TODO check if CAN is enabled
+	//TODO check if CAN is enabled
 
-        /* Declare a CAN filter configuration */
-        FDCAN_FilterTypeDef  sFilterConfig;
+	/* Declare a CAN filter configuration */
+	FDCAN_FilterTypeDef  sFilterConfig;
 
-        /* Verify the filter bank is possible */
-        if ( ( filterIndex >= 0 ) && ( filterIndex < 28 ) )
-            sFilterConfig.FilterIndex = filterIndex;
-        else
-            return -1;
+	/* Verify the filter bank is possible */
+	if ( ( filterIndex >= 0 ) && ( filterIndex < 28 ) )
+		sFilterConfig.FilterIndex = filterIndex;
+	else
+		return -1;
 
-        sFilterConfig.FilterType = FDCAN_FILTER_MASK;
-        sFilterConfig.IdType = format;
-        sFilterConfig.FilterID1 = id;
-        sFilterConfig.FilterID2 = mask;
-        sFilterConfig.FilterConfig  = FIFO;
-        sFilterConfig.FilterIndex = filterIndex;
+	sFilterConfig.FilterType = FDCAN_FILTER_RANGE;
+	sFilterConfig.IdType = FDCAN_STANDARD_ID;
+	sFilterConfig.FilterID1 = 0;
+	sFilterConfig.FilterID2 = 0x7FF;
+	sFilterConfig.FilterConfig  = FIFO;
+	sFilterConfig.FilterIndex = filterIndex;
 
-        return HAL_FDCAN_ConfigFilter(pfdcan, &sFilterConfig);
-    }
-    return HAL_ERROR;
+	return HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig);
 }
 
 void add_can_filter( uint16_t id )
 {
-	can_filter( &hfdcan1, id, 0x7FF, FDCAN_STANDARD_ID, CAN_Filter_Count++, FDCAN_FILTER_TO_RXFIFO0 );
+	can_filter( id, 0x7FF, 0, FDCAN_FILTER_TO_RXFIFO0 );
 }
 
 void process_can_packet( FDCAN_HandleTypeDef *hfdcan, uint32_t fifo )
 {
     FDCAN_RxHeaderTypeDef rx_header;
     uint8_t rx_buf[8];
-    HAL_FDCAN_GetRxMessage( hfdcan, fifo, &rx_header, rx_buf );
+    HAL_FDCAN_GetRxMessage( hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_buf );
 
     if( rx_header.IdType == FDCAN_STANDARD_ID ) {
     	CAN_Sniffer_Add_Packet(&sniffer, rx_header.Identifier, rx_buf);
@@ -273,7 +268,7 @@ static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
 	}
 
 	FDCAN_TxHeaderTypeDef Header = {
-	           .Identifier          = 0x7E0,
+	           .Identifier          = 0x090,
 	           .IdType              = FDCAN_STANDARD_ID,
 	           .TxFrameType         = FDCAN_DATA_FRAME,
 	           .DataLength          = len,
@@ -351,8 +346,6 @@ int main(void)
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
-  HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_RESET);
-
   sniffer.filter = &add_can_filter;
   CAN_Sniffer_Initialize(&sniffer);
 
@@ -407,7 +400,7 @@ int main(void)
   FordFocusSTRS.view[1].gauge[0].theme = THEME_STOCK_ST;
 
   // View 2 - Gauge 2
-  strcpy(rpm.label, "Tach");
+  strcpy(rpm.label, "RPM");
   strcpy(rpm.unit_label, PID_UNITS_RPM_LABEL);
   rpm.lower_limit = 0;
   rpm.upper_limit = 8000;
@@ -616,17 +609,31 @@ int main(void)
   uint8_t gauge = 0;
   uint8_t alert_active = 1;
 
+  HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_RESET);
+
+  /* Configure global filter to reject all non-matching frames */
+  HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
+
+  if( HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
+	  Error_Handler();
+  }
+
+  /* Activate Interrupts */
+  if( HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
+	  Error_Handler();
+  }
+
   /* Start the FDCAN module */
   if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
     Error_Handler();
   }
 
-  if( HAL_FDCAN_ConfigInterruptLines(&hfdcan1,FDCAN_ILS_RXFIFO0, FDCAN_INTERRUPT_LINE0) ) {
+  if( HAL_FDCAN_ConfigInterruptLines(&hfdcan1, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
 	  Error_Handler();
   }
 
   /* Activate Interrupts */
-  if( HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_RX_FIFO0) ) {
+  if( HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
 	  Error_Handler();
   }
 
@@ -644,13 +651,6 @@ int main(void)
   while (1)
   {
 	lv_timer_handler();
-
-	if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
-	{
-	    if( RxHeader.IdType == FDCAN_STANDARD_ID ) {
-	    	CAN_Sniffer_Add_Packet(&sniffer, RxHeader.Identifier, RxData);
-	    }
-	}
 
 	iat.pid_value = iat.pid_value + 0.05;
 	if( iat.pid_value > 150 )
@@ -676,8 +676,13 @@ int main(void)
 		*/
 
 	speed.pid_value = speed.pid_value + 1;
-	if( speed.pid_value > 120 )
+	if( speed.pid_value > 120 ) {
 		speed.pid_value = 0;
+		uint8_t buf[8];
+		buf[5] = coolant.pid_value;
+		buf[5] = boost.pid_value;
+		//ECU_CAN_Tx(buf,8);
+	}
 
 	log_minmax(&iat);
 	log_minmax(&boost);

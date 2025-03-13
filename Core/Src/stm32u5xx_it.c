@@ -61,6 +61,7 @@ extern GPU2D_HandleTypeDef hgpu2d;
 extern I2C_HandleTypeDef hi2c2;
 extern LTDC_HandleTypeDef hltdc;
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim17;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
@@ -314,6 +315,20 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM17 global interrupt.
+  */
+void TIM17_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM17_IRQn 0 */
+
+  /* USER CODE END TIM17_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim17);
+  /* USER CODE BEGIN TIM17_IRQn 1 */
+
+  /* USER CODE END TIM17_IRQn 1 */
 }
 
 /**

@@ -308,6 +308,9 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
+  /* MPU Configuration--------------------------------------------------------*/
+  MPU_Config();
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -343,10 +346,14 @@ int main(void)
   MX_DCACHE1_Init();
   MX_DCACHE2_Init();
   MX_FDCAN1_Init();
+  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
+
+  if (HAL_TIM_Base_Start_IT(&htim17) != HAL_OK)
+      Error_Handler();
 
   FordFocusSTRS.num_views = 2;
 
@@ -660,7 +667,6 @@ int main(void)
   {
 	digitaldash_service();
 	lv_timer_handler();
-	digitaldash_tick();
 
 	/* Log min/max values */
 	for( uint8_t idx = 0; idx < FordFocusSTRS.num_views; idx++) {
@@ -812,6 +818,13 @@ static void SystemPower_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// Timer interrupt callback
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    if (htim->Instance == TIM17) {
+    	digitaldash_tick();
+    }
+}
 
 /* USER CODE END 4 */
 

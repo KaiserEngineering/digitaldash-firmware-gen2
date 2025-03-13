@@ -120,6 +120,8 @@ volatile uint32_t can_tx_mailbox_status = 0;
 volatile uint32_t can_rx_mailbox_status = 0;
 
 uint32_t CAN_Filter_Count = 0;
+
+uint8_t active_view_idx = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -656,6 +658,8 @@ int main(void)
 		  FordFocusSTRS.view[idx].gauge[i].obj = add_stock_st_gauge(x_pos[i], 0, ui_view[idx], FordFocusSTRS.view[idx].gauge[i].pid);
 	  }
   }
+
+  uint32_t timestamp[MAX_VIEWS][MAX_GAUGES] = {0};
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -674,10 +678,12 @@ int main(void)
 
 	/* Check for dynamic gauge change */
 	if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
-		switch_screen(ui_view[FordFocusSTRS.dynamic[0].view_index]);
+		active_view_idx = FordFocusSTRS.dynamic[0].view_index;
 	} else {
-		switch_screen(ui_view[1]);
+		active_view_idx = 1;
 	}
+
+	switch_screen(ui_view[active_view_idx]);
 
 
 	/* Check for Alert(s) */
@@ -694,47 +700,15 @@ int main(void)
 		}
 	}
 
-
-	switch( gauge )
-	{
-		case 0:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[0].gauge[0].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[0].gauge[0].obj, LV_EVENT_REFRESH, &iat);
+	/* Update gauges on current view */
+	for( uint8_t i = 0; i < FordFocusSTRS.view[active_view_idx].num_gauges; i++) {
+		if( timestamp[active_view_idx][i] != FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp ) {
+			 timestamp[active_view_idx][i] = FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp;
+			 lv_obj_send_event(FordFocusSTRS.view[active_view_idx].gauge[i].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[active_view_idx].gauge[i].pid);
 		}
-		break;
 
-		case 1:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[0].gauge[1].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[0].gauge[1].obj, LV_EVENT_REFRESH, &boost);
-		}
-		break;
-
-		case 2:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[0].gauge[2].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[0].gauge[2].obj, LV_EVENT_REFRESH, &oil);
-		}
-		break;
-
-		case 3:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[0].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[1].gauge[0].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[1].gauge[0].pid);
-		}
-		break;
-
-		case 4:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[1].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[1].gauge[1].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[1].gauge[1].pid);
-		}
-		break;
-
-		case 5:
-		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[2].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[1].gauge[2].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[1].gauge[2].pid);
-		}
-		break;
 	}
 
-	gauge = (gauge >= 5) ? 3 : gauge + 1;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -60,7 +60,13 @@ void MX_FDCAN1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN1_Init 2 */
+
+  /* Allow data to be overwritten if missed, it's stale data anyways */
   HAL_FDCAN_ConfigRxFifoOverwrite(&hfdcan1, FDCAN_RX_FIFO0, FDCAN_RX_FIFO_OVERWRITE);
+
+  /* Enable the CAN transceiver */
+  HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_RESET);
+
   /* USER CODE END FDCAN1_Init 2 */
 
 }

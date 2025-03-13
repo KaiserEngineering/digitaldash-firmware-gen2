@@ -579,8 +579,6 @@ int main(void)
   uint8_t gauge = 0;
   uint8_t alert_active = 1;
 
-  HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_RESET);
-
   /* Configure global filter to reject all non-matching frames */
   HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
 

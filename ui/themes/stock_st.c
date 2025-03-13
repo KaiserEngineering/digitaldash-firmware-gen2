@@ -17,7 +17,7 @@ LV_IMG_DECLARE(ui_img_needle200_png);    // assets/needle200.png
 static void event_cb(lv_event_t * e)
 {
 	// Get the PID data
-	PID_DATA * data = lv_event_get_user_data(e);
+	PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
     lv_obj_t * needle = lv_event_get_target(e);
     lv_obj_t * value = lv_obj_get_child(needle, 0);
     lv_obj_t * min = lv_obj_get_child(needle, 1);

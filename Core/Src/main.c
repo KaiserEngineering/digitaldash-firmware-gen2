@@ -109,7 +109,6 @@ PID_DATA iat;
 PID_DATA boost;
 PID_DATA oil;
 PID_DATA coolant;
-PID_DATA rpm;
 PID_DATA speed;
 
 digitaldash FordFocusSTRS;
@@ -120,30 +119,8 @@ lv_obj_t * ui_alert_container[MAX_ALERTS];
 volatile uint32_t can_tx_mailbox_status = 0;
 volatile uint32_t can_rx_mailbox_status = 0;
 
-#ifdef LIB_OBDII_H_
-/* Declare an OBDII packet manager */
-static OBDII_PACKET_MANAGER obdii;
-#endif
-
-#ifdef LIB_CAN_BUS_SNIFFER_H_
-/* Declare a CAN Bus sniffer packet manager */
-static CAN_SNIFFER_PACKET_MANAGER sniffer;
-#endif
-
-#ifdef LIB_VEHICLE_DATA_H
-/* Declare a Vehicle Data packet manager */
-static VEHICLE_DATA_MANAGER vehicle;
-#endif
-
-/* Configure the Digital Dash to sync the backlight with the vehicle's lighting */
-#if defined(SNIFF_GAUGE_BRIGHTNESS_SUPPORTED) || !defined(LIMIT_PIDS)
-static PID_DATA gauge_brightness_req = { .pid = SNIFF_GAUGE_BRIGHTNESS, .mode = SNIFF, .pid_unit = PID_UNITS_PERCENT, .pid_value = 100 };
-static PTR_PID_DATA gauge_brightness;
-#endif
-
 #if defined(MODE1_ENGINE_SPEED_SUPPORTED) || !defined(LIMIT_PIDS)
 static PID_DATA engine_speed_req = { .pid = MODE1_ENGINE_SPEED, .mode = MODE1, .pid_unit = PID_UNITS_RPM, .pid_value = 0 };
-static PTR_PID_DATA engine_speed;
 #endif
 
 uint32_t CAN_Filter_Count = 0;
@@ -211,6 +188,8 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, uint32_t FIFO  )
 {
 	//TODO check if CAN is enabled
+	if( HAL_FDCAN_GetState(&hfdcan1) != HAL_FDCAN_STATE_RESET )
+		HAL_FDCAN_Stop(&hfdcan1);
 
 	/* Declare a CAN filter configuration */
 	FDCAN_FilterTypeDef  sFilterConfig;
@@ -223,15 +202,17 @@ HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, 
 
 	sFilterConfig.FilterType = FDCAN_FILTER_RANGE;
 	sFilterConfig.IdType = FDCAN_STANDARD_ID;
-	sFilterConfig.FilterID1 = 0;
+	sFilterConfig.FilterID1 = id;
 	sFilterConfig.FilterID2 = 0x7FF;
 	sFilterConfig.FilterConfig  = FIFO;
 	sFilterConfig.FilterIndex = filterIndex;
 
-	return HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig);
+	HAL_FDCAN_ConfigFilter(&hfdcan1, &sFilterConfig);
+
+	HAL_FDCAN_Start(&hfdcan1);
 }
 
-void add_can_filter( uint16_t id )
+void Add_CAN_Filter( uint16_t id )
 {
 	can_filter( id, 0x7FF, 0, FDCAN_FILTER_TO_RXFIFO0 );
 }
@@ -243,7 +224,7 @@ void process_can_packet( FDCAN_HandleTypeDef *hfdcan, uint32_t fifo )
     HAL_FDCAN_GetRxMessage( hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_buf );
 
     if( rx_header.IdType == FDCAN_STANDARD_ID ) {
-    	CAN_Sniffer_Add_Packet(&sniffer, rx_header.Identifier, rx_buf);
+    	DigitalDash_Add_CAN_Packet( rx_header.Identifier ,rx_buf);
     }
 }
 
@@ -286,6 +267,34 @@ static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
 	}
 
 	return 1;
+}
+
+static void LCD_Brightness( uint8_t brightness )
+{
+	if( brightness > 0 )
+		HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
+	else
+		HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_RESET);
+}
+
+static void esp32_reset( HOST_PWR_STATE state )
+{
+	if( state == HOST_PWR_ENABLED )
+		HAL_GPIO_WritePin(ESP32_RESET_N_GPIO_Port, ESP32_RESET_N_Pin, GPIO_PIN_SET);
+	else
+		HAL_GPIO_WritePin(ESP32_RESET_N_GPIO_Port, ESP32_RESET_N_Pin, GPIO_PIN_RESET);
+}
+
+void Digitaldash_Init( void )
+{
+    DIGITALDASH_CONFIG config;
+    config.dd_ecu_tx            = &ECU_CAN_Tx;
+    config.dd_host_ctrl         = &esp32_reset;
+    config.dd_set_backlight     = &LCD_Brightness;
+    config.dd_filter            = &Add_CAN_Filter;
+
+    if( digitaldash_init( &config ) != DIGITALDASH_INIT_OK )
+        Error_Handler();
 }
 
 /* USER CODE END 0 */
@@ -343,9 +352,6 @@ int main(void)
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
 
-  sniffer.filter = &add_can_filter;
-  CAN_Sniffer_Initialize(&sniffer);
-
   FordFocusSTRS.num_views = 2;
 
   // View 1
@@ -397,18 +403,7 @@ int main(void)
   FordFocusSTRS.view[1].gauge[0].theme = THEME_STOCK_ST;
 
   // View 2 - Gauge 2
-  strcpy(rpm.label, "RPM");
-  strcpy(rpm.unit_label, PID_UNITS_RPM_LABEL);
-  rpm.lower_limit = 0;
-  rpm.upper_limit = 8000;
-  rpm.pid = MODE1_ENGINE_SPEED;
-  rpm.mode = MODE1;
-  rpm.pid_unit = PID_UNITS_RPM;
-  rpm.precision = 0;
-  FordFocusSTRS.view[1].gauge[1].pid = &rpm;
   FordFocusSTRS.view[1].gauge[1].theme = THEME_STOCK_ST;
-
-  CAN_Sniffer_Add_PID(&sniffer, &rpm);
 
   // View 2 - Gauge 3
   strcpy(speed.label, "Speed");
@@ -634,20 +629,26 @@ int main(void)
 	  Error_Handler();
   }
 
-  lv_timer_handler();
-  HAL_Delay(1);
-  HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
+  Digitaldash_Init();
 
-  uint8_t RxData[8];
-  FDCAN_RxHeaderTypeDef RxHeader;
-
+  strcpy(engine_speed_req.label, "RPM");
+  strcpy(engine_speed_req.unit_label, PID_UNITS_RPM_LABEL);
+  engine_speed_req.lower_limit = 0;
+  engine_speed_req.upper_limit = 8000;
+  engine_speed_req.pid = MODE1_ENGINE_SPEED;
+  engine_speed_req.mode = MODE1;
+  engine_speed_req.pid_unit = PID_UNITS_RPM;
+  engine_speed_req.precision = 0;
+  FordFocusSTRS.view[1].gauge[1].pid = DigitalDash_Add_PID_To_Stream( &engine_speed_req );
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	digitaldash_service();
 	lv_timer_handler();
+	digitaldash_tick();
 
 	iat.pid_value = iat.pid_value + 0.05;
 	if( iat.pid_value > 150 )
@@ -675,16 +676,12 @@ int main(void)
 	speed.pid_value = speed.pid_value + 1;
 	if( speed.pid_value > 120 ) {
 		speed.pid_value = 0;
-		uint8_t buf[8];
-		buf[5] = coolant.pid_value;
-		buf[5] = boost.pid_value;
-		//ECU_CAN_Tx(buf,8);
 	}
 
 	log_minmax(&iat);
 	log_minmax(&boost);
 	log_minmax(&oil);
-	log_minmax(&rpm);
+	log_minmax(FordFocusSTRS.view[1].gauge[1].pid);
 
 		if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
 			switch_screen(ui_view[FordFocusSTRS.dynamic[0].view_index]);
@@ -740,7 +737,7 @@ int main(void)
 
 		case 4:
 		if(!lv_obj_has_flag(FordFocusSTRS.view[1].gauge[1].obj, LV_OBJ_FLAG_HIDDEN)) {
-			lv_obj_send_event(FordFocusSTRS.view[1].gauge[1].obj, LV_EVENT_REFRESH, &rpm);
+			lv_obj_send_event(FordFocusSTRS.view[1].gauge[1].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[1].gauge[1].pid);
 		}
 		break;
 

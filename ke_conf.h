@@ -16,6 +16,7 @@
 #define SPOOF_DATA 0
 #define ENABLE_WHEN_ENGINE_ON 0
 #define SAFE_SHUTDOWN 0 // This is only needed for the Pi
+#define LCD_ALWAYS_ON 1
 
 #define USE_KE_PROTOCOL 0
 #define USE_UNIT_CONVERSION 1

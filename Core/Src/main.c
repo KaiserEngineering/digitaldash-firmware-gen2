@@ -543,7 +543,6 @@ int main(void)
 
   lv_screen_load(ui_view[0]);
 
-  uint8_t gauge = 0;
   uint8_t alert_active = 1;
 
   /* Configure global filter to reject all non-matching frames */

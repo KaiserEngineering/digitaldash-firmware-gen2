@@ -46,6 +46,7 @@ void settings_setReadHandler(settings_read *readHandler);
 #define MAX_ALERTS 5
 #define ALERT_MESSAGE_LEN 64
 #define MAX_VIEWS 3
+#define NUM_DYNAMIC 2
 
 /********************************************************************************
 *                                  View enable                                  

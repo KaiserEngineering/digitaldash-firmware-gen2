@@ -11,6 +11,9 @@ code_header = open('header.h', 'r').read()
 code_header = code_header.replace("<today>", today.strftime("%b-%d-%Y"))
 code_header = code_header.replace("<year>", today.strftime("%Y"))
 
+#eeprom_status_check = "get_eeprom_status() == EEPROM_STATUS_PRESENT"
+eeprom_status_check = "true"
+
 # Open the command list
 with open('config.json') as f:
   config = json.load(f)
@@ -28,6 +31,9 @@ print("Max Alerts: " + str(max_alerts))
 
 alert_message_len = config["config"]["alert_message_len"]
 print("Alert_Message_Len: " + str(alert_message_len))
+
+num_dynamic = config["config"]["num_dynamic"]
+print("num_dynamic: " + str(num_dynamic))
 
 top_level_struc = config["config"]["top_level_struc"]
 top_level_name = config["config"]["top_level_name"]
@@ -57,7 +63,8 @@ config_h.write("void settings_setReadHandler(settings_read *readHandler);\n\n")
 config_h.write("#define GAUGES_PER_VIEW " + str(gauges_per_view) + "\n")
 config_h.write("#define MAX_ALERTS " + str(max_alerts) + "\n")
 config_h.write("#define ALERT_MESSAGE_LEN " + str(alert_message_len)+ "\n")
-config_h.write("#define MAX_VIEWS " + str(max_views)+ "")
+config_h.write("#define MAX_VIEWS " + str(max_views)+ "\n")
+config_h.write("#define NUM_DYNAMIC " + str(num_dynamic)+ "")
 
 config_c.write( "#include \"ke_config.h\"\n\n" )
 #config_c.write( "static " + top_level_struc + " " + top_level_name + ";\n\n")
@@ -106,17 +113,17 @@ def write_verify_declare( file, prefix, cmd, depth ):
     file.write( "bool verify_" + prefix + "_" + cmd["cmd"].lower() + "(" + cmd["dataType"] + " " + cmd["cmd"].lower() + ");\n" )
 
 def write_verify_source( file, prefix, cmd, depth ):
-    input = cmd["cmd"].lower()
+    input = prefix.lower() + "_" + cmd["cmd"].lower()
     file.write( "bool verify_" + prefix + "_" + cmd["cmd"].lower() + "(" + cmd["dataType"] + " " + input + ")\n" )
     file.write( "{\n" )
     if cmd["type"] == "number" or cmd["type"] == "slider":
       # Only check for less than 0 if the datatype is an integer
       if( not((cmd["dataType"].find("uint") >= 0) and ( cmd["min"] == 0 )) ):
-          file.write("    if (" + input + " < " +  str(cmd["min"]) + ")\n" )
+          file.write("    if (" + input + " < " +  str(cmd["min"]).upper() + ")\n" )
           file.write("        return 0;\n\n" )
 
       if( not((cmd["max"] == 255) and (cmd["dataType"] == "uint8_t")) ):
-          file.write("    if (" + input + " > " +  str(cmd["max"]) + ")\n" )
+          file.write("    if (" + input + " > " +  str(cmd["max"]).upper() + ")\n" )
           file.write("        return 0;\n\n" )
           file.write("    else\n" )
           file.write("        return 1;" )
@@ -139,6 +146,65 @@ def write_verify_source( file, prefix, cmd, depth ):
        
 
     file.write("\n}\n\n")
+
+def write_get_source(file, prefix, cmd, depth):
+    if( cmd["index"] ):
+      if( depth == 2 ):
+          input = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1]
+          index = "[idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1] + "]"
+      else:
+          input = "uint8_t idx"
+          index = "[idx]"
+    else:
+       input = "void"
+       index = ""
+
+    file.write(cmd["dataType"] + " get_" + prefix + "_" + cmd["cmd"].lower() + "(" + input + ")\n{\n")
+
+    output = "settings_" + prefix + "_" + cmd["cmd"].lower() + index
+
+    file.write("    // Verify the " + cmd["name"] + " value is valid\n")
+    file.write("    if (!verify_" + prefix + "_" + cmd["cmd"].lower() + "(" + output + "))\n")
+    file.write("        return DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + ";\n\n" )
+
+    file.write("    return " + output + ";\n")
+    file.write("}\n\n")
+
+def write_set_source(file, prefix, cmd, depth):
+    if( cmd["index"] ):
+      if( depth == 2 ):
+          input = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"].upper()
+          index = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"].upper()
+          output = "settings_" + prefix + "_" + cmd["cmd"].lower() + "[idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1] + "]"
+      else:
+          input = "uint8_t idx, " + cmd["dataType"] + " " + prefix.lower() + "_" + cmd["cmd"].lower()
+          index = "idx"
+          output = "settings_" + prefix + "_" + cmd["cmd"].lower() + "[idx]"
+    else:
+       input = "void"
+       index = ""
+       output = output = "settings_" + prefix + "_" + cmd["cmd"].lower()
+
+
+    file.write("// Set the " + cmd["name"] + "\n")
+    file.write("bool set_" + prefix.lower() + "_" + cmd["cmd"].lower() + "(" + input + ", bool save)\n{\n")
+
+    file.write("    // Verify the " + cmd["name"] + " value is valid\n")
+    file.write("    if (!verify_" + prefix.lower() + "_" + cmd["cmd"].lower() + "(" + prefix.lower() + "_" + cmd["cmd"].lower() + "))\n")
+    file.write("        return false;\n\n")
+    
+    file.write("    // Check to see if the " + cmd["name"] + " EEPROM value needs to be\n")
+    file.write("    // updated if immediate save is set\n")
+    file.write("    if (save)\n    {\n")
+    file.write("        if (load_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ") != " + prefix.lower() + "_" + cmd["cmd"].lower() + ")\n        {\n")
+
+    file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", " + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
+    file.write("        }\n")
+    file.write("    }\n\n")
+
+    file.write("    " + output + " = " + prefix.lower() + "_" + cmd["cmd"].lower() + ";\n\n")
+    file.write("    return 1;\n" )
+    file.write("}\n")
 
 def write_get_declare( file, prefix, cmd, depth ):
     # Get function definition
@@ -247,11 +313,11 @@ def write_variables( file, prefix, cmd, depth ):
           append = "[" + cmd["EEBytes"].upper() + "]"
       if( cmd["index"] ):
         if( depth == 2 ):
-          file.write( "static " + cmd["dataType"] + " " +  prefix + "_" + cmd["cmd"] +  "[" + cmd["count"][0].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
+          file.write( "static " + cmd["dataType"] + " settings_" +  prefix + "_" + cmd["cmd"].lower() +  "[" + cmd["count"][0].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
         else:
-           file.write( "static " + cmd["dataType"] + " " +  prefix + "_" + cmd["cmd"] +  "[" + cmd["count"].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
+           file.write( "static " + cmd["dataType"] + " settings_" +  prefix + "_" + cmd["cmd"].lower() +  "[" + cmd["count"].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
       else:
-        file.write( "static " + cmd["dataType"] + " " + prefix + "_" + cmd["cmd"] +  " = DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + ";\n" )
+        file.write( "static " + cmd["dataType"] + " settings_" + prefix + "_" + cmd["cmd"].lower() +  " = DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + ";\n" )
 
 def write_load_source( file, prefix, cmd, depth ):
    if cmd["index"]:
@@ -271,16 +337,16 @@ def write_load_source( file, prefix, cmd, depth ):
       else:
          index = "idx"
       if( get_eeprom_size(cmd) == 1 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint8_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte1[" + index + "]);\n")
           file.write("    }\n")
       elif( get_eeprom_size(cmd) == 2 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint16_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte1[" + index + "]);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint16_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 8) | " + "(uint16_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte2[" + index + "]);\n")
           file.write("    }\n")
       elif( get_eeprom_size(cmd) == 4 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint32_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte1[" + index + "]);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint32_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 8) | " + "(uint32_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte2[" + index + "]);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint32_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 16) | " + "(uint32_t)read(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte3[" + index + "]);\n")
@@ -288,16 +354,16 @@ def write_load_source( file, prefix, cmd, depth ):
           file.write("    }\n")
     else:
       if( get_eeprom_size(cmd) == 1 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint8_t)read(EEPROM_" + prefix.upper() + "_" + cmd["cmd"].upper() + "_BYTE1);\n")
           file.write("    }\n")
       elif( get_eeprom_size(cmd) == 2 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint16_t)read(EEPROM_" + prefix.upper() + "_" + cmd["cmd"].upper() + "1);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint16_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 8) | " + "(uint16_t)read(EEPROM_" + prefix.upper() + "_" + cmd["cmd"].upper() + "_BYTE2);\n")
           file.write("    }\n")
       elif( get_eeprom_size(cmd) == 4 ):
-          file.write("    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)\n    {\n");
+          file.write("    if (" + eeprom_status_check + ")\n    {\n");
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = (uint32_t)read(EEPROM_" + prefix.lower() + "_" + cmd["cmd"].lower() + "1);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint32_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 8) | " + "(uint32_t)read(EEPROM_" + prefix.upper() + "_" + cmd["cmd"].upper() + "_BYTE2);\n")
           file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val = ((uint32_t)load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val << 16) | " + "(uint32_t)read(EEPROM_" + prefix.upper() + "_" + cmd["cmd"].upper() + "_BYTE3);\n")
@@ -308,12 +374,61 @@ def write_load_source( file, prefix, cmd, depth ):
     file.write("    return load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_val;\n")
    file.write( "}\n\n" )
 
+def write_save_source( file, prefix, cmd, depth ):
+    input = cmd["cmd"].lower()
+    if( depth == 2 ):
+      index = "idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1]
+    else:
+      index = "idx"
+
+    if cmd["index"]:
+        if( depth == 2 ):
+          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"] + " " + cmd["cmd"].lower() + ")\n")
+        else:
+          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx, " + cmd["dataType"] + " " + cmd["cmd"].lower() + ")\n")
+    else:
+        file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(" + cmd["dataType"] + " " + cmd["cmd"].lower()  + ")\n")
+
+    file.write( "{\n")
+    
+    # Only values that are saved in EEPROM need to be added
+    if( get_eeprom_size(cmd) > 0 ):
+        file.write("    if (" + eeprom_status_check + ")\n    {\n");
+        byte_count = 1
+        while byte_count <= get_eeprom_size(cmd):
+            offset = (get_eeprom_size(cmd)-byte_count)*8
+            if offset > 0:
+                if( cmd["index"] ):
+                  file.write("        write(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "]);\n")
+                else:
+                  file.write("        write(EEPROM_" + cmd["cmd"].upper() + str(byte_count) + ", (" + input + " >> " + str(offset) + ") & 0xFF);\n")
+            else:
+                if( cmd["index"] ):
+                  file.write("        write(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte1[" + index + "], " + input + " & 0xFF);\n")
+                else:
+                  file.write("        write(EEPROM_" + cmd["cmd"].upper() + str(byte_count) + ", " + input + " & 0xFF);\n")
+            byte_count = byte_count + 1
+
+        file.write("    }\n");
+
+        byte_count = 1
+        #define EEPROM byte offset
+        while byte_count <= get_eeprom_size(cmd):
+            #settings.write("    write(EEPROM_" + cmd["cmd"] + "_BYTE" + str(byte_count) + ", EE_" + cmd["cmd"] + str(byte_count) + ");\n")
+            byte_count = byte_count + 1
+
+    file.write("}\n\n")
+
 def process_struct( prefix, cmd, depth ):
    write_comment_block( config_h, prefix, cmd, depth )
+   write_comment_block( config_c, prefix, cmd, depth )
    write_custom_struct( config_h, prefix, cmd, depth )
    write_verify_declare( config_h, prefix, cmd, depth )
    write_load_source( config_c, prefix, cmd, depth )
+   write_save_source( config_c, prefix, cmd, depth )
    write_verify_source(config_c, prefix, cmd, depth )
+   write_get_source(config_c, prefix, cmd, depth)
+   write_set_source(config_c, prefix, cmd, depth)
    write_get_declare( config_h, prefix, cmd, depth )
    write_set_declare( config_h, prefix, cmd, depth )
 

@@ -1048,117 +1048,368 @@ static const uint16_t map_dynamic_index_byte1[NUM_DYNAMIC] = {
     };
 
 
-static VIEW_STATE view_enable[MAX_VIEWS] = {DEFAULT_VIEW_ENABLE};
-static uint8_t view_num_gauges[GAUGES_PER_VIEW] = {DEFAULT_VIEW_NUM_GAUGES};
-static VIEW_BACKGROUND view_background[MAX_VIEWS] = {DEFAULT_VIEW_BACKGROUND};
-static GAUGE_THEME view_gauge_theme[MAX_VIEWS] = {DEFAULT_VIEW_GAUGE_THEME};
-static ALERT_STATE alert_enable[MAX_ALERTS] = {DEFAULT_ALERT_ENABLE};
-static char alert_message[MAX_ALERTS][ALERT_MESSAGE_LEN] = {DEFAULT_ALERT_MESSAGE};
-static ALERT_COMPARISON alert_compare[MAX_ALERTS] = {DEFAULT_ALERT_COMPARE};
-static float alert_threshold[NUM_DYNAMIC] = {DEFAULT_ALERT_THRESHOLD};
-static DYNAMIC_STATE dynamic_enable[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_ENABLE};
-static DYNAMIC_PRIORITY dynamic_priority[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_PRIORITY};
-static DYNAMIC_COMPARISON dynamic_compare[MAX_ALERTS] = {DEFAULT_DYNAMIC_COMPARE};
-static float dynamic_Threshold[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_THRESHOLD};
-static uint8_t dynamic_Index[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_INDEX};
+static VIEW_STATE settings_view_enable[MAX_VIEWS] = {DEFAULT_VIEW_ENABLE};
+static uint8_t settings_view_num_gauges[GAUGES_PER_VIEW] = {DEFAULT_VIEW_NUM_GAUGES};
+static VIEW_BACKGROUND settings_view_background[MAX_VIEWS] = {DEFAULT_VIEW_BACKGROUND};
+static GAUGE_THEME settings_view_gauge_theme[MAX_VIEWS] = {DEFAULT_VIEW_GAUGE_THEME};
+static ALERT_STATE settings_alert_enable[MAX_ALERTS] = {DEFAULT_ALERT_ENABLE};
+static char settings_alert_message[MAX_ALERTS][ALERT_MESSAGE_LEN] = {DEFAULT_ALERT_MESSAGE};
+static ALERT_COMPARISON settings_alert_compare[MAX_ALERTS] = {DEFAULT_ALERT_COMPARE};
+static float settings_alert_threshold[NUM_DYNAMIC] = {DEFAULT_ALERT_THRESHOLD};
+static DYNAMIC_STATE settings_dynamic_enable[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_ENABLE};
+static DYNAMIC_PRIORITY settings_dynamic_priority[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_PRIORITY};
+static DYNAMIC_COMPARISON settings_dynamic_compare[MAX_ALERTS] = {DEFAULT_DYNAMIC_COMPARE};
+static float settings_dynamic_threshold[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_THRESHOLD};
+static uint8_t settings_dynamic_index[NUM_DYNAMIC] = {DEFAULT_DYNAMIC_INDEX};
 
 
+
+
+/********************************************************************************
+*                                  View enable                                  
+*
+* @param idx_view    index of the view
+* @param enable    Enable or disable view by index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static VIEW_STATE load_view_enable(uint8_t idx)
 {
     VIEW_STATE load_view_enable_val = DEFAULT_VIEW_ENABLE;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_view_enable_val = (uint8_t)read(map_view_enable_byte1[idx]);
     }
     return load_view_enable_val;
 }
 
-bool verify_view_enable(VIEW_STATE enable)
+static void save_view_enable(uint8_t idx, VIEW_STATE enable)
 {
-    if (enable >= VIEW_STATE_RESERVED)
+    if (true)
+    {
+        write(map_view_enable_byte1[idx], enable & 0xFF);
+    }
+}
+
+bool verify_view_enable(VIEW_STATE view_enable)
+{
+    if (view_enable >= VIEW_STATE_RESERVED)
         return 0;
     else
         return 1;
 }
 
+VIEW_STATE get_view_enable(uint8_t idx)
+{
+    // Verify the View enable value is valid
+    if (!verify_view_enable(settings_view_enable[idx]))
+        return DEFAULT_VIEW_ENABLE;
+
+    return settings_view_enable[idx];
+}
+
+// Set the View enable
+bool set_view_enable(uint8_t idx, VIEW_STATE view_enable, bool save)
+{
+    // Verify the View enable value is valid
+    if (!verify_view_enable(view_enable))
+        return false;
+
+    // Check to see if the View enable EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_view_enable(idx) != view_enable)
+        {
+            save_view_enable(idx, view_enable);
+        }
+    }
+
+    settings_view_enable[idx] = view_enable;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                Number of gauges                               
+*
+* @param idx_view    index of the view
+* @param num_gauges    Define the number of gauges for view by index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static uint8_t load_view_num_gauges(uint8_t idx)
 {
     uint8_t load_view_num_gauges_val = DEFAULT_VIEW_NUM_GAUGES;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_view_num_gauges_val = (uint8_t)read(map_view_num_gauges_byte1[idx]);
     }
     return load_view_num_gauges_val;
 }
 
-bool verify_view_num_gauges(uint8_t num_gauges)
+static void save_view_num_gauges(uint8_t idx, uint8_t num_gauges)
 {
-    if (num_gauges > GAUGES_PER_VIEW)
+    if (true)
+    {
+        write(map_view_num_gauges_byte1[idx], num_gauges & 0xFF);
+    }
+}
+
+bool verify_view_num_gauges(uint8_t view_num_gauges)
+{
+    if (view_num_gauges > GAUGES_PER_VIEW)
         return 0;
 
     else
         return 1;
 }
 
+uint8_t get_view_num_gauges(uint8_t idx)
+{
+    // Verify the Number of gauges value is valid
+    if (!verify_view_num_gauges(settings_view_num_gauges[idx]))
+        return DEFAULT_VIEW_NUM_GAUGES;
+
+    return settings_view_num_gauges[idx];
+}
+
+// Set the Number of gauges
+bool set_view_num_gauges(uint8_t idx, uint8_t view_num_gauges, bool save)
+{
+    // Verify the Number of gauges value is valid
+    if (!verify_view_num_gauges(view_num_gauges))
+        return false;
+
+    // Check to see if the Number of gauges EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_view_num_gauges(idx) != view_num_gauges)
+        {
+            save_view_num_gauges(idx, view_num_gauges);
+        }
+    }
+
+    settings_view_num_gauges[idx] = view_num_gauges;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                   Background                                  
+*
+* @param idx_view    index of the view
+* @param background    Set the background color or image of a view by index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static VIEW_BACKGROUND load_view_background(uint8_t idx)
 {
     VIEW_BACKGROUND load_view_background_val = DEFAULT_VIEW_BACKGROUND;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_view_background_val = (uint8_t)read(map_view_background_byte1[idx]);
     }
     return load_view_background_val;
 }
 
-bool verify_view_background(VIEW_BACKGROUND background)
+static void save_view_background(uint8_t idx, VIEW_BACKGROUND background)
 {
-    if (background >= VIEW_BACKGROUND_RESERVED)
+    if (true)
+    {
+        write(map_view_background_byte1[idx], background & 0xFF);
+    }
+}
+
+bool verify_view_background(VIEW_BACKGROUND view_background)
+{
+    if (view_background >= VIEW_BACKGROUND_RESERVED)
         return 0;
     else
         return 1;
 }
 
+VIEW_BACKGROUND get_view_background(uint8_t idx)
+{
+    // Verify the Background value is valid
+    if (!verify_view_background(settings_view_background[idx]))
+        return DEFAULT_VIEW_BACKGROUND;
+
+    return settings_view_background[idx];
+}
+
+// Set the Background
+bool set_view_background(uint8_t idx, VIEW_BACKGROUND view_background, bool save)
+{
+    // Verify the Background value is valid
+    if (!verify_view_background(view_background))
+        return false;
+
+    // Check to see if the Background EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_view_background(idx) != view_background)
+        {
+            save_view_background(idx, view_background);
+        }
+    }
+
+    settings_view_background[idx] = view_background;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                          Theme assigned to the gauge                          
+*
+* @param idx_view    index of the view
+* @param idx_gauge    index of the gauge
+* @param theme    Set the gauge theme by view and gauge index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static GAUGE_THEME load_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge)
 {
     GAUGE_THEME load_view_gauge_theme_val = DEFAULT_VIEW_GAUGE_THEME;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_view_gauge_theme_val = (uint8_t)read(map_view_gauge_theme_byte1[idx_view][idx_gauge]);
     }
     return load_view_gauge_theme_val;
 }
 
-bool verify_view_gauge_theme(GAUGE_THEME theme)
+static void save_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME theme)
 {
-    if (theme >= GAUGE_THEME_RESERVED)
+    if (true)
+    {
+        write(map_view_gauge_theme_byte1[idx_view][idx_gauge], theme & 0xFF);
+    }
+}
+
+bool verify_view_gauge_theme(GAUGE_THEME view_gauge_theme)
+{
+    if (view_gauge_theme >= GAUGE_THEME_RESERVED)
         return 0;
     else
         return 1;
 }
 
+GAUGE_THEME get_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge)
+{
+    // Verify the Theme assigned to the gauge value is valid
+    if (!verify_view_gauge_theme(settings_view_gauge_theme[idx_view][idx_gauge]))
+        return DEFAULT_VIEW_GAUGE_THEME;
+
+    return settings_view_gauge_theme[idx_view][idx_gauge];
+}
+
+// Set the Theme assigned to the gauge
+bool set_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME, bool save)
+{
+    // Verify the Theme assigned to the gauge value is valid
+    if (!verify_view_gauge_theme(view_gauge_theme))
+        return false;
+
+    // Check to see if the Theme assigned to the gauge EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME) != view_gauge_theme)
+        {
+            save_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME, view_gauge_theme);
+        }
+    }
+
+    settings_view_gauge_theme[idx_view][idx_gauge] = view_gauge_theme;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                  Alert enable                                 
+*
+* @param idx_alert    index of the alert
+* @param enable    Enable or disable view by index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static ALERT_STATE load_alert_enable(uint8_t idx)
 {
     ALERT_STATE load_alert_enable_val = DEFAULT_ALERT_ENABLE;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_alert_enable_val = (uint8_t)read(map_alert_enable_byte1[idx]);
     }
     return load_alert_enable_val;
 }
 
-bool verify_alert_enable(ALERT_STATE enable)
+static void save_alert_enable(uint8_t idx, ALERT_STATE enable)
 {
-    if (enable >= ALERT_STATE_RESERVED)
+    if (true)
+    {
+        write(map_alert_enable_byte1[idx], enable & 0xFF);
+    }
+}
+
+bool verify_alert_enable(ALERT_STATE alert_enable)
+{
+    if (alert_enable >= ALERT_STATE_RESERVED)
         return 0;
     else
         return 1;
 }
 
+ALERT_STATE get_alert_enable(uint8_t idx)
+{
+    // Verify the Alert enable value is valid
+    if (!verify_alert_enable(settings_alert_enable[idx]))
+        return DEFAULT_ALERT_ENABLE;
+
+    return settings_alert_enable[idx];
+}
+
+// Set the Alert enable
+bool set_alert_enable(uint8_t idx, ALERT_STATE alert_enable, bool save)
+{
+    // Verify the Alert enable value is valid
+    if (!verify_alert_enable(alert_enable))
+        return false;
+
+    // Check to see if the Alert enable EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_alert_enable(idx) != alert_enable)
+        {
+            save_alert_enable(idx, alert_enable);
+        }
+    }
+
+    settings_alert_enable[idx] = alert_enable;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                 Alert message                                 
+*
+* @param idx_alert    index of the alert
+* @param message    Set the message that appears when alert occurs
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static char load_alert_message(uint8_t idx)
 {
     char load_alert_message_val = DEFAULT_ALERT_MESSAGE;
@@ -1166,35 +1417,194 @@ static char load_alert_message(uint8_t idx)
     return load_alert_message_val;
 }
 
-bool verify_alert_message(char message)
+static void save_alert_message(uint8_t idx, char message)
+{
+    if (true)
+    {
+        write(map_alert_message_byte1[idx]);
+        write(map_alert_message_byte2[idx]);
+        write(map_alert_message_byte3[idx]);
+        write(map_alert_message_byte4[idx]);
+        write(map_alert_message_byte5[idx]);
+        write(map_alert_message_byte6[idx]);
+        write(map_alert_message_byte7[idx]);
+        write(map_alert_message_byte8[idx]);
+        write(map_alert_message_byte9[idx]);
+        write(map_alert_message_byte10[idx]);
+        write(map_alert_message_byte11[idx]);
+        write(map_alert_message_byte12[idx]);
+        write(map_alert_message_byte13[idx]);
+        write(map_alert_message_byte14[idx]);
+        write(map_alert_message_byte15[idx]);
+        write(map_alert_message_byte16[idx]);
+        write(map_alert_message_byte17[idx]);
+        write(map_alert_message_byte18[idx]);
+        write(map_alert_message_byte19[idx]);
+        write(map_alert_message_byte20[idx]);
+        write(map_alert_message_byte21[idx]);
+        write(map_alert_message_byte22[idx]);
+        write(map_alert_message_byte23[idx]);
+        write(map_alert_message_byte24[idx]);
+        write(map_alert_message_byte25[idx]);
+        write(map_alert_message_byte26[idx]);
+        write(map_alert_message_byte27[idx]);
+        write(map_alert_message_byte28[idx]);
+        write(map_alert_message_byte29[idx]);
+        write(map_alert_message_byte30[idx]);
+        write(map_alert_message_byte31[idx]);
+        write(map_alert_message_byte32[idx]);
+        write(map_alert_message_byte33[idx]);
+        write(map_alert_message_byte34[idx]);
+        write(map_alert_message_byte35[idx]);
+        write(map_alert_message_byte36[idx]);
+        write(map_alert_message_byte37[idx]);
+        write(map_alert_message_byte38[idx]);
+        write(map_alert_message_byte39[idx]);
+        write(map_alert_message_byte40[idx]);
+        write(map_alert_message_byte41[idx]);
+        write(map_alert_message_byte42[idx]);
+        write(map_alert_message_byte43[idx]);
+        write(map_alert_message_byte44[idx]);
+        write(map_alert_message_byte45[idx]);
+        write(map_alert_message_byte46[idx]);
+        write(map_alert_message_byte47[idx]);
+        write(map_alert_message_byte48[idx]);
+        write(map_alert_message_byte49[idx]);
+        write(map_alert_message_byte50[idx]);
+        write(map_alert_message_byte51[idx]);
+        write(map_alert_message_byte52[idx]);
+        write(map_alert_message_byte53[idx]);
+        write(map_alert_message_byte54[idx]);
+        write(map_alert_message_byte55[idx]);
+        write(map_alert_message_byte56[idx]);
+        write(map_alert_message_byte57[idx]);
+        write(map_alert_message_byte58[idx]);
+        write(map_alert_message_byte59[idx]);
+        write(map_alert_message_byte60[idx]);
+        write(map_alert_message_byte61[idx]);
+        write(map_alert_message_byte62[idx]);
+        write(map_alert_message_byte63[idx]);
+        write(map_alert_message_byte1[idx], message & 0xFF);
+    }
+}
+
+bool verify_alert_message(char alert_message)
 {
     return 1; // TODO - String checking
 }
 
+char get_alert_message(uint8_t idx)
+{
+    // Verify the Alert message value is valid
+    if (!verify_alert_message(settings_alert_message[idx]))
+        return DEFAULT_ALERT_MESSAGE;
+
+    return settings_alert_message[idx];
+}
+
+// Set the Alert message
+bool set_alert_message(uint8_t idx, char alert_message, bool save)
+{
+    // Verify the Alert message value is valid
+    if (!verify_alert_message(alert_message))
+        return false;
+
+    // Check to see if the Alert message EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_alert_message(idx) != alert_message)
+        {
+            save_alert_message(idx, alert_message);
+        }
+    }
+
+    settings_alert_message[idx] = alert_message;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                Comparison type                                
+*
+* @param idx_alert    index of the alert
+* @param compare    Configure the comparison used for the realtime value and alert threshold
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static ALERT_COMPARISON load_alert_compare(uint8_t idx)
 {
     ALERT_COMPARISON load_alert_compare_val = DEFAULT_ALERT_COMPARE;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_alert_compare_val = (uint8_t)read(map_alert_compare_byte1[idx]);
     }
     return load_alert_compare_val;
 }
 
-bool verify_alert_compare(ALERT_COMPARISON compare)
+static void save_alert_compare(uint8_t idx, ALERT_COMPARISON compare)
 {
-    if (compare >= ALERT_COMPARISON_RESERVED)
+    if (true)
+    {
+        write(map_alert_compare_byte1[idx], compare & 0xFF);
+    }
+}
+
+bool verify_alert_compare(ALERT_COMPARISON alert_compare)
+{
+    if (alert_compare >= ALERT_COMPARISON_RESERVED)
         return 0;
     else
         return 1;
 }
 
+ALERT_COMPARISON get_alert_compare(uint8_t idx)
+{
+    // Verify the Comparison type value is valid
+    if (!verify_alert_compare(settings_alert_compare[idx]))
+        return DEFAULT_ALERT_COMPARE;
+
+    return settings_alert_compare[idx];
+}
+
+// Set the Comparison type
+bool set_alert_compare(uint8_t idx, ALERT_COMPARISON alert_compare, bool save)
+{
+    // Verify the Comparison type value is valid
+    if (!verify_alert_compare(alert_compare))
+        return false;
+
+    // Check to see if the Comparison type EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_alert_compare(idx) != alert_compare)
+        {
+            save_alert_compare(idx, alert_compare);
+        }
+    }
+
+    settings_alert_compare[idx] = alert_compare;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                            Dynamic gauge threshold                            
+*
+* @param idx_alert    index of the alert
+* @param threshold    Comparison value of the dynamic gauge
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static float load_alert_threshold(uint8_t idx)
 {
     float load_alert_threshold_val = DEFAULT_ALERT_THRESHOLD;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_alert_threshold_val = (uint32_t)read(map_alert_threshold_byte1[idx]);
         load_alert_threshold_val = ((uint32_t)load_alert_threshold_val << 8) | (uint32_t)read(map_alert_threshold_byte2[idx]);
@@ -1204,80 +1614,275 @@ static float load_alert_threshold(uint8_t idx)
     return load_alert_threshold_val;
 }
 
-bool verify_alert_threshold(float threshold)
+static void save_alert_threshold(uint8_t idx, float threshold)
 {
-    if (threshold < -100000)
+    if (true)
+    {
+        write(map_alert_threshold_byte1[idx]);
+        write(map_alert_threshold_byte2[idx]);
+        write(map_alert_threshold_byte3[idx]);
+        write(map_alert_threshold_byte1[idx], threshold & 0xFF);
+    }
+}
+
+bool verify_alert_threshold(float alert_threshold)
+{
+    if (alert_threshold < -100000)
         return 0;
 
-    if (threshold > 100000)
+    if (alert_threshold > 100000)
         return 0;
 
     else
         return 1;
 }
 
+float get_alert_threshold(uint8_t idx)
+{
+    // Verify the Dynamic gauge threshold value is valid
+    if (!verify_alert_threshold(settings_alert_threshold[idx]))
+        return DEFAULT_ALERT_THRESHOLD;
+
+    return settings_alert_threshold[idx];
+}
+
+// Set the Dynamic gauge threshold
+bool set_alert_threshold(uint8_t idx, float alert_threshold, bool save)
+{
+    // Verify the Dynamic gauge threshold value is valid
+    if (!verify_alert_threshold(alert_threshold))
+        return false;
+
+    // Check to see if the Dynamic gauge threshold EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_alert_threshold(idx) != alert_threshold)
+        {
+            save_alert_threshold(idx, alert_threshold);
+        }
+    }
+
+    settings_alert_threshold[idx] = alert_threshold;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                 Dynamic enable                                
+*
+* @param idx_dynamic    index of the dynamic
+* @param enable    Enable or disable view by index
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static DYNAMIC_STATE load_dynamic_enable(uint8_t idx)
 {
     DYNAMIC_STATE load_dynamic_enable_val = DEFAULT_DYNAMIC_ENABLE;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_dynamic_enable_val = (uint8_t)read(map_dynamic_enable_byte1[idx]);
     }
     return load_dynamic_enable_val;
 }
 
-bool verify_dynamic_enable(DYNAMIC_STATE enable)
+static void save_dynamic_enable(uint8_t idx, DYNAMIC_STATE enable)
 {
-    if (enable >= DYNAMIC_STATE_RESERVED)
+    if (true)
+    {
+        write(map_dynamic_enable_byte1[idx], enable & 0xFF);
+    }
+}
+
+bool verify_dynamic_enable(DYNAMIC_STATE dynamic_enable)
+{
+    if (dynamic_enable >= DYNAMIC_STATE_RESERVED)
         return 0;
     else
         return 1;
 }
 
+DYNAMIC_STATE get_dynamic_enable(uint8_t idx)
+{
+    // Verify the Dynamic enable value is valid
+    if (!verify_dynamic_enable(settings_dynamic_enable[idx]))
+        return DEFAULT_DYNAMIC_ENABLE;
+
+    return settings_dynamic_enable[idx];
+}
+
+// Set the Dynamic enable
+bool set_dynamic_enable(uint8_t idx, DYNAMIC_STATE dynamic_enable, bool save)
+{
+    // Verify the Dynamic enable value is valid
+    if (!verify_dynamic_enable(dynamic_enable))
+        return false;
+
+    // Check to see if the Dynamic enable EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_dynamic_enable(idx) != dynamic_enable)
+        {
+            save_dynamic_enable(idx, dynamic_enable);
+        }
+    }
+
+    settings_dynamic_enable[idx] = dynamic_enable;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                    Priority                                   
+*
+* @param idx_dynamic    index of the dynamic
+* @param priority    Priority of the dynamic gauges, if both gauges comparisons are met then highest priority wins
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static DYNAMIC_PRIORITY load_dynamic_priority(uint8_t idx)
 {
     DYNAMIC_PRIORITY load_dynamic_priority_val = DEFAULT_DYNAMIC_PRIORITY;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_dynamic_priority_val = (uint8_t)read(map_dynamic_priority_byte1[idx]);
     }
     return load_dynamic_priority_val;
 }
 
-bool verify_dynamic_priority(DYNAMIC_PRIORITY priority)
+static void save_dynamic_priority(uint8_t idx, DYNAMIC_PRIORITY priority)
 {
-    if (priority >= DYNAMIC_PRIORITY_RESERVED)
+    if (true)
+    {
+        write(map_dynamic_priority_byte1[idx], priority & 0xFF);
+    }
+}
+
+bool verify_dynamic_priority(DYNAMIC_PRIORITY dynamic_priority)
+{
+    if (dynamic_priority >= DYNAMIC_PRIORITY_RESERVED)
         return 0;
     else
         return 1;
 }
 
+DYNAMIC_PRIORITY get_dynamic_priority(uint8_t idx)
+{
+    // Verify the Priority value is valid
+    if (!verify_dynamic_priority(settings_dynamic_priority[idx]))
+        return DEFAULT_DYNAMIC_PRIORITY;
+
+    return settings_dynamic_priority[idx];
+}
+
+// Set the Priority
+bool set_dynamic_priority(uint8_t idx, DYNAMIC_PRIORITY dynamic_priority, bool save)
+{
+    // Verify the Priority value is valid
+    if (!verify_dynamic_priority(dynamic_priority))
+        return false;
+
+    // Check to see if the Priority EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_dynamic_priority(idx) != dynamic_priority)
+        {
+            save_dynamic_priority(idx, dynamic_priority);
+        }
+    }
+
+    settings_dynamic_priority[idx] = dynamic_priority;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                Comparison type                                
+*
+* @param idx_dynamic    index of the dynamic
+* @param compare    Configure the comparison used for the realtime value and alert threshold
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static DYNAMIC_COMPARISON load_dynamic_compare(uint8_t idx)
 {
     DYNAMIC_COMPARISON load_dynamic_compare_val = DEFAULT_DYNAMIC_COMPARE;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_dynamic_compare_val = (uint8_t)read(map_dynamic_compare_byte1[idx]);
     }
     return load_dynamic_compare_val;
 }
 
-bool verify_dynamic_compare(DYNAMIC_COMPARISON compare)
+static void save_dynamic_compare(uint8_t idx, DYNAMIC_COMPARISON compare)
 {
-    if (compare >= DYNAMIC_COMPARISON_RESERVED)
+    if (true)
+    {
+        write(map_dynamic_compare_byte1[idx], compare & 0xFF);
+    }
+}
+
+bool verify_dynamic_compare(DYNAMIC_COMPARISON dynamic_compare)
+{
+    if (dynamic_compare >= DYNAMIC_COMPARISON_RESERVED)
         return 0;
     else
         return 1;
 }
 
+DYNAMIC_COMPARISON get_dynamic_compare(uint8_t idx)
+{
+    // Verify the Comparison type value is valid
+    if (!verify_dynamic_compare(settings_dynamic_compare[idx]))
+        return DEFAULT_DYNAMIC_COMPARE;
+
+    return settings_dynamic_compare[idx];
+}
+
+// Set the Comparison type
+bool set_dynamic_compare(uint8_t idx, DYNAMIC_COMPARISON dynamic_compare, bool save)
+{
+    // Verify the Comparison type value is valid
+    if (!verify_dynamic_compare(dynamic_compare))
+        return false;
+
+    // Check to see if the Comparison type EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_dynamic_compare(idx) != dynamic_compare)
+        {
+            save_dynamic_compare(idx, dynamic_compare);
+        }
+    }
+
+    settings_dynamic_compare[idx] = dynamic_compare;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                            Dynamic gauge threshold                            
+*
+* @param idx_dynamic    index of the dynamic
+* @param Threshold    Comparison value of the dynamic gauge
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static float load_dynamic_threshold(uint8_t idx)
 {
     float load_dynamic_threshold_val = DEFAULT_DYNAMIC_THRESHOLD;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_dynamic_threshold_val = (uint32_t)read(map_dynamic_threshold_byte1[idx]);
         load_dynamic_threshold_val = ((uint32_t)load_dynamic_threshold_val << 8) | (uint32_t)read(map_dynamic_threshold_byte2[idx]);
@@ -1287,35 +1892,124 @@ static float load_dynamic_threshold(uint8_t idx)
     return load_dynamic_threshold_val;
 }
 
-bool verify_dynamic_threshold(float threshold)
+static void save_dynamic_threshold(uint8_t idx, float threshold)
 {
-    if (threshold < -100000)
+    if (true)
+    {
+        write(map_dynamic_threshold_byte1[idx]);
+        write(map_dynamic_threshold_byte2[idx]);
+        write(map_dynamic_threshold_byte3[idx]);
+        write(map_dynamic_threshold_byte1[idx], threshold & 0xFF);
+    }
+}
+
+bool verify_dynamic_threshold(float dynamic_threshold)
+{
+    if (dynamic_threshold < -100000)
         return 0;
 
-    if (threshold > 100000)
+    if (dynamic_threshold > 100000)
         return 0;
 
     else
         return 1;
 }
 
+float get_dynamic_threshold(uint8_t idx)
+{
+    // Verify the Dynamic gauge threshold value is valid
+    if (!verify_dynamic_threshold(settings_dynamic_threshold[idx]))
+        return DEFAULT_DYNAMIC_THRESHOLD;
+
+    return settings_dynamic_threshold[idx];
+}
+
+// Set the Dynamic gauge threshold
+bool set_dynamic_threshold(uint8_t idx, float dynamic_threshold, bool save)
+{
+    // Verify the Dynamic gauge threshold value is valid
+    if (!verify_dynamic_threshold(dynamic_threshold))
+        return false;
+
+    // Check to see if the Dynamic gauge threshold EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_dynamic_threshold(idx) != dynamic_threshold)
+        {
+            save_dynamic_threshold(idx, dynamic_threshold);
+        }
+    }
+
+    settings_dynamic_threshold[idx] = dynamic_threshold;
+
+    return 1;
+}
+
+
+/********************************************************************************
+*                                   View index                                  
+*
+* @param idx_dynamic    index of the dynamic
+* @param Index    Set which view should be enabled if the dynamic event is true
+* @param save    Set true to save to the EEPROM, otherwise value is non-volatile
+*
+********************************************************************************/
 static uint8_t load_dynamic_index(uint8_t idx)
 {
     uint8_t load_dynamic_index_val = DEFAULT_DYNAMIC_INDEX;
 
-    if (get_eeprom_status() == EEPROM_STATUS_PRESENT)
+    if (true)
     {
         load_dynamic_index_val = (uint8_t)read(map_dynamic_index_byte1[idx]);
     }
     return load_dynamic_index_val;
 }
 
-bool verify_dynamic_index(uint8_t index)
+static void save_dynamic_index(uint8_t idx, uint8_t index)
 {
-    if (index > max_views)
+    if (true)
+    {
+        write(map_dynamic_index_byte1[idx], index & 0xFF);
+    }
+}
+
+bool verify_dynamic_index(uint8_t dynamic_index)
+{
+    if (dynamic_index > MAX_VIEWS)
         return 0;
 
     else
         return 1;
 }
 
+uint8_t get_dynamic_index(uint8_t idx)
+{
+    // Verify the View index value is valid
+    if (!verify_dynamic_index(settings_dynamic_index[idx]))
+        return DEFAULT_DYNAMIC_INDEX;
+
+    return settings_dynamic_index[idx];
+}
+
+// Set the View index
+bool set_dynamic_index(uint8_t idx, uint8_t dynamic_index, bool save)
+{
+    // Verify the View index value is valid
+    if (!verify_dynamic_index(dynamic_index))
+        return false;
+
+    // Check to see if the View index EEPROM value needs to be
+    // updated if immediate save is set
+    if (save)
+    {
+        if (load_dynamic_index(idx) != dynamic_index)
+        {
+            save_dynamic_index(idx, dynamic_index);
+        }
+    }
+
+    settings_dynamic_index[idx] = dynamic_index;
+
+    return 1;
+}

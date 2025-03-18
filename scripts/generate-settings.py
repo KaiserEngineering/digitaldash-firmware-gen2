@@ -173,8 +173,8 @@ def write_get_source(file, prefix, cmd, depth):
 def write_set_source(file, prefix, cmd, depth):
     if( cmd["index"] ):
       if( depth == 2 ):
-          input = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"].upper()
-          index = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"].upper()
+          input = "uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"].upper() + " " + prefix.lower() + "_" + cmd["cmd"].lower()
+          index = "idx_" + prefix.lower().split('_')[0] + ", idx_" + prefix.lower().split('_')[1]
           output = "settings_" + prefix + "_" + cmd["cmd"].lower() + "[idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1] + "]"
       else:
           input = "uint8_t idx, " + cmd["dataType"] + " " + prefix.lower() + "_" + cmd["cmd"].lower()
@@ -264,12 +264,12 @@ def sub_write_memory_organization_2d( file, prefix, cmd, idx1, idx2 ):
 def sub_write_memory_map( file, prefix, cmd, byte, depth ):
    if( depth == 2 ):
       for i in range(config["config"][cmd["count"][0]]):
-         array = "{ "
+         array = " {"
          for j in range(config["config"][cmd["count"][1]]):
             array = array + "EEPROM_" + prefix.upper().split('_')[0].upper() + str(i+1) + "_" + prefix.upper().split('_')[1].upper() + "_" + cmd["cmd"].upper() + str(j+1) + "_BYTE" +  str(byte)
-            if( j < config["config"][cmd["count"][1]]):
+            if( j < config["config"][cmd["count"][1]]-1):
                array = array +  ", "
-         array = array + " }"
+         array = array + "}"
          file.write("#define EEPROM_" + prefix.upper().split('_')[0].upper() + str(i+1) + "_" + prefix.upper().split('_')[1].upper() + "_" + cmd["cmd"].upper() + "_BYTE" + str(byte) + array + "\n")
       file.write("static const uint16_t map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte) + "[" + cmd["count"][0].upper() + "]" + "[" + cmd["count"][1].upper() + "] = {" + "\n")
       for i in range(config["config"][cmd["count"][0]]):
@@ -313,7 +313,7 @@ def write_variables( file, prefix, cmd, depth ):
           append = "[" + cmd["EEBytes"].upper() + "]"
       if( cmd["index"] ):
         if( depth == 2 ):
-          file.write( "static " + cmd["dataType"] + " settings_" +  prefix + "_" + cmd["cmd"].lower() +  "[" + cmd["count"][0].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
+          file.write( "static " + cmd["dataType"] + " settings_" +  prefix + "_" + cmd["cmd"].lower() +  "[" + cmd["count"][0].upper() + "]" + append + "[" + cmd["count"][1].upper() + "] = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
         else:
            file.write( "static " + cmd["dataType"] + " settings_" +  prefix + "_" + cmd["cmd"].lower() +  "[" + cmd["count"].upper() + "]" + append + " = {DEFAULT_" + prefix.upper() + "_" + cmd["cmd"].upper() + "};\n" )
       else:
@@ -375,7 +375,7 @@ def write_load_source( file, prefix, cmd, depth ):
    file.write( "}\n\n" )
 
 def write_save_source( file, prefix, cmd, depth ):
-    input = cmd["cmd"].lower()
+    input = "(uint32_t)" + cmd["cmd"].lower()
     if( depth == 2 ):
       index = "idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1]
     else:
@@ -399,7 +399,7 @@ def write_save_source( file, prefix, cmd, depth ):
             offset = (get_eeprom_size(cmd)-byte_count)*8
             if offset > 0:
                 if( cmd["index"] ):
-                  file.write("        write(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "]);\n")
+                  file.write("        write(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], (" + input + " >> " + str(offset) + ") & 0xFF);\n")
                 else:
                   file.write("        write(EEPROM_" + cmd["cmd"].upper() + str(byte_count) + ", (" + input + " >> " + str(offset) + ") & 0xFF);\n")
             else:

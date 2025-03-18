@@ -261,7 +261,7 @@ int main(void)
   FordFocusSTRS.view[0].gauge[0].pid = &iat;
   FordFocusSTRS.view[0].gauge[0].theme = THEME_STOCK_ST;
 
-  set_view_gauge_pid(0, 0, &iat);
+  //set_view_gauge_pid(0, 0, &iat);
   set_view_gauge_theme(0, 0, THEME_STOCK_ST, true);
 
   // View 1 - Gauge 2
@@ -322,13 +322,13 @@ int main(void)
 
   char tmp[ALERT_MESSAGE_LEN];
   strcpy(tmp, "Max oil pressure reached");
-  set_alert_msg(0, "Max oil pressure reached");
-  set_alert_pid(0, &oil);
-  set_alert_compare(0, DD_GREATER_THAN);
-  set_alert_thresh(0, 160);
+  set_alert_message(0, "Max oil pressure reached", true);
+  //set_alert_pid(0, &oil);
+  set_alert_compare(0, DD_GREATER_THAN, true);
+  set_alert_threshold(0, 160, true);
 
   // Dynamic 1
-  FordFocusSTRS.dynamic[0].enabled = load_dynamic_enable(1);
+  FordFocusSTRS.dynamic[0].enabled = get_dynamic_enable(1);
   FordFocusSTRS.dynamic[0].priority = DD_MEDIUM_PRIORITY;
   FordFocusSTRS.dynamic[0].compare = DD_GREATER_THAN;
   FordFocusSTRS.dynamic[0].pid = &oil;
@@ -336,16 +336,14 @@ int main(void)
   FordFocusSTRS.dynamic[0].view_index = 0;
 
   set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, true);
-  set_dynamic_priority(0, DD_MEDIUM_PRIORITY);
-  set_dynamic_pid(0, &oil);
-  set_dynamic_compare(0, DD_GREATER_THAN);
-  set_dynamic_thresh(0, 100);
-  set_dynamic_view_index(0, 0);
-
+  set_dynamic_priority(0, DD_MEDIUM_PRIORITY, true);
+  //set_dynamic_pid(0, &oil);
+  set_dynamic_compare(0, DD_GREATER_THAN, true);
+  set_dynamic_threshold(0, 100, true);
 
 
   // Dynamic 2
-  FordFocusSTRS.dynamic[1].enabled = load_dynamic_enable(1);
+  FordFocusSTRS.dynamic[1].enabled = get_dynamic_enable(1);
   FordFocusSTRS.dynamic[1].priority = DD_HIGH_PRIORITY;
   FordFocusSTRS.dynamic[1].compare = DD_GREATER_THAN;
   FordFocusSTRS.dynamic[1].pid = &oil;
@@ -419,7 +417,7 @@ int main(void)
   }
 
   for( uint8_t idx = 0; idx < FordFocusSTRS.num_views; idx++) {
-	  int x_pos[MAX_GAUGES] = {0};
+	  int x_pos[GAUGES_PER_VIEW] = {0};
 
 	  if( FordFocusSTRS.view[idx].num_gauges == 1) {
 		  x_pos[0] = 0;
@@ -513,25 +511,6 @@ int main(void)
 	log_minmax(&rpm);
 	log_minmax(&speed);
 
-		if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
-			switch_screen(ui_view[FordFocusSTRS.dynamic[0].view_index]);
-		} else {
-			switch_screen(ui_view[1]);
-		}
-
-
-		if( compare_values(FordFocusSTRS.alert[0].trigger.pid->pid_value, FordFocusSTRS.alert[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) )
-		{
-			if( alert_active == 0 ) {
-				alert_active = 1;
-				lv_obj_remove_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
-			}
-		} else {
-			if( alert_active == 1 ) {
-				alert_active = 0;
-				lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
-			}
-		}
 
 		/*
 		lv_obj_send_event(FordFocusSTRS.view[0].gauge[0].obj, LV_EVENT_REFRESH, &iat);

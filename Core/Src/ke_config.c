@@ -81,9 +81,9 @@ static const uint16_t map_view_background_byte1[MAX_VIEWS] = {
 #define EEPROM_VIEW3_GAUGE_THEME1_BYTE1 (uint16_t)0x000F
 #define EEPROM_VIEW3_GAUGE_THEME2_BYTE1 (uint16_t)0x0010
 #define EEPROM_VIEW3_GAUGE_THEME3_BYTE1 (uint16_t)0x0011
-#define EEPROM_VIEW1_GAUGE_THEME_BYTE1{ EEPROM_VIEW1_GAUGE_THEME1_BYTE1, EEPROM_VIEW1_GAUGE_THEME2_BYTE1, EEPROM_VIEW1_GAUGE_THEME3_BYTE1,  }
-#define EEPROM_VIEW2_GAUGE_THEME_BYTE1{ EEPROM_VIEW2_GAUGE_THEME1_BYTE1, EEPROM_VIEW2_GAUGE_THEME2_BYTE1, EEPROM_VIEW2_GAUGE_THEME3_BYTE1,  }
-#define EEPROM_VIEW3_GAUGE_THEME_BYTE1{ EEPROM_VIEW3_GAUGE_THEME1_BYTE1, EEPROM_VIEW3_GAUGE_THEME2_BYTE1, EEPROM_VIEW3_GAUGE_THEME3_BYTE1,  }
+#define EEPROM_VIEW1_GAUGE_THEME_BYTE1 {EEPROM_VIEW1_GAUGE_THEME1_BYTE1, EEPROM_VIEW1_GAUGE_THEME2_BYTE1, EEPROM_VIEW1_GAUGE_THEME3_BYTE1}
+#define EEPROM_VIEW2_GAUGE_THEME_BYTE1 {EEPROM_VIEW2_GAUGE_THEME1_BYTE1, EEPROM_VIEW2_GAUGE_THEME2_BYTE1, EEPROM_VIEW2_GAUGE_THEME3_BYTE1}
+#define EEPROM_VIEW3_GAUGE_THEME_BYTE1 {EEPROM_VIEW3_GAUGE_THEME1_BYTE1, EEPROM_VIEW3_GAUGE_THEME2_BYTE1, EEPROM_VIEW3_GAUGE_THEME3_BYTE1}
 static const uint16_t map_view_gauge_theme_byte1[MAX_VIEWS][GAUGES_PER_VIEW] = {
     EEPROM_VIEW1_GAUGE_THEME_BYTE1,
     EEPROM_VIEW2_GAUGE_THEME_BYTE1,
@@ -1051,7 +1051,7 @@ static const uint16_t map_dynamic_index_byte1[NUM_DYNAMIC] = {
 static VIEW_STATE settings_view_enable[MAX_VIEWS] = {DEFAULT_VIEW_ENABLE};
 static uint8_t settings_view_num_gauges[GAUGES_PER_VIEW] = {DEFAULT_VIEW_NUM_GAUGES};
 static VIEW_BACKGROUND settings_view_background[MAX_VIEWS] = {DEFAULT_VIEW_BACKGROUND};
-static GAUGE_THEME settings_view_gauge_theme[MAX_VIEWS] = {DEFAULT_VIEW_GAUGE_THEME};
+static GAUGE_THEME settings_view_gauge_theme[MAX_VIEWS][GAUGES_PER_VIEW] = {DEFAULT_VIEW_GAUGE_THEME};
 static ALERT_STATE settings_alert_enable[MAX_ALERTS] = {DEFAULT_ALERT_ENABLE};
 static char settings_alert_message[MAX_ALERTS][ALERT_MESSAGE_LEN] = {DEFAULT_ALERT_MESSAGE};
 static ALERT_COMPARISON settings_alert_compare[MAX_ALERTS] = {DEFAULT_ALERT_COMPARE};
@@ -1088,7 +1088,7 @@ static void save_view_enable(uint8_t idx, VIEW_STATE enable)
 {
     if (true)
     {
-        write(map_view_enable_byte1[idx], enable & 0xFF);
+        write(map_view_enable_byte1[idx], (uint32_t)enable & 0xFF);
     }
 }
 
@@ -1155,7 +1155,7 @@ static void save_view_num_gauges(uint8_t idx, uint8_t num_gauges)
 {
     if (true)
     {
-        write(map_view_num_gauges_byte1[idx], num_gauges & 0xFF);
+        write(map_view_num_gauges_byte1[idx], (uint32_t)num_gauges & 0xFF);
     }
 }
 
@@ -1223,7 +1223,7 @@ static void save_view_background(uint8_t idx, VIEW_BACKGROUND background)
 {
     if (true)
     {
-        write(map_view_background_byte1[idx], background & 0xFF);
+        write(map_view_background_byte1[idx], (uint32_t)background & 0xFF);
     }
 }
 
@@ -1291,7 +1291,7 @@ static void save_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THE
 {
     if (true)
     {
-        write(map_view_gauge_theme_byte1[idx_view][idx_gauge], theme & 0xFF);
+        write(map_view_gauge_theme_byte1[idx_view][idx_gauge], (uint32_t)theme & 0xFF);
     }
 }
 
@@ -1313,7 +1313,7 @@ GAUGE_THEME get_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge)
 }
 
 // Set the Theme assigned to the gauge
-bool set_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME, bool save)
+bool set_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME view_gauge_theme, bool save)
 {
     // Verify the Theme assigned to the gauge value is valid
     if (!verify_view_gauge_theme(view_gauge_theme))
@@ -1323,9 +1323,9 @@ bool set_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME, bool
     // updated if immediate save is set
     if (save)
     {
-        if (load_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME) != view_gauge_theme)
+        if (load_view_gauge_theme(idx_view, idx_gauge) != view_gauge_theme)
         {
-            save_view_gauge_theme(uint8_t idx_view, uint8_t idx_gauge, GAUGE_THEME, view_gauge_theme);
+            save_view_gauge_theme(idx_view, idx_gauge, view_gauge_theme);
         }
     }
 
@@ -1358,7 +1358,7 @@ static void save_alert_enable(uint8_t idx, ALERT_STATE enable)
 {
     if (true)
     {
-        write(map_alert_enable_byte1[idx], enable & 0xFF);
+        write(map_alert_enable_byte1[idx], (uint32_t)enable & 0xFF);
     }
 }
 
@@ -1421,70 +1421,7 @@ static void save_alert_message(uint8_t idx, char message)
 {
     if (true)
     {
-        write(map_alert_message_byte1[idx]);
-        write(map_alert_message_byte2[idx]);
-        write(map_alert_message_byte3[idx]);
-        write(map_alert_message_byte4[idx]);
-        write(map_alert_message_byte5[idx]);
-        write(map_alert_message_byte6[idx]);
-        write(map_alert_message_byte7[idx]);
-        write(map_alert_message_byte8[idx]);
-        write(map_alert_message_byte9[idx]);
-        write(map_alert_message_byte10[idx]);
-        write(map_alert_message_byte11[idx]);
-        write(map_alert_message_byte12[idx]);
-        write(map_alert_message_byte13[idx]);
-        write(map_alert_message_byte14[idx]);
-        write(map_alert_message_byte15[idx]);
-        write(map_alert_message_byte16[idx]);
-        write(map_alert_message_byte17[idx]);
-        write(map_alert_message_byte18[idx]);
-        write(map_alert_message_byte19[idx]);
-        write(map_alert_message_byte20[idx]);
-        write(map_alert_message_byte21[idx]);
-        write(map_alert_message_byte22[idx]);
-        write(map_alert_message_byte23[idx]);
-        write(map_alert_message_byte24[idx]);
-        write(map_alert_message_byte25[idx]);
-        write(map_alert_message_byte26[idx]);
-        write(map_alert_message_byte27[idx]);
-        write(map_alert_message_byte28[idx]);
-        write(map_alert_message_byte29[idx]);
-        write(map_alert_message_byte30[idx]);
-        write(map_alert_message_byte31[idx]);
-        write(map_alert_message_byte32[idx]);
-        write(map_alert_message_byte33[idx]);
-        write(map_alert_message_byte34[idx]);
-        write(map_alert_message_byte35[idx]);
-        write(map_alert_message_byte36[idx]);
-        write(map_alert_message_byte37[idx]);
-        write(map_alert_message_byte38[idx]);
-        write(map_alert_message_byte39[idx]);
-        write(map_alert_message_byte40[idx]);
-        write(map_alert_message_byte41[idx]);
-        write(map_alert_message_byte42[idx]);
-        write(map_alert_message_byte43[idx]);
-        write(map_alert_message_byte44[idx]);
-        write(map_alert_message_byte45[idx]);
-        write(map_alert_message_byte46[idx]);
-        write(map_alert_message_byte47[idx]);
-        write(map_alert_message_byte48[idx]);
-        write(map_alert_message_byte49[idx]);
-        write(map_alert_message_byte50[idx]);
-        write(map_alert_message_byte51[idx]);
-        write(map_alert_message_byte52[idx]);
-        write(map_alert_message_byte53[idx]);
-        write(map_alert_message_byte54[idx]);
-        write(map_alert_message_byte55[idx]);
-        write(map_alert_message_byte56[idx]);
-        write(map_alert_message_byte57[idx]);
-        write(map_alert_message_byte58[idx]);
-        write(map_alert_message_byte59[idx]);
-        write(map_alert_message_byte60[idx]);
-        write(map_alert_message_byte61[idx]);
-        write(map_alert_message_byte62[idx]);
-        write(map_alert_message_byte63[idx]);
-        write(map_alert_message_byte1[idx], message & 0xFF);
+
     }
 }
 
@@ -1496,10 +1433,10 @@ bool verify_alert_message(char alert_message)
 char get_alert_message(uint8_t idx)
 {
     // Verify the Alert message value is valid
-    if (!verify_alert_message(settings_alert_message[idx]))
-        return DEFAULT_ALERT_MESSAGE;
+    //if (!verify_alert_message(settings_alert_message[idx]))
+    //    return DEFAULT_ALERT_MESSAGE;
 
-    return settings_alert_message[idx];
+    //return settings_alert_message[idx];
 }
 
 // Set the Alert message
@@ -1519,7 +1456,7 @@ bool set_alert_message(uint8_t idx, char alert_message, bool save)
         }
     }
 
-    settings_alert_message[idx] = alert_message;
+    //settings_alert_message[idx] = alert_message;
 
     return 1;
 }
@@ -1548,7 +1485,7 @@ static void save_alert_compare(uint8_t idx, ALERT_COMPARISON compare)
 {
     if (true)
     {
-        write(map_alert_compare_byte1[idx], compare & 0xFF);
+        write(map_alert_compare_byte1[idx], (uint32_t)compare & 0xFF);
     }
 }
 
@@ -1618,10 +1555,10 @@ static void save_alert_threshold(uint8_t idx, float threshold)
 {
     if (true)
     {
-        write(map_alert_threshold_byte1[idx]);
-        write(map_alert_threshold_byte2[idx]);
-        write(map_alert_threshold_byte3[idx]);
-        write(map_alert_threshold_byte1[idx], threshold & 0xFF);
+        write(map_alert_threshold_byte1[idx], ((uint32_t)threshold >> 24) & 0xFF);
+        write(map_alert_threshold_byte2[idx], ((uint32_t)threshold >> 16) & 0xFF);
+        write(map_alert_threshold_byte3[idx], ((uint32_t)threshold >> 8) & 0xFF);
+        write(map_alert_threshold_byte1[idx], (uint32_t)threshold & 0xFF);
     }
 }
 
@@ -1692,7 +1629,7 @@ static void save_dynamic_enable(uint8_t idx, DYNAMIC_STATE enable)
 {
     if (true)
     {
-        write(map_dynamic_enable_byte1[idx], enable & 0xFF);
+        write(map_dynamic_enable_byte1[idx], (uint32_t)enable & 0xFF);
     }
 }
 
@@ -1759,7 +1696,7 @@ static void save_dynamic_priority(uint8_t idx, DYNAMIC_PRIORITY priority)
 {
     if (true)
     {
-        write(map_dynamic_priority_byte1[idx], priority & 0xFF);
+        write(map_dynamic_priority_byte1[idx], (uint32_t)priority & 0xFF);
     }
 }
 
@@ -1826,7 +1763,7 @@ static void save_dynamic_compare(uint8_t idx, DYNAMIC_COMPARISON compare)
 {
     if (true)
     {
-        write(map_dynamic_compare_byte1[idx], compare & 0xFF);
+        write(map_dynamic_compare_byte1[idx], (uint32_t)compare & 0xFF);
     }
 }
 
@@ -1896,10 +1833,10 @@ static void save_dynamic_threshold(uint8_t idx, float threshold)
 {
     if (true)
     {
-        write(map_dynamic_threshold_byte1[idx]);
-        write(map_dynamic_threshold_byte2[idx]);
-        write(map_dynamic_threshold_byte3[idx]);
-        write(map_dynamic_threshold_byte1[idx], threshold & 0xFF);
+        write(map_dynamic_threshold_byte1[idx], ((uint32_t)threshold >> 24) & 0xFF);
+        write(map_dynamic_threshold_byte2[idx], ((uint32_t)threshold >> 16) & 0xFF);
+        write(map_dynamic_threshold_byte3[idx], ((uint32_t)threshold >> 8) & 0xFF);
+        write(map_dynamic_threshold_byte1[idx], (uint32_t)threshold & 0xFF);
     }
 }
 
@@ -1970,7 +1907,7 @@ static void save_dynamic_index(uint8_t idx, uint8_t index)
 {
     if (true)
     {
-        write(map_dynamic_index_byte1[idx], index & 0xFF);
+        write(map_dynamic_index_byte1[idx], (uint32_t)index & 0xFF);
     }
 }
 

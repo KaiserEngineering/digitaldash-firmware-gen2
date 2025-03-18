@@ -11,7 +11,11 @@
 #include "lib_pid.h"
 #include "lvgl.h"
 #include "stdio.h"
-#include "ke_config.h"
+
+#define MAX_ALERT_LENGTH 64
+#define MAX_GAUGES 3
+#define MAX_ALERTS 5
+#define MAX_VIEWS 3
 
 typedef enum {
     DD_LESS_THAN,
@@ -35,6 +39,10 @@ typedef enum {
 
 typedef enum {
     BACKGROUND_FLARE,
+	BACKGROUND_USER1,
+	BACKGROUND_RED,
+	BACKGROUND_GREEN,
+	BACKGROUND_BLUE,
     BACKGROUND_BLACK
 }digitaldash_background;
 
@@ -42,7 +50,11 @@ typedef struct {
 	PID_DATA * pid;              // PID to monitor
     digitaldash_compare compare; // Comparison type
     float thresh;                // Value to compare against
-    char msg[ALERT_MESSAGE_LEN];  // Alert message
+}digitaldash_trigger;
+
+typedef struct {
+    digitaldash_trigger trigger; // Trigger for when an alert should appear
+    char msg[MAX_ALERT_LENGTH];  // Alert message
 }digitaldash_alert;
 
 typedef struct {
@@ -53,17 +65,16 @@ typedef struct {
 
 typedef struct {
     uint8_t enabled; // Is the view enabled or not
+    uint8_t view_index; // Screen number 0 - MAX_VIEWS
     uint8_t num_gauges;
     digitaldash_background background; // background of the specific view
-    digitaldash_gauge gauge[GAUGES_PER_VIEW]; // Gauge objects
+    digitaldash_gauge gauge[MAX_GAUGES]; // Gauge objects
 }digitaldash_view;
 
 typedef struct {
     uint8_t enabled;
     uint8_t view_index;
-	PID_DATA * pid;              // PID to monitor
-    digitaldash_compare compare; // Comparison type
-    float thresh;
+    digitaldash_trigger trigger;   // Trigger for when a view should dynamically change
     digitaldash_priority priority; // Priority level for when multiple trigger events are true
 }digitaldash_dynamic;
 
@@ -71,7 +82,6 @@ typedef struct {
     digitaldash_view view[MAX_VIEWS];
     uint8_t num_views;
     digitaldash_alert alert[MAX_ALERTS];
-    uint8_t num_alerts;
     digitaldash_dynamic dynamic[MAX_VIEWS];
 }digitaldash;
 

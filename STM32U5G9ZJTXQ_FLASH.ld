@@ -45,7 +45,7 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
 /* Start MX regions */
-  ExtFlash	(rx)	: ORIGIN = 0xa0000000, LENGTH = 131072K
+  ExtFlash	(rx)	: ORIGIN = 0xa0000000, LENGTH = 65536K
   FLASH	(rx)	: ORIGIN = 0x08000000, LENGTH = 4096K
   RAM	(xrw)	: ORIGIN = 0x20000000, LENGTH = 3008K
 /* End MX regions */
@@ -138,6 +138,14 @@ SECTIONS
   } >RAM AT> FLASH
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);
+  
+  .noinit (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.noinit)
+    . = ALIGN(4);
+  } > RAM
+  
   .bss :
   {
     /* This is used by the startup in order to initialize the .bss section */
@@ -175,5 +183,4 @@ SECTIONS
     KEEP (*(.ExtFlash_Section))
     . = ALIGN(4);
   } >ExtFlash
-
 }

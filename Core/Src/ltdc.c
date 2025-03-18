@@ -21,7 +21,7 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "lvgl_port_display.h"
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;
@@ -44,14 +44,14 @@ void MX_LTDC_Init(void)
   hltdc.Init.VSPolarity = LTDC_VSPOLARITY_AL;
   hltdc.Init.DEPolarity = LTDC_DEPOLARITY_AL;
   hltdc.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
-  hltdc.Init.HorizontalSync = 3;
-  hltdc.Init.VerticalSync = 3;
-  hltdc.Init.AccumulatedHBP = 11;
-  hltdc.Init.AccumulatedVBP = 11;
-  hltdc.Init.AccumulatedActiveW = 811;
-  hltdc.Init.AccumulatedActiveH = 491;
-  hltdc.Init.TotalWidth = 819;
-  hltdc.Init.TotalHeigh = 499;
+  hltdc.Init.HorizontalSync = HSYNC - 1;
+  hltdc.Init.VerticalSync = VSYNC - 1;
+  hltdc.Init.AccumulatedHBP = HSYNC + HBP - 1;
+  hltdc.Init.AccumulatedVBP = VSYNC + VBP - 1;
+  hltdc.Init.AccumulatedActiveW = HSYNC + HBP + ACT_HOR_RES - 1;
+  hltdc.Init.AccumulatedActiveH = VSYNC + VBP + ACT_VER_RES - 1;
+  hltdc.Init.TotalWidth = HSYNC + HBP + ACT_HOR_RES + HFP - 1;
+  hltdc.Init.TotalHeigh = VSYNC + VBP + ACT_VER_RES + VFP - 1;
   hltdc.Init.Backcolor.Blue = 0;
   hltdc.Init.Backcolor.Green = 0;
   hltdc.Init.Backcolor.Red = 0;
@@ -60,17 +60,17 @@ void MX_LTDC_Init(void)
     Error_Handler();
   }
   pLayerCfg.WindowX0 = 0;
-  pLayerCfg.WindowX1 = 800;
+  pLayerCfg.WindowX1 = UI_HOR_RES;
   pLayerCfg.WindowY0 = 0;
-  pLayerCfg.WindowY1 = 200;
+  pLayerCfg.WindowY1 = UI_VER_RES;
   pLayerCfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB888;
   pLayerCfg.Alpha = 255;
   pLayerCfg.Alpha0 = 0;
   pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
   pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
   pLayerCfg.FBStartAdress = 0;
-  pLayerCfg.ImageWidth = 800;
-  pLayerCfg.ImageHeight = 200;
+  pLayerCfg.ImageWidth = UI_HOR_RES;
+  pLayerCfg.ImageHeight = UI_VER_RES;
   pLayerCfg.Backcolor.Blue = 0;
   pLayerCfg.Backcolor.Green = 0;
   pLayerCfg.Backcolor.Red = 0;
@@ -100,13 +100,13 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* ltdcHandle)
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
     PeriphClkInit.LtdcClockSelection = RCC_LTDCCLKSOURCE_PLL3;
     PeriphClkInit.PLL3.PLL3Source = RCC_PLLSOURCE_HSE;
-    PeriphClkInit.PLL3.PLL3M = 4;
-    PeriphClkInit.PLL3.PLL3N = 50;
+    PeriphClkInit.PLL3.PLL3M = 1;
+    PeriphClkInit.PLL3.PLL3N = 8;
     PeriphClkInit.PLL3.PLL3P = 2;
     PeriphClkInit.PLL3.PLL3Q = 2;
-    PeriphClkInit.PLL3.PLL3R = 8;
-    PeriphClkInit.PLL3.PLL3RGE = RCC_PLLVCIRANGE_0;
-    PeriphClkInit.PLL3.PLL3FRACN = 0;
+    PeriphClkInit.PLL3.PLL3R = 3;
+    PeriphClkInit.PLL3.PLL3RGE = RCC_PLLVCIRANGE_1;
+    PeriphClkInit.PLL3.PLL3FRACN = 3584.0;
     PeriphClkInit.PLL3.PLL3ClockOut = RCC_PLL3_DIVR;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {
@@ -116,11 +116,12 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* ltdcHandle)
     /* LTDC clock enable */
     __HAL_RCC_LTDC_CLK_ENABLE();
 
-    __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /**LTDC GPIO Configuration
+    PE4     ------> LTDC_B0
     PB2     ------> LTDC_B1
     PE7     ------> LTDC_B6
     PE8     ------> LTDC_B7
@@ -147,57 +148,49 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* ltdcHandle)
     PD1     ------> LTDC_B5
     PD3     ------> LTDC_CLK
     PD6     ------> LTDC_DE
-    PB9     ------> LTDC_B0
     PE0     ------> LTDC_HSYNC
     */
+    GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_LTDC;
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF8_LTDC;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF8_LTDC;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
                           |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15
                           |GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF8_LTDC;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF7_LTDC;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF8_LTDC;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF7_LTDC;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
     /* LTDC interrupt Init */
-    HAL_NVIC_SetPriority(LTDC_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(LTDC_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(LTDC_IRQn);
   /* USER CODE BEGIN LTDC_MspInit 1 */
 
@@ -217,6 +210,7 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* ltdcHandle)
     __HAL_RCC_LTDC_CLK_DISABLE();
 
     /**LTDC GPIO Configuration
+    PE4     ------> LTDC_B0
     PB2     ------> LTDC_B1
     PE7     ------> LTDC_B6
     PE8     ------> LTDC_B7
@@ -243,14 +237,13 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* ltdcHandle)
     PD1     ------> LTDC_B5
     PD3     ------> LTDC_CLK
     PD6     ------> LTDC_DE
-    PB9     ------> LTDC_B0
     PE0     ------> LTDC_HSYNC
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_2|GPIO_PIN_9);
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_4|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13
+                          |GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0);
 
-    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_0);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_2);
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
                           |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15

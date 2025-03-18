@@ -57,8 +57,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LCD_ON_Pin GPIO_PIN_4
-#define LCD_ON_GPIO_Port GPIOE
 #define TP_IRQ_Pin GPIO_PIN_5
 #define TP_IRQ_GPIO_Port GPIOE
 #define TP_IRQ_EXTI_IRQn EXTI5_IRQn
@@ -72,8 +70,12 @@ void Error_Handler(void);
 #define USB_FAULT_Pin GPIO_PIN_4
 #define USB_FAULT_GPIO_Port GPIOA
 #define USB_FAULT_EXTI_IRQn EXTI4_IRQn
-#define RED_LED_Pin GPIO_PIN_2
-#define RED_LED_GPIO_Port GPIOD
+#define ESP32_RESET_N_Pin GPIO_PIN_0
+#define ESP32_RESET_N_GPIO_Port GPIOG
+#define BLKT_EN_Pin GPIO_PIN_15
+#define BLKT_EN_GPIO_Port GPIOB
+#define CAN_STBY_Pin GPIO_PIN_2
+#define CAN_STBY_GPIO_Port GPIOD
 #define GREEN_LED_Pin GPIO_PIN_4
 #define GREEN_LED_GPIO_Port GPIOD
 

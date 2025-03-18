@@ -41,7 +41,7 @@ void MX_HSPI1_Init(void)
   hxspi1.Init.FifoThresholdByte = 4;
   hxspi1.Init.MemoryMode = HAL_XSPI_SINGLE_MEM;
   hxspi1.Init.MemoryType = HAL_XSPI_MEMTYPE_MACRONIX;
-  hxspi1.Init.MemorySize = HAL_XSPI_SIZE_1GB;
+  hxspi1.Init.MemorySize = HAL_XSPI_SIZE_512MB;
   hxspi1.Init.ChipSelectHighTimeCycle = 2;
   hxspi1.Init.FreeRunningClock = HAL_XSPI_FREERUNCLK_DISABLE;
   hxspi1.Init.ClockMode = HAL_XSPI_CLOCK_MODE_0;
@@ -79,12 +79,12 @@ void HAL_XSPI_MspInit(XSPI_HandleTypeDef* xspiHandle)
     PeriphClkInit.HspiClockSelection = RCC_HSPICLKSOURCE_PLL2;
     PeriphClkInit.PLL2.PLL2Source = RCC_PLLSOURCE_HSE;
     PeriphClkInit.PLL2.PLL2M = 1;
-    PeriphClkInit.PLL2.PLL2N = 25;
+    PeriphClkInit.PLL2.PLL2N = 15;
     PeriphClkInit.PLL2.PLL2P = 2;
-    PeriphClkInit.PLL2.PLL2Q = 3;
+    PeriphClkInit.PLL2.PLL2Q = 2;
     PeriphClkInit.PLL2.PLL2R = 4;
     PeriphClkInit.PLL2.PLL2RGE = RCC_PLLVCIRANGE_1;
-    PeriphClkInit.PLL2.PLL2FRACN = 0;
+    PeriphClkInit.PLL2.PLL2FRACN = 5120.0;
     PeriphClkInit.PLL2.PLL2ClockOut = RCC_PLL2_DIVQ;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {

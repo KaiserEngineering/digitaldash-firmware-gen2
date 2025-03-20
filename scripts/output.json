@@ -1,0 +1,179 @@
+{
+    "view": [
+        {
+            "enabled": true,
+            "num_gauges": 3,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "num_gauges": 3,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "num_gauges": 3,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        }
+    ],
+    "alert": [
+        {
+            "enabled": true,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        },
+        {
+            "enabled": true,
+            "background": "Flare",
+            "gauges": [
+                {
+                    "pid": "Boost",
+                    "theme": "Grump Cat"
+                },
+                {
+                    "pid": "Oil Temp",
+                    "theme": "Stock ST"
+                },
+                {
+                    "pid": "RPM",
+                    "theme": "Grump Cat"
+                }
+            ]
+        }
+    ],
+    "dynamic": [
+        {
+            "priority": "Highest",
+            "view_index": 2,
+            "enabled": true,
+            "pid": "Oil",
+            "thresh": 200,
+            "compare": ">"
+        },
+        {
+            "priority": "Medium",
+            "view_index": 1,
+            "enabled": true,
+            "pid": "Boost",
+            "thresh": 10,
+            "compare": ">"
+        },
+        {
+            "priority": "Default",
+            "view_index": 0,
+            "enabled": true,
+            "pid": "N/A",
+            "thresh": 999999,
+            "compare": "N/A"
+        }
+    ]
+}

@@ -590,7 +590,7 @@ int main(void)
 			  FordFocusSTRS.view[view].gauge[gauge].theme = get_view_gauge_theme(view, gauge);
 
 			  // Finally, add the gauge to the view
-			  FordFocusSTRS.view[view].gauge[gauge].obj = add_gauge(GAUGE_THEME_STOCK_ST, x_pos[gauge], 0, ui_view[view], FordFocusSTRS.view[view].gauge[gauge].pid);
+			  FordFocusSTRS.view[view].gauge[gauge].obj = add_gauge(FordFocusSTRS.view[view].gauge[gauge].theme, x_pos[gauge], 0, ui_view[view], FordFocusSTRS.view[view].gauge[gauge].pid);
 
 			  //get_unit_label(PID_UNITS_MPH, FordFocusSTRS.view[view].gauge[gauge].pid->unit_label);
 		  }

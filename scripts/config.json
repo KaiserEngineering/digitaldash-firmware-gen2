@@ -248,7 +248,7 @@
             "desc": "Set the PID units by view and gauge index",
             "type": "number",
             "dataType": "PID_UNITS",
-            "default": "PID_UNITS_RESERVED",
+            "default": "RESERVED",
             "min": 1,
             "max": 255,
             "limit": "PID_UNITS_RESERVED",

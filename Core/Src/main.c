@@ -274,8 +274,11 @@ void spoof_config(void)
 	set_view_gauge_theme(0, 1, GAUGE_THEME_GRUMPY_CAT, false);
 	set_view_gauge_theme(0, 2, GAUGE_THEME_STOCK_ST, false);
 	set_view_gauge_pid(0, 0, MODE1_ENGINE_SPEED_UUID, 0);
+	set_view_gauge_units(0, 0, PID_UNITS_RPM, 0);
 	set_view_gauge_pid(0, 1, MODE1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, 0);
+	set_view_gauge_units(0, 1, PID_UNITS_PSI, 0);
 	set_view_gauge_pid(0, 2, MODE1_ENGINE_COOLANT_TEMPERATURE_UUID, 0);
+	set_view_gauge_units(0, 2, PID_UNITS_FAHRENHEIT, 0);
 }
 
 /* USER CODE END 0 */
@@ -562,12 +565,20 @@ int main(void)
 		  {
 			  PID_DATA pid_req;
 
+			  // Get PID universally unique ID, PID, and mode
 			  pid_req.pid_uuid = get_view_gauge_pid(view, gauge);
 			  pid_req.pid = get_pid_by_uuid(pid_req.pid_uuid);
 			  pid_req.mode = get_mode_by_uuid(pid_req.pid_uuid);
-			  pid_req.pid_unit = PID_UNITS_PERCENT;
+
+			  // Load the unit and default to base unit if error
+			  pid_req.pid_unit = get_view_gauge_units(view, gauge);
+			  if( pid_req.pid_unit == PID_UNITS_RESERVED )
+				  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
+
+			  // Load the labels
 			  get_pid_label(pid_req.pid_uuid, pid_req.label);
-			  get_unit_label(get_pid_base_unit(pid_req.pid_uuid), pid_req.unit_label);
+			  get_unit_label(pid_req.pid_unit, pid_req.unit_label);
+
 			  pid_req.lower_limit = 0;
 			  pid_req.upper_limit = 100;
 			  pid_req.precision = 0;

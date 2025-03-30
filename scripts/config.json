@@ -248,10 +248,10 @@
             "desc": "Set the PID units by view and gauge index",
             "type": "number",
             "dataType": "PID_UNITS",
-            "default": 0,
+            "default": "PID_UNITS_RESERVED",
             "min": 1,
             "max": 255,
-            "limit": "Reserved",
+            "limit": "PID_UNITS_RESERVED",
             "EEBytes": 1
         }
     ]

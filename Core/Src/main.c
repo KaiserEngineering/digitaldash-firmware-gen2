@@ -352,28 +352,6 @@ int main(void)
   // Spoof a config if EEPROM isn't present
   spoof_config();
 
-  // Alert 1
-  strcpy(FordFocusSTRS.alert[0].msg, "Max oil pressure reached");
-  FordFocusSTRS.alert[0].trigger.pid = &oil;
-  FordFocusSTRS.alert[0].trigger.compare = DD_GREATER_THAN;
-  FordFocusSTRS.alert[0].trigger.thresh = 160;
-
-  // Dynamic 1
-  FordFocusSTRS.dynamic[0].enabled = 1;
-  FordFocusSTRS.dynamic[0].priority = DD_MEDIUM_PRIORITY;
-  FordFocusSTRS.dynamic[0].trigger.compare = DD_GREATER_THAN;
-  FordFocusSTRS.dynamic[0].trigger.pid = &oil;
-  FordFocusSTRS.dynamic[0].trigger.thresh = 100;
-  FordFocusSTRS.dynamic[0].view_index = 0;
-
-  // Dynamic 2
-  FordFocusSTRS.dynamic[1].enabled = 1;
-  FordFocusSTRS.dynamic[1].priority = DD_HIGH_PRIORITY;
-  FordFocusSTRS.dynamic[1].trigger.compare = DD_GREATER_THAN;
-  FordFocusSTRS.dynamic[1].trigger.pid = &oil;
-  FordFocusSTRS.dynamic[1].trigger.thresh = 260;
-  FordFocusSTRS.dynamic[1].view_index = 1;
-
   BSP_HSPI_NOR_Init_t hspi_init;
   hspi_init.InterfaceMode = MX25LM51245G_OPI_MODE;
   hspi_init.TransferRate = MX25LM51245G_DTR_TRANSFER;
@@ -499,6 +477,7 @@ int main(void)
 	  }
   }
 
+  /*
   ui_alert_container[0] = lv_obj_create(ui_view[0]);
   lv_obj_remove_style_all(ui_alert_container[0]);
   lv_obj_set_width(ui_alert_container[0], 450);
@@ -535,6 +514,7 @@ int main(void)
   lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
 
   uint8_t alert_active = 1;
+  */
 
   lv_screen_load(ui_view[0]);
 
@@ -556,17 +536,22 @@ int main(void)
 	}
 
 	/* Check for dynamic gauge change */
+	/*
 	if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
 		active_view_idx = FordFocusSTRS.dynamic[0].view_index;
 	} else {
 		active_view_idx = 0;
 	}
+	*/
+
+	active_view_idx = 0;
 
 	if( FordFocusSTRS.view[active_view_idx].enabled )
 		switch_screen(ui_view[active_view_idx]);
 
 
 	/* Check for Alert(s) */
+	/*
 	if( compare_values(FordFocusSTRS.alert[0].trigger.pid->pid_value, FordFocusSTRS.alert[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) )
 	{
 		if( alert_active == 0 ) {
@@ -579,6 +564,7 @@ int main(void)
 			lv_obj_add_flag(ui_alert_container[0], LV_OBJ_FLAG_HIDDEN);
 		}
 	}
+	*/
 
 	/* Update gauges on current view */
 	for( uint8_t i = 0; i < FordFocusSTRS.view[active_view_idx].num_gauges; i++) {

@@ -15,20 +15,20 @@ extern "C" {
  *      DEFINES
  *********************/
 
-#define UI_HOR_RES    800
-#define UI_VER_RES    165
-#define ACT_HOR_RES    800
-#define ACT_VER_RES    480
+#define UI_HOR_RES    1024
+#define UI_VER_RES    200
+#define ACT_HOR_RES    1024
+#define ACT_VER_RES    600
 #define DISP_PARTIAL 0
 
 // LCD Timing
 #define HSYNC 30
-#define HFP 210
-#define HBP 58
+#define HFP 16
+#define HBP 130
 
 #define VSYNC 13
-#define VFP 22
-#define VBP 180
+#define VFP 12
+#define VBP 206
 
 /**********************
  * GLOBAL PROTOTYPES

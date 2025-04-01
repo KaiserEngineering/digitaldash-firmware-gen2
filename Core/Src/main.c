@@ -60,7 +60,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define FIRMWARE_VERSION "v1.0.0"
-
+#define USE_KE_CONF
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

@@ -9,7 +9,6 @@
 #define INC_KE_DIGITALDASH_H_
 
 #include "lib_pid.h"
-#include "lvgl.h"
 #include "stdio.h"
 #include "ke_config.h"
 
@@ -27,15 +26,6 @@ typedef enum {
     DD_MEDIUM_PRIORITY,
     DD_HIGH_PRIORITY
 }digitaldash_priority;
-
-typedef enum {
-    BACKGROUND_FLARE,
-	BACKGROUND_USER1,
-	BACKGROUND_RED,
-	BACKGROUND_GREEN,
-	BACKGROUND_BLUE,
-    BACKGROUND_BLACK
-}digitaldash_background;
 
 typedef struct {
 	PID_DATA * pid;              // PID to monitor
@@ -57,7 +47,7 @@ typedef struct {
 typedef struct {
     uint8_t enabled; // Is the view enabled or not
     uint8_t num_gauges;
-    digitaldash_background background; // background of the specific view
+    VIEW_BACKGROUND background; // background of the specific view
     digitaldash_gauge gauge[GAUGES_PER_VIEW]; // Gauge objects
 }digitaldash_view;
 

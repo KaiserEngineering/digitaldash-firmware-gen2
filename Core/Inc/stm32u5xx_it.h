@@ -59,6 +59,7 @@ void EXTI1_IRQHandler(void);
 void EXTI4_IRQHandler(void);
 void EXTI5_IRQHandler(void);
 void FDCAN1_IT0_IRQHandler(void);
+void I2C1_EV_IRQHandler(void);
 void I2C2_EV_IRQHandler(void);
 void I2C2_ER_IRQHandler(void);
 void SPI1_IRQHandler(void);

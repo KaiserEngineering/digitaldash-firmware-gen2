@@ -129,9 +129,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(ESP32_RESET_N_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PG1 PG9 PG10 PG12
-                           PG13 PG14 PG15 */
+                           PG15 */
   GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_12
-                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+                          |GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);

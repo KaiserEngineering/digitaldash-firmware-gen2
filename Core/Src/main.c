@@ -88,6 +88,16 @@ volatile uint32_t can_rx_mailbox_status = 0;
 uint32_t CAN_Filter_Count = 0;
 
 uint8_t active_view_idx = 0;
+
+#define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
+#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer))
+#define RXBUFFERSIZE                      TXBUFFERSIZE
+__IO uint32_t     Transfer_Direction = 0;
+__IO uint32_t     Xfer_Complete = 0;
+
+uint8_t aTxBuffer[4];
+uint8_t aRxBuffer[4];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -139,6 +149,101 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 		default:
 			return 0;  // Return false by default if comparison is invalid
 	}
+}
+
+/**
+  * @brief  Tx Transfer completed callback.
+  *   I2cHandle: I2C handle.
+  * @note   This example shows a simple way to report end of IT Tx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+
+void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Toggle LED4: Transfer in transmission process is correct */
+
+  Xfer_Complete = 1;
+  aTxBuffer[0]++;
+  aTxBuffer[1]++;
+  aTxBuffer[2]++;
+  aTxBuffer[3]++;
+
+}
+
+
+/**
+  * @brief  Rx Transfer completed callback.
+  *   I2cHandle: I2C handle
+  * @note   This example shows a simple way to report end of IT Rx transfer, and
+  *         you can add your own implementation.
+  * @retval None
+  */
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /* Toggle LED4: Transfer in reception process is correct */
+
+  Xfer_Complete = 1;
+  aRxBuffer[0]=0x00;
+  aRxBuffer[1]=0x00;
+  aRxBuffer[2]=0x00;
+  aRxBuffer[3]=0x00;
+}
+
+
+
+/**
+  * @brief  Slave Address Match callback.
+  *   hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  *   TransferDirection: Master request Transfer Direction (Write/Read), value of @ref I2C_XferOptions_definition
+  *   AddrMatchCode: Address Match Code
+  * @retval None
+  */
+void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode) {
+    Transfer_Direction = TransferDirection;
+    if (Transfer_Direction != 0) {
+        /* While the I2C in reception process, user can transmit data through
+           "aTxBuffer" buffer */
+        if (HAL_I2C_Slave_Seq_Transmit_IT(&hi2c1, (uint8_t *)aTxBuffer, TXBUFFERSIZE, I2C_FIRST_AND_LAST_FRAME) != HAL_OK) {
+            Error_Handler();
+        }
+
+    } else {
+        if (HAL_I2C_Slave_Seq_Receive_IT(&hi2c1, (uint8_t *)aRxBuffer, RXBUFFERSIZE, I2C_FIRST_AND_LAST_FRAME) != HAL_OK) {
+            Error_Handler();
+        }
+    }
+}
+
+/**
+  * @brief  Listen Complete callback.
+  *   hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	HAL_I2C_EnableListen_IT(hi2c);
+}
+
+/**
+  * @brief  I2C error callbacks.
+  *   I2cHandle: I2C handle
+  * @note   This example shows a simple way to report transfer error, and you can
+  *         add your own implementation.
+  * @retval None
+  */
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  /** Error_Handler() function is called when error occurs.
+    * 1- When Slave doesn't acknowledge its address, Master restarts communication.
+    * 2- When Master doesn't acknowledge the last data transferred, Slave doesn't care in this example.
+    */
+  if (HAL_I2C_GetError(I2cHandle) != HAL_I2C_ERROR_AF)
+  {
+    Error_Handler();
+  }
 }
 
 HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, uint32_t FIFO  )
@@ -340,6 +445,7 @@ int main(void)
   MX_DCACHE2_Init();
   MX_FDCAN1_Init();
   MX_TIM17_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
@@ -378,6 +484,22 @@ int main(void)
   {
 	  /* PWM Generation Error */
 	  Error_Handler();
+  }
+
+  aRxBuffer[0]=0x00;
+  aRxBuffer[1]=0x00;
+  aRxBuffer[2]=0x00;
+  aRxBuffer[3]=0x00;
+  aTxBuffer[0]=0xAA;
+  aTxBuffer[1]=0xBB;
+  aTxBuffer[2]=0xCC;
+  aTxBuffer[3]=0xDD;
+
+  // Enable the I2C slave connection to the ESP32
+  if(HAL_I2C_EnableListen_IT(&hi2c1) != HAL_OK)
+  {
+    /* Transfer error in reception process */
+    Error_Handler();
   }
 
   // Create the screen
@@ -525,6 +647,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	HAL_I2C_Master_Transmit(&hi2c1, 0x5a, aTxBuffer, 4, 0xFFFF);
 	digitaldash_service();
 	lv_timer_handler();
 
@@ -642,6 +765,7 @@ void SystemClock_Config(void)
   */
 static void SystemPower_Config(void)
 {
+  HAL_PWREx_EnableVddIO2();
 
   /*
    * Switch to SMPS regulator instead of LDO

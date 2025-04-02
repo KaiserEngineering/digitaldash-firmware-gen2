@@ -373,7 +373,7 @@ void spoof_config(void)
 	set_view_gauge_theme(0, 1, GAUGE_THEME_GRUMPY_CAT, false);
 	set_view_gauge_theme(0, 2, GAUGE_THEME_STOCK_ST, false);
 	set_view_gauge_pid(0, 0, MODE1_ENGINE_SPEED_UUID, 0);
-	set_view_gauge_units(0, 0, PID_UNITS_G_FORCE, 0);
+	set_view_gauge_units(0, 0, PID_UNITS_RPM, 0);
 	set_view_gauge_pid(0, 1, MODE1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, 0);
 	set_view_gauge_units(0, 1, PID_UNITS_PSI, 0);
 	set_view_gauge_pid(0, 2, MODE1_ENGINE_COOLANT_TEMPERATURE_UUID, 0);
@@ -386,6 +386,14 @@ void spoof_config(void)
 	set_view_gauge_theme(1, 0, GAUGE_THEME_STOCK_ST, false);
 	set_view_gauge_pid(1, 0, MODE1_ENGINE_SPEED_UUID, 0);
 	set_view_gauge_units(1, 0, PID_UNITS_RPM, 0);
+
+	// Dynamic
+	set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, false);
+	set_dynamic_pid(0, MODE1_ENGINE_SPEED_UUID, false);
+	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, false);
+	set_dynamic_compare(0, DD_GREATER_THAN, false);
+	set_dynamic_threshold(0, 5000, false);
+	set_dynamic_index(0, 1, false);
 }
 
 
@@ -631,6 +639,33 @@ int main(void)
 	  }
   }
 
+  for(uint8_t idx = 0; idx < NUM_DYNAMIC; idx++)
+  {
+	  FordFocusSTRS.dynamic[idx].enabled = get_dynamic_enable(idx);
+
+	  if( FordFocusSTRS.dynamic[idx].enabled ) {
+		  FordFocusSTRS.dynamic[idx].priority = get_dynamic_priority(idx);
+		  FordFocusSTRS.dynamic[idx].compare = get_dynamic_compare(idx);
+		  FordFocusSTRS.dynamic[idx].thresh = get_dynamic_threshold(idx);
+		  FordFocusSTRS.dynamic[idx].view_index = get_dynamic_index(idx);
+
+		  PID_DATA pid_req;
+
+		  // Get PID universally unique ID, PID, and mode
+		  pid_req.pid_uuid = get_dynamic_pid(idx);
+		  pid_req.pid = get_pid_by_uuid(pid_req.pid_uuid);
+		  pid_req.mode = get_mode_by_uuid(pid_req.pid_uuid);
+
+		  // Load the unit and default to base unit if error
+		  pid_req.pid_unit = get_dynamic_units(idx);
+		  if( pid_req.pid_unit == PID_UNITS_RESERVED )
+			  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
+
+		  // Start the PID stream and save the pointer
+		  FordFocusSTRS.dynamic[idx].pid = DigitalDash_Add_PID_To_Stream( &pid_req );
+	  }
+  }
+
   /*
   ui_alert_container[0] = lv_obj_create(ui_view[0]);
   lv_obj_remove_style_all(ui_alert_container[0]);
@@ -670,7 +705,7 @@ int main(void)
   uint8_t alert_active = 1;
   */
 
-  lv_screen_load(ui_view[0]);
+  lv_screen_load(ui_view[1]);
 
   uint32_t timestamp[MAX_VIEWS][GAUGES_PER_VIEW] = {0};
   /* USER CODE END 2 */
@@ -691,15 +726,11 @@ int main(void)
 	}
 
 	/* Check for dynamic gauge change */
-	/*
-	if( compare_values(FordFocusSTRS.dynamic[0].trigger.pid->pid_value, FordFocusSTRS.dynamic[0].trigger.thresh, FordFocusSTRS.alert[0].trigger.compare) ) {
+	if( compare_values(FordFocusSTRS.dynamic[0].pid->pid_value, FordFocusSTRS.dynamic[0].thresh, FordFocusSTRS.dynamic[0].compare) ) {
 		active_view_idx = FordFocusSTRS.dynamic[0].view_index;
 	} else {
 		active_view_idx = 0;
 	}
-	*/
-
-	active_view_idx = 0;
 
 	if( FordFocusSTRS.view[active_view_idx].enabled )
 		switch_screen(ui_view[active_view_idx]);

@@ -39,8 +39,8 @@ top_level_struc = config["config"]["top_level_struc"]
 top_level_name = config["config"]["top_level_name"]
 
 # Create the c file
-config_c = open("../Core/Src/ke_config.c", "w")
-config_h = open("../Core/Inc/ke_config.h", "w")
+config_c = open("../lib/lib_digitaldash_config/src/ke_config.c", "w")
+config_h = open("../lib/lib_digitaldash_config/inc/ke_config.h", "w")
 
 config_c.write( code_header + "\n\n" )
 config_h.write( code_header + "\n\n" )
@@ -51,9 +51,9 @@ config_h.write("#ifdef __cplusplus\n")
 config_h.write("extern \"C\"\n{\n")
 config_h.write("#endif\n\n")
 
-config_h.write("#include \"lvgl.h\"\n")
 config_h.write("#include \"stdbool.h\"\n")
-config_h.write("#include \"string.h\"\n\n")
+config_h.write("#include \"string.h\"\n")
+config_h.write("#include \"lib_pid.h\"\n\n")
 
 config_h.write("typedef void(settings_write)(uint16_t bAdd, uint8_t bData);\n")
 config_h.write("typedef uint8_t(settings_read)(uint16_t bAdd);\n\n")

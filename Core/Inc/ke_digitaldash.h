@@ -54,7 +54,9 @@
  typedef struct {
      uint8_t enabled;
      uint8_t view_index;
-     digitaldash_trigger trigger;   // Trigger for when a view should dynamically change
+     PID_DATA * pid;              // PID to monitor
+     digitaldash_compare compare; // Comparison type
+     float thresh;                // Value to compare against
      digitaldash_priority priority; // Priority level for when multiple trigger events are true
  }digitaldash_dynamic;
  
@@ -62,7 +64,7 @@
      digitaldash_view view[MAX_VIEWS];
      uint8_t num_views;
      digitaldash_alert alert[MAX_ALERTS];
-     digitaldash_dynamic dynamic[MAX_VIEWS];
+     digitaldash_dynamic dynamic[NUM_DYNAMIC];
  }digitaldash;
  
  #endif /* INC_KE_DIGITALDASH_H_ */

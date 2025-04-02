@@ -208,6 +208,34 @@
             "max": "max_views",
             "limit": "Reserved",
             "EEBytes": 1
+        },
+        {
+            "index" : true,
+            "count" : "num_dynamic",
+            "cmd": "pid",
+            "name": "PID assigned to the dynamic gauge",
+            "desc": "Set the dynamic PID by dynamic index",
+            "type": "number",
+            "dataType": "uint32_t",
+            "default": 0,
+            "min": 1,
+            "max": 16777215,
+            "limit": "Reserved",
+            "EEBytes": 4
+        },
+        {
+            "index" : true,
+            "count" : "num_dynamic",
+            "cmd": "units",
+            "name": "PID units assigned to the dynamic",
+            "desc": "Set the PID units by dynamic index",
+            "type": "number",
+            "dataType": "PID_UNITS",
+            "default": "RESERVED",
+            "min": 1,
+            "max": 255,
+            "limit": "PID_UNITS_RESERVED",
+            "EEBytes": 1
         }
     ],
     "gauge": [

@@ -726,7 +726,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	HAL_I2C_Master_Transmit(&hi2c1, 0x5a, aTxBuffer, 4, 0xFFFF);
+	//HAL_I2C_Master_Transmit(&hi2c1, 0x5a, aTxBuffer, 4, 0xFFFF);
 	digitaldash_service();
 	lv_timer_handler();
 

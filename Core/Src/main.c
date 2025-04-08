@@ -49,6 +49,7 @@
 #include "ke_digitaldash.h"
 #include "lib_digital_dash.h"
 #include "ke_config.h"
+#include "eeprom_24cw.h"
 
 /* USER CODE END Includes */
 
@@ -104,6 +105,20 @@ static void SystemPower_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// Function to read data from EEPROM
+uint8_t eeprom_read(uint16_t bAdd)
+{
+	return eeprom_24cw_read(&hi2c2, bAdd);
+}
+
+// Function to write data to EEPROM with retries
+void eeprom_write(uint16_t bAdd, uint8_t bData)
+{
+	eeprom_24cw_write(&hi2c2, bAdd, bData);
+}
+
+
 static void switch_screen(struct _lv_obj_t * scr)
 {
 	if( lv_display_get_screen_active(NULL) != scr)
@@ -465,6 +480,10 @@ int main(void)
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
+
+  // Attach EEPROM read and write handlers
+  settings_setReadHandler(eeprom_read);
+  settings_setWriteHandler(eeprom_write);
 
   // Start 1ms timer tick for Digital Dash
   if (HAL_TIM_Base_Start_IT(&htim17) != HAL_OK)

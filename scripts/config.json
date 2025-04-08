@@ -251,7 +251,8 @@
             "options": [
                 "Stock ST",
                 "Grumpy Cat",
-                "Linear"
+                "Linear",
+                "Radial"
             ],
             "limit": "Reserved",
             "EEBytes": 1

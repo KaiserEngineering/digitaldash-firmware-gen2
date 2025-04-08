@@ -381,9 +381,9 @@ void spoof_config(void)
 	set_view_enable(0, VIEW_STATE_ENABLED, false);
 	set_view_num_gauges(0, 3, false);
 	set_view_background(0, VIEW_BACKGROUND_USER1, false);
-	set_view_gauge_theme(0, 0, GAUGE_THEME_STOCK_ST, false);
-	set_view_gauge_theme(0, 1, GAUGE_THEME_GRUMPY_CAT, false);
-	set_view_gauge_theme(0, 2, GAUGE_THEME_STOCK_ST, false);
+	set_view_gauge_theme(0, 0, GAUGE_THEME_RADIAL, false);
+	set_view_gauge_theme(0, 1, GAUGE_THEME_RADIAL, false);
+	set_view_gauge_theme(0, 2, GAUGE_THEME_RADIAL, false);
 	set_view_gauge_pid(0, 0, MODE1_ENGINE_SPEED_UUID, 0);
 	set_view_gauge_units(0, 0, PID_UNITS_RPM, 0);
 	set_view_gauge_pid(0, 1, MODE1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, 0);
@@ -404,7 +404,7 @@ void spoof_config(void)
 	set_dynamic_pid(0, MODE1_ENGINE_SPEED_UUID, false);
 	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, false);
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, false);
-	set_dynamic_threshold(0, 3500, false);
+	set_dynamic_threshold(0, 8000, false);
 	set_dynamic_index(0, 1, false);
 }
 
@@ -765,9 +765,6 @@ int main(void)
 		if( timestamp[active_view_idx][i] != FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp ) {
 			 timestamp[active_view_idx][i] = FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp;
 			 lv_obj_send_event(FordFocusSTRS.view[active_view_idx].gauge[i].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[active_view_idx].gauge[i].pid);
-			 if(( i == 0 ) & (active_view_idx == 1)) {
-				 //lv_bar_set_value(lv_obj_get_child(FordFocusSTRS.view[active_view_idx].gauge[i].obj,1), (int32_t)FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_value, LV_ANIM_OFF);
-			 }
 		}
 
 	}

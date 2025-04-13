@@ -413,10 +413,11 @@ void spoof_config(void)
 
 	// Dynamic
 	set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, true);
-	set_dynamic_pid(0, MODE1_ENGINE_SPEED_UUID, true);
+	set_dynamic_pid(0, CALC1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, true);
+	set_dynamic_units(0, PID_UNITS_PSI, true);
 	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, true);
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, true);
-	set_dynamic_threshold(0, 5000, true);
+	set_dynamic_threshold(0, 5, true);
 	set_dynamic_index(0, 1, true);
 }
 

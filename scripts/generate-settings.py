@@ -476,7 +476,7 @@ def write_save_source( file, prefix, cmd, depth ):
         if( cmd["type"] == "string" ):
            byte_count = 1
            while byte_count <= get_eeprom_size(cmd):
-            file.write("        write(map_"  + prefix + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], " + prefix + "_" + cmd["cmd"].lower() + "[" + index + "]);\n")
+            file.write("        write(map_"  + prefix + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], " + prefix + "_" + cmd["cmd"].lower() + "[" + index + "][" + str(byte_count-1) + "]);\n")
             byte_count = byte_count + 1
         else:
           byte_count = 1

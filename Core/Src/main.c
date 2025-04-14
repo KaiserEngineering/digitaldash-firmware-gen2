@@ -186,7 +186,7 @@ void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	if (HAL_I2C_Slave_Seq_Receive_IT(&hi2c1, &i2c_register_req, sizeof(i2c_register_req), I2C_NEXT_FRAME) != HAL_OK) {
+	if (HAL_I2C_Slave_Seq_Receive_IT(hi2c, i2c_register_req, sizeof(i2c_register_req), I2C_NEXT_FRAME) != HAL_OK) {
 		Error_Handler();
 	}
 }
@@ -513,15 +513,6 @@ int main(void)
 	  /* PWM Generation Error */
 	  Error_Handler();
   }
-
-  aRxBuffer[0]=0x00;
-  aRxBuffer[1]=0x00;
-  aRxBuffer[2]=0x00;
-  aRxBuffer[3]=0x00;
-  aTxBuffer[0]=0xAA;
-  aTxBuffer[1]=0xBB;
-  aTxBuffer[2]=0xCC;
-  aTxBuffer[3]=0xDD;
 
   // Enable the I2C slave connection to the ESP32
   if(HAL_I2C_EnableListen_IT(&hi2c1) != HAL_OK)

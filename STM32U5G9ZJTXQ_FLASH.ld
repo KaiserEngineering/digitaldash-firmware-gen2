@@ -177,7 +177,7 @@ SECTIONS
   }
   .ARM.attributes 0 : { *(.ARM.attributes) }
  /*  Unitialized ExtFlash section into "ExtFlash" ExtFlash type memory [MMT section] */
- .ExtFlash_Section :
+ .ExtFlash_Section (NOLOAD) :
   {
     . = ALIGN(4);
     KEEP (*(.ExtFlash_Section))

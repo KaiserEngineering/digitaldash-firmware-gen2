@@ -581,6 +581,8 @@ for i, struct in enumerate(config["config"]["struct_list"]):
             write_define_load_setting( config_c, struct, cmd, 1)
 config_c.write("\n")
 
+config_c.write("static settings_registers[" + str(TotalByteCount) + "];\n\n")
+
 config_c.write("static settings_write *write;\n")
 config_c.write("static settings_read *read;\n\n")
 config_c.write("void settings_setWriteHandler(settings_write *writeHandler) { write = writeHandler; }\n")

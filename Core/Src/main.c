@@ -63,6 +63,7 @@
 #define FIRMWARE_VERSION "v1.0.0"
 
 static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[1][UI_HOR_RES*UI_VER_RES*3];
+#define XIP_ENABLED 1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -79,6 +80,12 @@ lv_obj_t * ui_alert[MAX_ALERTS];
 lv_obj_t * ui_alert_container[MAX_ALERTS];
 
 uint32_t CAN_Filter_Count = 0;
+
+/* UART RX'd byte */
+static uint8_t rx_byte;
+static int image_byte = 0;
+static int image_size = 0;
+static uint8_t image_buffer[UI_HOR_RES * UI_VER_RES * 4] = {0};
 
 uint8_t active_view_idx = 0;
 
@@ -162,6 +169,24 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 			return 0;  // Return false by default if comparison is invalid
 	}
 }
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if( huart == &huart1 )
+	{
+		/* Echo the UART byte to the ESP32 */
+		//HAL_UART_Transmit_IT( &huart1, &rx_byte, 1 );
+		image_buffer[image_byte++] = rx_byte;
+		if( (image_byte <= 1) & (rx_byte == 0) )
+			image_byte--;
+		//backgrounds_external[0][image_byte] = rx_byte;
+		//image_byte++;
+
+		/* Wait for the next byte */
+		HAL_UART_Receive_IT( &huart1, &rx_byte, 1 );
+	}
+}
+
 
 /**
   * @brief  Tx Transfer completed callback.
@@ -387,7 +412,7 @@ void spoof_config(void)
 	// View 0
 	set_view_enable(0, VIEW_STATE_ENABLED, true);
 	set_view_num_gauges(0, 3, true);
-	set_view_background(0, VIEW_BACKGROUND_BLACK, true);
+	set_view_background(0, VIEW_BACKGROUND_USER1, true);
 	set_view_gauge_theme(0, 0, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 1, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 2, GAUGE_THEME_RADIAL, true);
@@ -401,18 +426,18 @@ void spoof_config(void)
 	// View 1
 	set_view_enable(1, VIEW_STATE_ENABLED, true);
 	set_view_num_gauges(1, 1, true);
-	set_view_background(1, VIEW_BACKGROUND_BLACK, true);
+	set_view_background(1, VIEW_BACKGROUND_USER1, true);
 	set_view_gauge_theme(1, 0, GAUGE_THEME_LINEAR, true);
 	set_view_gauge_pid(1, 0, MODE1_ENGINE_SPEED_UUID, true);
 	set_view_gauge_units(1, 0, PID_UNITS_RPM, true);
 
 	// Dynamic
 	set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, true);
-	set_dynamic_pid(0, CALC1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, true);
-	set_dynamic_units(0, PID_UNITS_PSI, true);
+	set_dynamic_pid(0, MODE1_ENGINE_SPEED_UUID, true);
+	set_dynamic_units(0, PID_UNITS_RPM, true);
 	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, true);
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, true);
-	set_dynamic_threshold(0, 5, true);
+	set_dynamic_threshold(0, 3000, true);
 	set_dynamic_index(0, 1, true);
 }
 
@@ -478,6 +503,9 @@ int main(void)
   settings_setReadHandler(eeprom_read);
   settings_setWriteHandler(eeprom_write);
 
+  // Enable UART interrupt
+  HAL_UART_Receive_IT( &huart1, &rx_byte, 1 );
+
   // Load all settings from EEPROM
   load_settings();
 
@@ -504,10 +532,13 @@ int main(void)
   }
   */
 
+#if XIP_ENABLED
   if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
   {
 	while(1){}
   }
+#endif
+
 
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2U * 50);
   if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4) != HAL_OK)
@@ -574,14 +605,16 @@ int main(void)
 		  lv_image_dsc_t * img = NULL;
 		  lv_color_t color = {0};
 
+#if XIP_ENABLED
 		  lv_image_dsc_t ext_background = {
-		    .header.cf = LV_COLOR_FORMAT_RGB888,
+		    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
 		    .header.magic = LV_IMAGE_HEADER_MAGIC,
 		    .header.w = UI_HOR_RES,
 		    .header.h = UI_VER_RES,
-		    .data_size = sizeof(backgrounds_external[0]),
-		    .data = backgrounds_external[0],
+		    .data_size = UI_HOR_RES * UI_VER_RES * 3,
+		    .data = (const uint8_t *)backgrounds_external[0],
 		  };
+#endif
 
 		  switch( FordFocusSTRS.view[view].background )
 		  {
@@ -591,9 +624,14 @@ int main(void)
 				  break;
 
 			  case VIEW_BACKGROUND_USER1:
+#if XIP_ENABLED
 				  img = &ext_background;
+				  color.red = img->data[0];
+				  color.green = img->data[1];
+				  color.blue = img->data[2];
 				  is_image = 1;
 				  break;
+#endif
 
 			  case VIEW_BACKGROUND_BLACK:
 			  default:
@@ -732,6 +770,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+#if !XIP_ENABLED
+	image_size = 1024*25*3;
+	if( image_byte >= image_size )
+	{
+		BSP_HSPI_NOR_Erase_Chip(0);
+		while( BSP_HSPI_NOR_GetStatus(0) != BSP_ERROR_NONE) {
+			HAL_Delay(50);
+		}
+		BSP_HSPI_NOR_Write(0, image_buffer, 0, image_size);
+		image_byte = 0;
+	}
+#endif
+
 	//HAL_I2C_Master_Transmit(&hi2c1, 0x5a, aTxBuffer, 4, 0xFFFF);
 	digitaldash_service();
 	lv_timer_handler();

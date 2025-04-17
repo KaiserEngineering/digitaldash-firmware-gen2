@@ -64,6 +64,9 @@
 
 static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[1][UI_HOR_RES*UI_VER_RES*3];
 #define XIP_ENABLED 1
+
+#define BKLT_MIN_DUTY 3
+#define BKLT_MAX_DUTY 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -372,10 +375,10 @@ static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
 
 static void LCD_Brightness( uint8_t brightness )
 {
-	if( brightness > 0 )
-		HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
-	else
-		HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_RESET);
+	//if( brightness > 0 )
+		//HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_SET);
+	//else
+		//HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_RESET);
 }
 
 static void esp32_reset( HOST_PWR_STATE state )
@@ -412,7 +415,7 @@ void spoof_config(void)
 	// View 0
 	set_view_enable(0, VIEW_STATE_ENABLED, true);
 	set_view_num_gauges(0, 3, true);
-	set_view_background(0, VIEW_BACKGROUND_USER1, true);
+	set_view_background(0, VIEW_BACKGROUND_BLACK, true);
 	set_view_gauge_theme(0, 0, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 1, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 2, GAUGE_THEME_RADIAL, true);
@@ -484,7 +487,6 @@ int main(void)
   MX_ICACHE_Init();
   MX_LTDC_Init();
   MX_RTC_Init();
-  MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_GPU2D_Init();
   MX_FLASH_Init();
@@ -494,6 +496,7 @@ int main(void)
   MX_TIM17_Init();
   MX_I2C1_Init();
   MX_SPI3_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
@@ -540,8 +543,7 @@ int main(void)
 #endif
 
 
-  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2U * 50);
-  if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4) != HAL_OK)
+  if (HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2) != HAL_OK)
   {
 	  /* PWM Generation Error */
 	  Error_Handler();
@@ -821,6 +823,10 @@ int main(void)
 	for( uint8_t i = 0; i < FordFocusSTRS.view[active_view_idx].num_gauges; i++) {
 		if( timestamp[active_view_idx][i] != FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp ) {
 			 timestamp[active_view_idx][i] = FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp;
+			 if( FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_uuid == MODE1_ENGINE_SPEED_UUID )
+			 {
+				 __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, 32*(uint32_t)FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_value);
+			 }
 			 lv_obj_send_event(FordFocusSTRS.view[active_view_idx].gauge[i].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[active_view_idx].gauge[i].pid);
 		}
 

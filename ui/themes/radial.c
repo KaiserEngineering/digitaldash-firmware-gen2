@@ -8,6 +8,8 @@
 #include "themes.h"
 
 #define ARC_THICKNESS 15
+#define RADIAL_START_ANGLE 180
+#define RADIAL_END_ANGLE 0
 
 static void event_cb(lv_event_t * e)
 {
@@ -57,7 +59,7 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA *
                        LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
     lv_arc_set_range(needle, pid->lower_limit, pid->upper_limit);
     lv_arc_set_value(needle, pid->pid_value);
-    lv_arc_set_bg_angles(needle, 175, 5);
+    lv_arc_set_bg_angles(needle, RADIAL_START_ANGLE, RADIAL_END_ANGLE);
     lv_obj_set_style_arc_color(needle, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_arc_opa(needle, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_arc_width(needle, ARC_THICKNESS, LV_PART_MAIN | LV_STATE_DEFAULT);

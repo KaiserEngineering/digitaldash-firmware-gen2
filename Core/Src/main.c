@@ -535,6 +535,7 @@ int main(void)
 #endif
 
 
+  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, 6400);
   if (HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2) != HAL_OK)
   {
 	  /* PWM Generation Error */
@@ -815,10 +816,6 @@ int main(void)
 	for( uint8_t i = 0; i < FordFocusSTRS.view[active_view_idx].num_gauges; i++) {
 		if( timestamp[active_view_idx][i] != FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp ) {
 			 timestamp[active_view_idx][i] = FordFocusSTRS.view[active_view_idx].gauge[i].pid->timestamp;
-			 if( FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_uuid == MODE1_ENGINE_SPEED_UUID )
-			 {
-				 __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, 32*(uint32_t)FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_value);
-			 }
 			 lv_obj_send_event(FordFocusSTRS.view[active_view_idx].gauge[i].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[active_view_idx].gauge[i].pid);
 		}
 

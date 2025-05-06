@@ -71,6 +71,7 @@ static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used))
 #define BKLT_TIM_CHANNEL TIM_CHANNEL_2
 
 #define ESP32_UART ESP32_UART /* ESP32 communication channel */
+#define ESP32_I2C ESP32_I2C /* ESP32 to STM32 I2C channel */
 #define EEPROM_I2C &hi2c2 /* EEPROM I2C channel */
 /* USER CODE END PD */
 
@@ -225,7 +226,7 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
   * @retval None
   */
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode) {
-	if( hi2c == &hi2c1 ) {
+	if( hi2c == ESP32_I2C ) {
 		if (TransferDirection == I2C_DIRECTION_TRANSMIT) {
 			if (HAL_I2C_Slave_Seq_Receive_IT(hi2c, i2c_register_req, sizeof(i2c_register_req), I2C_FIRST_FRAME) != HAL_OK) {
 				Error_Handler();
@@ -548,7 +549,7 @@ int main(void)
   }
 
   // Enable the I2C slave connection to the ESP32
-  if(HAL_I2C_EnableListen_IT(&hi2c1) != HAL_OK)
+  if(HAL_I2C_EnableListen_IT(ESP32_I2C) != HAL_OK)
   {
     /* Transfer error in reception process */
     Error_Handler();
@@ -783,7 +784,7 @@ int main(void)
 	}
 #endif
 
-	//HAL_I2C_Master_Transmit(&hi2c1, 0x5a, aTxBuffer, 4, 0xFFFF);
+	//HAL_I2C_Master_Transmit(ESP32_I2C, 0x5a, aTxBuffer, 4, 0xFFFF);
 	digitaldash_service();
 	lv_timer_handler();
 

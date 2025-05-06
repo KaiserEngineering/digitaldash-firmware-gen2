@@ -67,6 +67,10 @@ static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used))
 
 #define BKLT_MIN_DUTY 3
 #define BKLT_MAX_DUTY 100
+#define BKLT_TIM &htim15
+#define BKLT_TIM_CHANNEL TIM_CHANNEL_2
+
+#define ESP32_UART ESP32_UART /* ESP32 communication channel */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -535,8 +539,8 @@ int main(void)
 #endif
 
 
-  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, 6400);
-  if (HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2) != HAL_OK)
+  __HAL_TIM_SET_COMPARE(BKLT_TIM, BKLT_TIM_CHANNEL, 6400);
+  if (HAL_TIM_PWM_Start(BKLT_TIM, BKLT_TIM_CHANNEL) != HAL_OK)
   {
 	  /* PWM Generation Error */
 	  Error_Handler();

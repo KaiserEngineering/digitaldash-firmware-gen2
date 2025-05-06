@@ -167,10 +167,10 @@ uint8_t compare_values(float a, float b, digitaldash_compare comparison)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if( huart == &huart1 )
+	if( huart == ESP32_UART )
 	{
 		/* Echo the UART byte to the ESP32 */
-		//HAL_UART_Transmit_IT( &huart1, &rx_byte, 1 );
+		//HAL_UART_Transmit_IT( ESP32_UART, &rx_byte, 1 );
 		image_buffer[image_byte++] = rx_byte;
 		if( (image_byte <= 1) & (rx_byte == 0) )
 			image_byte--;
@@ -178,7 +178,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		//image_byte++;
 
 		/* Wait for the next byte */
-		HAL_UART_Receive_IT( &huart1, &rx_byte, 1 );
+		HAL_UART_Receive_IT( ESP32_UART, &rx_byte, 1 );
 	}
 }
 
@@ -499,7 +499,7 @@ int main(void)
   settings_setWriteHandler(eeprom_write);
 
   // Enable UART interrupt
-  HAL_UART_Receive_IT( &huart1, &rx_byte, 1 );
+  HAL_UART_Receive_IT( ESP32_UART, &rx_byte, 1 );
 
   // Load all settings from EEPROM
   load_settings();

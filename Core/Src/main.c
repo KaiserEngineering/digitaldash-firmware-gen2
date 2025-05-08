@@ -229,10 +229,13 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode) {
 	if( hi2c == ESP32_I2C ) {
+		// Write
 		if (TransferDirection == I2C_DIRECTION_TRANSMIT) {
 			if (HAL_I2C_Slave_Seq_Receive_IT(hi2c, i2c_register_req, sizeof(i2c_register_req), I2C_FIRST_FRAME) != HAL_OK) {
 				Error_Handler();
 			}
+
+		// Read
 		} else {
 			uint16_t reg = (i2c_register_req[0] << 8) | i2c_register_req[1];
 			uint8_t value = eeprom_read(reg);

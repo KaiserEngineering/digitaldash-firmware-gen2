@@ -349,11 +349,9 @@ void HAL_FDCAN_RxFifo1MsgPendingCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t R
 
 static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
 {
-
 	if( !IS_FDCAN_DLC(len) ) {
 		Error_Handler();
 	}
-
 	FDCAN_TxHeaderTypeDef Header = {
 	           .Identifier          = 0x7E0,
 	           .IdType              = FDCAN_STANDARD_ID,
@@ -385,6 +383,16 @@ static void LCD_Brightness( uint8_t brightness )
 		//HAL_GPIO_WritePin(BLKT_EN_GPIO_Port, BLKT_EN_Pin, GPIO_PIN_RESET);
 }
 
+/**
+ * @brief Controls the reset line for the ESP32 host device.
+ *
+ * This function sets or clears the ESP32 reset pin based on the specified power state.
+ * When `HOST_PWR_ENABLED` is passed, the reset pin is driven high to allow the ESP32
+ * to run. When any other state is passed, the reset pin is driven low to reset or hold
+ * the ESP32 in reset.
+ *
+ * @param state Desired power state for the ESP32 (e.g., `HOST_PWR_ENABLED` or `HOST_PWR_DISABLED`).
+ */
 static void esp32_reset( HOST_PWR_STATE state )
 {
 	if( state == HOST_PWR_ENABLED )
@@ -393,7 +401,20 @@ static void esp32_reset( HOST_PWR_STATE state )
 		HAL_GPIO_WritePin(ESP32_RESET_N_GPIO_Port, ESP32_RESET_N_Pin, GPIO_PIN_RESET);
 }
 
-uint8_t dynamic_gauge_check( digitaldash *dash, uint8_t idx )
+/**
+ * @brief Checks if a dynamic gauge condition is met and returns the corresponding view index.
+ *
+ * This function evaluates a condition for a dynamic gauge defined in the given
+ * `digitaldash` instance. It compares the current PID value against a threshold
+ * using the specified comparison operator. If the condition is met, it returns
+ * the associated view index to display. Otherwise, it returns 0.
+ *
+ * @param dash Pointer to the `digitaldash` structure containing dynamic gauge definitions.
+ * @param idx  Index of the dynamic gauge to check.
+ *
+ * @return The view index to display if the condition is true, or 0 if not.
+ */
+int8_t dynamic_gauge_check( digitaldash *dash, uint8_t idx )
 {
 	if( compare_values(dash->dynamic[idx].pid->pid_value, dash->dynamic[idx].thresh, dash->dynamic[idx].compare) ) {
 		return dash->dynamic[idx].view_index;

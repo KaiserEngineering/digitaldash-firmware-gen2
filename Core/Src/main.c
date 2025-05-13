@@ -494,6 +494,12 @@ void spoof_config(void)
 	set_dynamic_threshold(0, 3000, true);
 	set_dynamic_index(0, 1, true);
 
+	// Alert 0
+	set_alert_enable(0, ALERT_STATE_ENABLED, true );
+	set_alert_pid(0, MODE1_ENGINE_SPEED_UUID, true );
+	set_alert_units(0, PID_UNITS_RPM, true );
+	set_alert_compare(0, ALERT_COMPARISON_GREATER_THAN_OR_EQUAL_TO, true );
+	set_alert_threshold(0, 6500, true );
 	char msg[64] = "This is a tesst of the EEPROM string saving";
 	set_alert_message(0, msg, true);
 }

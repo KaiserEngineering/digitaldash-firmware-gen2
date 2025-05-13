@@ -127,11 +127,22 @@ void eeprom_write(uint16_t bAdd, uint8_t bData)
 }
 
 
-static void switch_screen(struct _lv_obj_t * scr)
+static void switch_view(uint8_t idx)
 {
-	if( lv_display_get_screen_active(NULL) != scr)
+	// Check if the selected view is hidden
+	if( lv_obj_has_flag(ui_view[idx], LV_OBJ_FLAG_HIDDEN) )
 	{
-		lv_screen_load(scr);
+		// Hide all views except the active
+		for( uint8_t i = 0; i < MAX_VIEWS; i++)
+		{
+			if( ui_view[i] == NULL )
+				continue;  // Skip null entries
+			else if( i == idx )
+				lv_obj_remove_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+			else
+				lv_obj_add_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+		}
+
 	}
 }
 

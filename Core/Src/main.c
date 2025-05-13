@@ -446,6 +446,9 @@ void spoof_config(void)
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, true);
 	set_dynamic_threshold(0, 3000, true);
 	set_dynamic_index(0, 1, true);
+
+	char msg[64] = "This is a tesst of the EEPROM string saving";
+	set_alert_message(0, msg, true);
 }
 
 

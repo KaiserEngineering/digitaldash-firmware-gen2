@@ -243,7 +243,7 @@ def write_set_source(file, prefix, cmd, depth):
     file.write("        // Reload the current setting saved in EEPROM\n")
     file.write("        load_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + output + ");\n\n")
     file.write("        if (settings_" + prefix + "_" + cmd["cmd"].lower() + var + " != " + prefix.lower() + "_" + cmd["cmd"].lower() + ")\n        {\n")
-    file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", " + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
+    file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
     file.write("        }\n")
     file.write("    }\n\n")
 
@@ -433,46 +433,27 @@ def write_save_source( file, prefix, cmd, depth ):
     else:
       index = "idx"
 
-    if( cmd["type"] == "string" ):
-       pointer = "*"
-    else:
-       pointer = ""
-
     if cmd["index"]:
         if( depth == 2 ):
-          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"] + " " + prefix + "_" + cmd["cmd"].lower() + ")\n")
+          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx_" + prefix.lower().split('_')[0] + ", uint8_t idx_" + prefix.lower().split('_')[1] + ", " + cmd["dataType"] + " *" + prefix + "_" + cmd["cmd"].lower() + ")\n")
         else:
-          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx, " + cmd["dataType"] + pointer + " " + prefix + "_" + cmd["cmd"].lower() + ")\n")
+          file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(uint8_t idx, " + cmd["dataType"] + " *" + prefix + "_" + cmd["cmd"].lower() + ")\n")
     else:
-        file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(" + cmd["dataType"] + pointer + " " + prefix + "_" + cmd["cmd"].lower()  + ")\n")
+        file.write( "static void save_" + prefix + "_" + cmd["cmd"].lower() + "(" + cmd["dataType"] + " *" + prefix + "_" + cmd["cmd"].lower()  + ")\n")
 
     file.write( "{\n")
     
     # Only values that are saved in EEPROM need to be added
     if( get_eeprom_size(cmd) > 0 ):
-        file.write("    if (" + eeprom_status_check + ")\n    {\n");
-        if( cmd["type"] == "string" ):
-           byte_count = 1
-           while byte_count <= get_eeprom_size(cmd):
-            file.write("        write_eeprom(map_"  + prefix + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], " + prefix + "_" + cmd["cmd"].lower() + "[" + str(byte_count-1) + "]);\n")
-            byte_count = byte_count + 1
-        else:
-          byte_count = 1
-          while byte_count <= get_eeprom_size(cmd):
-              offset = (get_eeprom_size(cmd)-byte_count)*8
-              if offset > 0:
-                  if( cmd["index"] ):
-                    file.write("        write_eeprom(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], (" + input + " >> " + str(offset) + ") & 0xFF);\n")
-                  else:
-                    file.write("        write(EEPROM_" + cmd["cmd"].upper() + str(byte_count) + ", (" + input + " >> " + str(offset) + ") & 0xFF);\n")
-              else:
-                  if( cmd["index"] ):
-                    file.write("        write_eeprom(map_" + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], " + input + " & 0xFF);\n")
-                  else:
-                    file.write("        write(EEPROM_" + cmd["cmd"].upper() + str(byte_count) + ", " + input + " & 0xFF);\n")
-              byte_count = byte_count + 1
+        file.write( "    uint8_t bytes[EE_SIZE_" + prefix.upper() + "_" + cmd["cmd"].upper() + "];\n\n" )
+        file.write("    memcpy(bytes, " + prefix.lower() + "_" + cmd["cmd"].lower() + ", EE_SIZE_" + prefix.upper() + "_" + cmd["cmd"].upper() + ");\n\n")
+        #file.write("    if (" + eeprom_status_check + ")\n    {\n");
+        byte_count = 1
+        while byte_count <= get_eeprom_size(cmd):
+          file.write("    write_eeprom(map_"  + prefix.lower() + "_" + cmd["cmd"].lower() + "_byte" + str(byte_count) + "[" + index + "], bytes[" + str(get_eeprom_size(cmd) - byte_count) + "]);\n")
+          byte_count = byte_count + 1
 
-        file.write("    }\n");
+          #file.write("    }\n");
 
         byte_count = 1
         #define EEPROM byte offset

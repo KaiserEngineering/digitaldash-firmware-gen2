@@ -716,6 +716,8 @@ int main(void)
 				  break;
 		  }
 
+		  lv_obj_set_style_bg_opa(ui_view[view], LV_OPA_COVER, LV_PART_MAIN);
+
 		  if( is_image )
 			  lv_obj_set_style_bg_image_src(ui_view[view], img, LV_PART_MAIN | LV_STATE_DEFAULT);
 		  else

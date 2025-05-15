@@ -504,6 +504,106 @@ void spoof_config(void)
 	set_alert_message(0, msg, true);
 }
 
+/**
+ * @brief  Initialize the external NOR flash memory.
+ *
+ * This function initializes the NOR flash connected via HSPI using
+ * Octo-SPI interface mode and DTR (Double Transfer Rate) for high-speed
+ * operation.
+ *
+ * If XIP (Execute In Place) is enabled via the XIP_ENABLED macro,
+ * the function also enables memory-mapped mode to allow code execution
+ * directly from external flash.
+ *
+ * @note   Assumes BSP and hardware configuration are compatible with the
+ *         MX25LM51245G flash memory.
+ *
+ * @retval None
+ */
+void flash_init(void)
+{
+	BSP_HSPI_NOR_Init_t hspi_init;
+	hspi_init.InterfaceMode = MX25LM51245G_OPI_MODE;
+	hspi_init.TransferRate = MX25LM51245G_DTR_TRANSFER;
+
+	if( BSP_HSPI_NOR_Init(0, &hspi_init) != BSP_ERROR_NONE )
+		Error_Handler();
+
+	#if XIP_ENABLED
+	if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
+		Error_Handler();
+	#endif
+}
+
+/**
+ * @brief  Initialize the LCD backlight using PWM.
+ *
+ * This function sets the PWM duty cycle to control the brightness
+ * of the LCD backlight and starts the PWM signal on the specified
+ * timer and channel.
+ *
+ * @note   Assumes BKLT_TIM and BKLT_TIM_CHANNEL are properly configured.
+ *
+ * @retval None
+ */
+void backlight_init(void)
+{
+	__HAL_TIM_SET_COMPARE(BKLT_TIM, BKLT_TIM_CHANNEL, 6400);
+	if (HAL_TIM_PWM_Start(BKLT_TIM, BKLT_TIM_CHANNEL) != HAL_OK) {
+		Error_Handler();
+	}
+}
+
+/**
+ * @brief  Initialize and start the FDCAN peripheral.
+ *
+ * This function configures the external CAN bus (EXT_CAN_BUS) for operation
+ * using the FDCAN peripheral. It sets up filtering, interrupts, and starts
+ * the FDCAN module.
+ *
+ * The configuration includes:
+ * - Setting the global filter to reject all non-matching standard/extended
+ *   and remote frames.
+ * - Configuring interrupt lines for RX FIFO 0.
+ * - Enabling notifications for new messages in RX FIFO 0 and RX FIFO 1.
+ * - Starting the FDCAN module.
+ *
+ * If any step fails, the function calls Error_Handler().
+ *
+ * @note The interrupt configuration and activation appear to be duplicated;
+ *       ensure this is intentional or consider removing the redundancy.
+ *
+ * @retval None
+ */
+void CAN_Init(void)
+{
+	/* Configure global filter to reject all non-matching frames */
+	HAL_FDCAN_ConfigGlobalFilter(EXT_CAN_BUS, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
+
+	if( HAL_FDCAN_ConfigInterruptLines(EXT_CAN_BUS, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
+		Error_Handler();
+	}
+
+	/* Activate Interrupts */
+	if( HAL_FDCAN_ActivateNotification(EXT_CAN_BUS, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
+		Error_Handler();
+	}
+
+	/* Start the FDCAN module */
+	if (HAL_FDCAN_Start(EXT_CAN_BUS) != HAL_OK) {
+		Error_Handler();
+	}
+
+	if( HAL_FDCAN_ConfigInterruptLines(EXT_CAN_BUS, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
+		Error_Handler();
+	}
+
+	/* Activate Interrupts */
+	if( HAL_FDCAN_ActivateNotification(EXT_CAN_BUS, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
+		Error_Handler();
+	}
+}
+
 
 /* USER CODE END 0 */
 
@@ -573,47 +673,24 @@ int main(void)
   load_settings();
 
   // Start 1ms timer tick for Digital Dash
-  if (HAL_TIM_Base_Start_IT(&htim17) != HAL_OK)
+  if (HAL_TIM_Base_Start_IT(&htim17) != HAL_OK) {
       Error_Handler();
+  }
 
   // Spoof a config if EEPROM isn't present
- spoof_config();
+  spoof_config();
 
-  BSP_HSPI_NOR_Init_t hspi_init;
-  hspi_init.InterfaceMode = MX25LM51245G_OPI_MODE;
-  hspi_init.TransferRate = MX25LM51245G_DTR_TRANSFER;
+  // Initialize the external flash
+  flash_init();
 
-  if( BSP_HSPI_NOR_Init(0, &hspi_init) != BSP_ERROR_NONE )
-  {
-	  while(1){}
-  }
+  // Initialize the CAN bus
+  CAN_Init();
 
-  /*
-  if( BSP_HSPI_NOR_Write(0, ui_img_flare_png.data, (uint32_t)&backgrounds_external[0], sizeof(backgrounds_external[0])) != BSP_ERROR_NONE )
-  {
-	while(1){}
-  }
-  */
-
-#if XIP_ENABLED
-  if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
-  {
-	while(1){}
-  }
-#endif
-
-
-  __HAL_TIM_SET_COMPARE(BKLT_TIM, BKLT_TIM_CHANNEL, 6400);
-  if (HAL_TIM_PWM_Start(BKLT_TIM, BKLT_TIM_CHANNEL) != HAL_OK)
-  {
-	  /* PWM Generation Error */
-	  Error_Handler();
-  }
+  // Initialize the backlight
+  backlight_init();
 
   // Enable the I2C slave connection to the ESP32
-  if(HAL_I2C_EnableListen_IT(ESP32_I2C) != HAL_OK)
-  {
-    /* Transfer error in reception process */
+  if(HAL_I2C_EnableListen_IT(ESP32_I2C) != HAL_OK) {
     Error_Handler();
   }
 
@@ -621,32 +698,6 @@ int main(void)
   lv_disp_t * dispp = lv_display_get_default();
   lv_theme_t * theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), true, LV_FONT_DEFAULT);
   lv_disp_set_theme(dispp, theme);
-
-  /* Configure global filter to reject all non-matching frames */
-  HAL_FDCAN_ConfigGlobalFilter(EXT_CAN_BUS, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
-
-  if( HAL_FDCAN_ConfigInterruptLines(EXT_CAN_BUS, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
-	  Error_Handler();
-  }
-
-  /* Activate Interrupts */
-  if( HAL_FDCAN_ActivateNotification(EXT_CAN_BUS, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
-	  Error_Handler();
-  }
-
-  /* Start the FDCAN module */
-  if (HAL_FDCAN_Start(EXT_CAN_BUS) != HAL_OK) {
-    Error_Handler();
-  }
-
-  if( HAL_FDCAN_ConfigInterruptLines(EXT_CAN_BUS, FDCAN_IT_GROUP_RX_FIFO0, FDCAN_INTERRUPT_LINE0) != HAL_OK ) {
-	  Error_Handler();
-  }
-
-  /* Activate Interrupts */
-  if( HAL_FDCAN_ActivateNotification(EXT_CAN_BUS, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0) != HAL_OK ) {
-	  Error_Handler();
-  }
 
   Digitaldash_Init();
 

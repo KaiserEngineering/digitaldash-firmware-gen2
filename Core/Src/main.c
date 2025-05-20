@@ -914,9 +914,12 @@ int main(void)
 	/* Check for dynamic gauge change */
 	active_view_idx = dynamic_gauge_check(&FordFocusSTRS, 0);
 
+	/* Switch to the active view, this can be called each loop. A check will
+	 * be made to ensure that the screen is only re-loaded if it is not active. */
 	if( FordFocusSTRS.view[active_view_idx].enabled )
 		switch_view(active_view_idx);
 
+	/* Parse through each alert and check if it needs to be activated */
 	for(uint8_t idx = 0; idx < MAX_ALERTS; idx++)
 	{
 		if( FordFocusSTRS.alert[idx].enabled == ALERT_STATE_DISABLED ) {

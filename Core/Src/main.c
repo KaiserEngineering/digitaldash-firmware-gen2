@@ -102,6 +102,10 @@ uint8_t active_view_idx = 0;
 #define EEPROM_ADDRESS_SIZE 2
 uint8_t i2c_register_req[EEPROM_ADDRESS_SIZE] = {0};
 
+// You cannot search hardware filters by ID directly, therefore maintain a map of filter indexes and their IDs.
+#define CAN_FILTER_UNUSED 0x0000
+uint16_t can_filters[MAX_CAN_FILTERS] = {CAN_FILTER_UNUSED};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -293,7 +297,7 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 	HAL_I2C_EnableListen_IT(hi2c);
 }
 
-HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, uint32_t FIFO  )
+HAL_StatusTypeDef can_filter_add( uint32_t id, uint32_t mask, uint32_t filterIndex, uint32_t FIFO  )
 {
 	HAL_StatusTypeDef status = HAL_OK;
 
@@ -310,7 +314,7 @@ HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, 
 	FDCAN_FilterTypeDef  sFilterConfig;
 
 	/* Verify the filter bank is possible */
-	if ( ( filterIndex >= 0 ) && ( filterIndex < 28 ) )
+	if ( ( filterIndex >= 0 ) && ( filterIndex < MAX_CAN_FILTERS ) )
 		sFilterConfig.FilterIndex = filterIndex;
 	else
 		return -1;
@@ -328,12 +332,73 @@ HAL_StatusTypeDef can_filter( uint32_t id, uint32_t mask, uint32_t filterIndex, 
 	if( status != HAL_OK )
 		return status;
 
+	// The CAN Filter return HAL_OK, log it in the can_filters map.
+	can_filters[filterIndex] = id;
+
 	return HAL_FDCAN_Start(EXT_CAN_BUS);
+}
+
+HAL_StatusTypeDef can_filter_remove( uint32_t id, uint32_t mask )
+{
+	HAL_StatusTypeDef status = HAL_OK;
+
+	// Stop the CAN controller if it's not already reset
+	if( HAL_FDCAN_GetState(EXT_CAN_BUS) != HAL_FDCAN_STATE_RESET ) {
+		status = HAL_FDCAN_Stop(EXT_CAN_BUS);
+
+		// Abort is CAN couldn't be stopped
+		if( status != HAL_OK )
+			return status;
+	}
+
+	uint32_t filterIndex = 0xFFFF;
+
+	// Search for the ID
+	for( uint32_t idx = 0; idx < MAX_CAN_FILTERS; idx++ )
+	{
+		if( can_filters[idx] == id ) {
+			filterIndex = idx;
+			break;  // Stop searching once found
+		}
+	}
+
+	// The ID was not found
+	if( filterIndex == 0xFFFF )
+		return HAL_ERROR;
+
+
+    // Prepare filter config to disable the filter
+    FDCAN_FilterTypeDef sFilterConfig;
+    sFilterConfig.FilterIndex  = filterIndex;
+    sFilterConfig.FilterConfig = FDCAN_FILTER_DISABLE;
+    sFilterConfig.FilterType   = FDCAN_FILTER_MASK;     // Doesn't matter when disabling
+    sFilterConfig.IdType       = FDCAN_STANDARD_ID;
+    sFilterConfig.FilterID1    = 0;
+    sFilterConfig.FilterID2    = 0;
+
+    status = HAL_FDCAN_ConfigFilter(EXT_CAN_BUS, &sFilterConfig);
+    if (status != HAL_OK)
+        return status;
+
+    // The CAN Filter return HAL_OK, remove it in the can_filters map.
+    can_filters[filterIndex] = CAN_FILTER_UNUSED;
+
+    return HAL_FDCAN_Start(EXT_CAN_BUS);
 }
 
 void Add_CAN_Filter( uint16_t id )
 {
-	can_filter( id, 0x7FF, CAN_Filter_Count++, FDCAN_FILTER_TO_RXFIFO0 );
+	if( CAN_Filter_Count < MAX_CAN_FILTERS ) {
+		can_filter_add( id, 0x7FF, CAN_Filter_Count++, FDCAN_FILTER_TO_RXFIFO0 ); // TODO add error handling
+	}
+}
+
+void Remove_CAN_Filter( uint16_t id )
+{
+	if( CAN_Filter_Count > 0 ) {
+		can_filter_remove( id, 0x7FF );
+		CAN_Filter_Count--;
+	}
 }
 
 void process_can_packet( FDCAN_HandleTypeDef *hfdcan, uint32_t fifo )

@@ -74,6 +74,7 @@ typedef enum _ecu_comm {
 #define ECU_RX_ID            (uint16_t)0x7E8
 #define ECU_DLC              (uint8_t)0x08
 #define ECU_TIMEOUT          (uint32_t)1000
+#define MAX_CAN_FILTERS       28
 
 /********************************************************************
 * UART Configuration                                                *

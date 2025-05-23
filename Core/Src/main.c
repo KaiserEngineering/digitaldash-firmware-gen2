@@ -862,21 +862,11 @@ int main(void)
 
 			  // Get PID universally unique ID, PID, and mode
 			  pid_req.pid_uuid = get_view_gauge_pid(view, gauge);
-			  pid_req.pid = get_pid_by_uuid(pid_req.pid_uuid);
-			  pid_req.mode = get_mode_by_uuid(pid_req.pid_uuid);
 
 			  // Load the unit and default to base unit if error
 			  pid_req.pid_unit = get_view_gauge_units(view, gauge);
 			  if( pid_req.pid_unit == PID_UNITS_RESERVED )
 				  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
-
-			  // Load the labels
-			  get_pid_label(pid_req.pid_uuid, pid_req.label);
-			  get_unit_label(pid_req.pid_unit, pid_req.unit_label);
-
-			  pid_req.lower_limit = get_pid_lower_limit(pid_req.pid_uuid ,pid_req.pid_unit);
-			  pid_req.upper_limit = get_pid_upper_limit(pid_req.pid_uuid ,pid_req.pid_unit);
-			  pid_req.precision = get_pid_precision(pid_req.pid_uuid ,pid_req.pid_unit);
 
 			  // Start the PID stream and save the pointer
 			  FordFocusSTRS.view[view].gauge[gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req );
@@ -904,8 +894,6 @@ int main(void)
 
 		  // Get PID universally unique ID, PID, and mode
 		  pid_req.pid_uuid = get_dynamic_pid(idx);
-		  pid_req.pid = get_pid_by_uuid(pid_req.pid_uuid);
-		  pid_req.mode = get_mode_by_uuid(pid_req.pid_uuid);
 
 		  // Load the unit and default to base unit if error
 		  pid_req.pid_unit = get_dynamic_units(idx);
@@ -926,8 +914,6 @@ int main(void)
 		  PID_DATA pid_req;
 
 		  pid_req.pid_uuid = get_alert_pid(idx);
-		  pid_req.pid = get_pid_by_uuid(pid_req.pid_uuid);
-		  pid_req.mode = get_mode_by_uuid(pid_req.pid_uuid);
 
 		  // Load the unit and default to base unit if error
 		  pid_req.pid_unit = get_alert_units(idx);

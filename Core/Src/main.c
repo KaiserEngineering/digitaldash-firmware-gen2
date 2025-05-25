@@ -936,6 +936,7 @@ int main(void)
   switch_view(0);
 
   add_alert(ui_screen);
+  lv_timer_handler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -956,8 +957,8 @@ int main(void)
 #endif
 
 	//HAL_I2C_Master_Transmit(ESP32_I2C, 0x5a, aTxBuffer, 4, 0xFFFF);
-	digitaldash_service();
 	lv_timer_handler();
+	digitaldash_service();
 
 	/* Log min/max values */
 	for( uint8_t idx = 0; idx < FordFocusSTRS.num_views; idx++) {

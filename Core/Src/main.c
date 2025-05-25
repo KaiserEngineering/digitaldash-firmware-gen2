@@ -137,6 +137,13 @@ void eeprom_write(uint16_t bAdd, uint8_t bData)
 	eeprom_24cw_write(EEPROM_I2C, bAdd, bData);
 }
 
+static void switch_screen(struct _lv_obj_t * scr)
+{
+	if( lv_display_get_screen_active(NULL) != scr)
+	{
+		lv_screen_load(scr);
+	}
+}
 
 static void switch_view(uint8_t idx)
 {
@@ -777,6 +784,8 @@ int main(void)
   // Create the splash screen
   splash_screen = lv_obj_create(NULL);
   lv_obj_remove_flag(splash_screen, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_style_bg_color(splash_screen, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_set_style_bg_opa(splash_screen, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
   lv_obj_t * label;
   label = lv_label_create(splash_screen);

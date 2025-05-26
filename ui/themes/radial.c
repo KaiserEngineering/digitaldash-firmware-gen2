@@ -19,31 +19,10 @@ static void event_cb(lv_event_t * e)
     lv_obj_t * value = lv_obj_get_child(needle, 0);
     lv_obj_t * minmax = lv_obj_get_child(needle, 1);
 
-    // Check if the value needs to be refreshed
-    //if( lv_arc_get_value(needle) == (int32_t)data->pid_value )
-    //	return;
-
     lv_arc_set_value(needle, scale_float(data->pid_value, data->precision));
 
-    // Update the numbers
-    switch( data->precision )
-    {
-		case 2:
-			label_set_text_fmt_with_check(value, "%.2f%s", data->pid_value, data->unit_label);
-			label_set_text_fmt_with_check(minmax, "%.2f/%.2f", data->pid_min, data->pid_max);
-			break;
-
-		case 1:
-			label_set_text_fmt_with_check(value, "%.1f%s", data->pid_value, data->unit_label);
-			label_set_text_fmt_with_check(minmax, "%.1f/%.1f", data->pid_min, data->pid_max);
-			break;
-
-		case 0:
-		default:
-			label_set_text_fmt_with_check(value, "%.0f%s", data->pid_value, data->unit_label);
-			label_set_text_fmt_with_check(minmax, "%.0f/%.0f", data->pid_min, data->pid_max);
-			break;
-    }
+    lv_label_set_text_fmt(value, float_with_units[data->precision], data->pid_value, data->unit_label);
+    lv_label_set_text_fmt(minmax, two_float_with_slash[data->precision], data->pid_min, data->pid_max);
 }
 
 lv_obj_t * add_radial_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA * pid)

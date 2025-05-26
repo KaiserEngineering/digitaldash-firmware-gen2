@@ -8,6 +8,10 @@
 
 #include "ui.h"
 
+const char *float_with_units[] = {"%.0f%s", "%.1f%s", "%.2f%s"};
+const char *float_only[] = {"%.0f", "%.1f", "%.2f"};
+const char *two_float_with_slash[] = {"%.0f/%.0f", "%.1f/%.1f", "%.2f/%.2f"};
+
 static const float pow10_table[] = {1.0f, 10.0f, 100.0f};
 
 int32_t scale_float( float val, uint8_t precision )

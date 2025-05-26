@@ -1060,6 +1060,9 @@ int main(void)
 				// Log the value
 				prev_pid_value[active_view_idx][i] = FordFocusSTRS.view[active_view_idx].gauge[i].pid->pid_value;
 
+				// Some values are interrupt driven, log the min/max incase they were missed in the main loop
+				log_minmax(FordFocusSTRS.view[active_view_idx].gauge[i].pid);
+
 				// Send an event to the gauge
 				lv_obj_send_event(FordFocusSTRS.view[active_view_idx].gauge[i].obj, LV_EVENT_REFRESH, FordFocusSTRS.view[active_view_idx].gauge[i].pid);
 			}

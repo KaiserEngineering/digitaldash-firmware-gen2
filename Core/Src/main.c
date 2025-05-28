@@ -792,6 +792,8 @@ int main(void)
   // Initialize the CAN bus
   CAN_Init();
 
+  HAL_GPIO_WritePin(LCD_EN_GPIO_Port, LCD_EN_Pin, GPIO_PIN_SET);
+
   // Initialize the backlight
   backlight_init();
 

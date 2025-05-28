@@ -70,8 +70,10 @@ void Error_Handler(void);
 #define USB_FAULT_Pin GPIO_PIN_4
 #define USB_FAULT_GPIO_Port GPIOA
 #define USB_FAULT_EXTI_IRQn EXTI4_IRQn
-#define ESP32_RESET_N_Pin GPIO_PIN_0
-#define ESP32_RESET_N_GPIO_Port GPIOG
+#define ESP32_RESET_N_Pin GPIO_PIN_1
+#define ESP32_RESET_N_GPIO_Port GPIOB
+#define LCD_EN_Pin GPIO_PIN_0
+#define LCD_EN_GPIO_Port GPIOG
 #define CAN_STBY_Pin GPIO_PIN_2
 #define CAN_STBY_GPIO_Port GPIOD
 #define GREEN_LED_Pin GPIO_PIN_4

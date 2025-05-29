@@ -763,6 +763,7 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI3_Init();
   MX_TIM15_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   lv_init();
   lv_tick_set_cb(HAL_GetTick);

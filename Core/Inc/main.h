@@ -57,27 +57,30 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TP_IRQ_Pin GPIO_PIN_5
-#define TP_IRQ_GPIO_Port GPIOE
-#define TP_IRQ_EXTI_IRQn EXTI5_IRQn
-#define BL_CTRL_Pin GPIO_PIN_6
-#define BL_CTRL_GPIO_Port GPIOE
-#define USER_BUTTON_Pin GPIO_PIN_13
-#define USER_BUTTON_GPIO_Port GPIOC
-#define USB_DETECT_Pin GPIO_PIN_1
-#define USB_DETECT_GPIO_Port GPIOA
-#define USB_DETECT_EXTI_IRQn EXTI1_IRQn
-#define USB_FAULT_Pin GPIO_PIN_4
-#define USB_FAULT_GPIO_Port GPIOA
-#define USB_FAULT_EXTI_IRQn EXTI4_IRQn
+#define FORD_BKLT_Pin GPIO_PIN_5
+#define FORD_BKLT_GPIO_Port GPIOE
+#define GPIO1_Pin GPIO_PIN_13
+#define GPIO1_GPIO_Port GPIOC
+#define HSPI_NRST_Pin GPIO_PIN_0
+#define HSPI_NRST_GPIO_Port GPIOB
 #define ESP32_RESET_N_Pin GPIO_PIN_1
 #define ESP32_RESET_N_GPIO_Port GPIOB
 #define LCD_EN_Pin GPIO_PIN_0
 #define LCD_EN_GPIO_Port GPIOG
+#define GPIO2_Pin GPIO_PIN_1
+#define GPIO2_GPIO_Port GPIOG
+#define USB_SLEEP_N_Pin GPIO_PIN_8
+#define USB_SLEEP_N_GPIO_Port GPIOA
+#define DBG_LED1_Pin GPIO_PIN_11
+#define DBG_LED1_GPIO_Port GPIOA
+#define DBG_LED2_Pin GPIO_PIN_12
+#define DBG_LED2_GPIO_Port GPIOA
 #define CAN_STBY_Pin GPIO_PIN_2
 #define CAN_STBY_GPIO_Port GPIOD
-#define GREEN_LED_Pin GPIO_PIN_4
-#define GREEN_LED_GPIO_Port GPIOD
+#define PWR_HOLD_Pin GPIO_PIN_7
+#define PWR_HOLD_GPIO_Port GPIOD
+#define PWR_VD_Pin GPIO_PIN_10
+#define PWR_VD_GPIO_Port GPIOG
 
 /* USER CODE BEGIN Private defines */
 

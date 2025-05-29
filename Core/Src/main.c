@@ -169,7 +169,7 @@ static void switch_view(uint8_t idx)
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-	 HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+	 //HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
 	 //HAL_SPI_Receive_IT(&hspi1, rx_buffer, sizeof(rx_buffer));
 }
 

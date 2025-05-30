@@ -769,6 +769,8 @@ int main(void)
   MX_TIM15_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  // Indicate Boot has started
+  HAL_GPIO_WritePin(DBG_LED1_GPIO_Port, DBG_LED1_Pin, GPIO_PIN_SET);
   lv_init();
   lv_tick_set_cb(HAL_GetTick);
   lvgl_display_init();
@@ -995,6 +997,9 @@ int main(void)
 
   add_alert(ui_screen);
   lv_timer_handler();
+
+  // Indicate Boot has ended
+  HAL_GPIO_WritePin(DBG_LED1_GPIO_Port, DBG_LED1_Pin, GPIO_PIN_RESET);
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -63,7 +63,6 @@
 #define FIRMWARE_VERSION "v1.0.0"
 
 static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[1][UI_HOR_RES*UI_VER_RES*3];
-#define XIP_ENABLED 1
 
 #define BKLT_MIN_DUTY 3
 #define BKLT_MAX_DUTY 100
@@ -105,9 +104,7 @@ uint32_t CAN_Filter_Count = 0;
 /* UART RX'd byte */
 static uint8_t rx_byte;
 static int image_byte = 0;
-#if !XIP_ENABLED
-static int image_size = 0;
-#endif
+static int image_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL;
 static uint8_t image_buffer[UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL] = {0};
 
 #define EEPROM_ADDRESS_SIZE 2
@@ -637,10 +634,6 @@ void spoof_config(void)
  * Octo-SPI interface mode and DTR (Double Transfer Rate) for high-speed
  * operation.
  *
- * If XIP (Execute In Place) is enabled via the XIP_ENABLED macro,
- * the function also enables memory-mapped mode to allow code execution
- * directly from external flash.
- *
  * @note   Assumes BSP and hardware configuration are compatible with the
  *         MX25LM51245G flash memory.
  *
@@ -655,10 +648,8 @@ void flash_init(void)
 	if( BSP_HSPI_NOR_Init(0, &hspi_init) != BSP_ERROR_NONE )
 		Error_Handler();
 
-	#if XIP_ENABLED
 	if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE )
 		Error_Handler();
-	#endif
 }
 
 /**
@@ -877,7 +868,6 @@ int main(void)
 		  const lv_image_dsc_t * img = NULL;
 		  lv_color_t color = {0};
 
-#if XIP_ENABLED
 		  lv_image_dsc_t ext_background = {
 		    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
 		    .header.magic = LV_IMAGE_HEADER_MAGIC,
@@ -886,7 +876,6 @@ int main(void)
 		    .data_size = UI_HOR_RES * UI_VER_RES * 4,
 		    .data = (const uint8_t *)backgrounds_external[0],
 		  };
-#endif
 
 		  switch( FordFocusSTRS.view[view].background )
 		  {
@@ -896,14 +885,9 @@ int main(void)
 				  break;
 
 			  case VIEW_BACKGROUND_USER1:
-#if XIP_ENABLED
 				  img = &ext_background;
-				  color.red = img->data[0];
-				  color.green = img->data[1];
-				  color.blue = img->data[2];
 				  is_image = 1;
 				  break;
-#endif
 
 			  case VIEW_BACKGROUND_BLACK:
 			  default:
@@ -1022,21 +1006,43 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-#if !XIP_ENABLED
-	image_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL;
 	if( image_byte >= image_size )
 	{
-		HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_SET);
-		//BSP_HSPI_NOR_Erase_Chip(0);
-		erase_background(VIEW_BACKGROUND_USER1_ADDR);
-		while( BSP_HSPI_NOR_GetStatus(0) != BSP_ERROR_NONE) {
-			HAL_Delay(50);
+		uint32_t background_addr = VIEW_BACKGROUND_USER1_ADDR;
+
+		// Memory can only be written when NOT in memory mapped mode.
+		if(BSP_HSPI_NOR_DisableMemoryMappedMode(0) == BSP_ERROR_NONE)
+		{
+			// Indicate write in process.
+			HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_SET);
+
+			// Erase the current background.
+			erase_background(background_addr);
+
+			// Wait for the erase to complete.
+			while( BSP_HSPI_NOR_GetStatus(0) != BSP_ERROR_NONE) {
+				HAL_Delay(50);
+			}
+
+			// Write the new background.
+			BSP_HSPI_NOR_Write(0, image_buffer, 0, image_size);
+
+			// Re-enable Memory mapped mode.
+			if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE)
+				Error_Handler();
+
+			// Invalidate DCache
+			HAL_DCACHE_Invalidate(&hdcache1);
+			HAL_DCACHE_Invalidate(&hdcache2);
+			HAL_ICACHE_Invalidate();
+
+			// Clear byte data and indicate completion.
+			image_byte = 0;
+			HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_RESET);
+		} else {
+			Error_Handler();
 		}
-		BSP_HSPI_NOR_Write(0, image_buffer, 0, image_size);
-		image_byte = 0;
-		HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_RESET);
 	}
-#endif
 
 	//HAL_I2C_Master_Transmit(ESP32_I2C, 0x5a, aTxBuffer, 4, 0xFFFF);
 	lv_timer_handler();

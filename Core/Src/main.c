@@ -855,7 +855,7 @@ int main(void)
 		  FordFocusSTRS.view[view].background = get_view_background(view);
 
 		  uint8_t is_image = 0;
-		  lv_image_dsc_t * img = NULL;
+		  const lv_image_dsc_t * img = NULL;
 		  lv_color_t color = {0};
 
 #if XIP_ENABLED

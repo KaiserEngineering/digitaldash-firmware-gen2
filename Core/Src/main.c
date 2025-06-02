@@ -120,6 +120,11 @@ static uint16_t current_register = 0;
 #define CAN_FILTER_UNUSED 0x0000
 uint16_t can_filters[MAX_CAN_FILTERS] = {CAN_FILTER_UNUSED};
 
+#define VIEW_BACKGROUND_USER1_ADDR 0x00000000
+#define ERASE_BLOCK_SIZE     MX25LM51245G_ERASE_64K
+#define ERASE_BLOCK_BYTES    65536
+#define ERASE_TOTAL_BYTES    UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -496,6 +501,20 @@ static void LCD_Brightness( uint8_t brightness )
 	else {
 		if (HAL_TIM_PWM_Stop(BKLT_TIM, BKLT_TIM_CHANNEL) != HAL_OK) {
 			Error_Handler();
+		}
+	}
+}
+
+void erase_background(uint32_t start_address)
+{
+	for (uint32_t offset = 0; offset < ERASE_TOTAL_BYTES; offset += ERASE_BLOCK_BYTES)
+	{
+		uint32_t block_addr = start_address + offset;
+		int32_t result = BSP_HSPI_NOR_Erase_Block(0, block_addr, ERASE_BLOCK_SIZE);
+
+		if (result != BSP_ERROR_NONE)
+		{
+			break;
 		}
 	}
 }
@@ -1008,7 +1027,8 @@ int main(void)
 	if( image_byte >= image_size )
 	{
 		HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_SET);
-		BSP_HSPI_NOR_Erase_Chip(0);
+		//BSP_HSPI_NOR_Erase_Chip(0);
+		erase_background(VIEW_BACKGROUND_USER1_ADDR);
 		while( BSP_HSPI_NOR_GetStatus(0) != BSP_ERROR_NONE) {
 			HAL_Delay(50);
 		}

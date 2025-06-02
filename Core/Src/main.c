@@ -1004,7 +1004,7 @@ int main(void)
   while (1)
   {
 #if !XIP_ENABLED
-	image_size = 1024*200*4;
+	image_size = UI_HOR_RES*UI_VER_RES*UI_BYTES_PER_PIXEL;
 	if( image_byte >= image_size )
 	{
 		HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_SET);

@@ -26,8 +26,8 @@ void lvgl_display_init (void)
   static __attribute__((aligned(32))) uint8_t buf_2[UI_HOR_RES * UI_VER_RES * 2];
   lv_st_ltdc_create_direct((void *)0x20000000, buf_2, 0);
 #elif LV_COLOR_DEPTH == 24 || LV_COLOR_DEPTH == 32
-  static __attribute__((section(".noinit"), aligned(32))) uint8_t buf_1[UI_HOR_RES * UI_VER_RES * 4];
-  static __attribute__((section(".noinit"), aligned(32))) uint8_t buf_2[UI_HOR_RES * UI_VER_RES * 4];
+  static __attribute__((section(".noinit"), aligned(32))) uint8_t buf_1[UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL];
+  static __attribute__((section(".noinit"), aligned(32))) uint8_t buf_2[UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL];
 #if DISP_PARTIAL
   lv_st_ltdc_create_partial(buf_1, buf_2, sizeof(buf_1), 0);
 #else

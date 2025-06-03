@@ -913,9 +913,9 @@ int main(void)
 			  x_pos[0] = -200;
 			  x_pos[1] = 200;
 		  }if( FordFocusSTRS.view[view].num_gauges == 3) {
-			  x_pos[0] = -225;
+			  x_pos[0] = -300;
 			  x_pos[1] = 0;
-			  x_pos[2] = 225;
+			  x_pos[2] = 300;
 		  }
 
 		  // Iterate through each gauge in the view

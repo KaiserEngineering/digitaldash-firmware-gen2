@@ -50,7 +50,7 @@
 #include "lib_digital_dash.h"
 #include "ke_config.h"
 #include "eeprom_24cw.h"
-#include "build_info.h"
+#include "../build_info.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -724,6 +724,30 @@ void CAN_Init(void)
 }
 
 
+
+void show_build_info_overlay(void)
+{
+    // Get the top layer
+    lv_obj_t * top_layer = lv_layer_top();
+
+    // Create the label
+    lv_obj_t * build_label = lv_label_create(top_layer);
+
+    // Format the build info
+    char buf[128];
+    snprintf(buf, sizeof(buf), "%s (%s) %s", BUILD_VERSION, BUILD_COMMIT, BUILD_TIMESTAMP);
+
+    lv_label_set_text(build_label, buf);
+
+    // Optional: Make background transparent
+    lv_obj_set_style_text_opa(build_label, LV_OPA_COVER, 0); // Semi-transparent text
+    lv_obj_set_style_text_color(build_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(build_label, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    // Align it to the bottom-right corner (or wherever you prefer)
+    lv_obj_align(build_label, LV_ALIGN_BOTTOM_MID, -0, -5);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -998,6 +1022,7 @@ int main(void)
   switch_screen(splash_screen);
 
   add_alert(ui_screen);
+  show_build_info_overlay();
   lv_timer_handler();
 
   // Indicate Boot has ended

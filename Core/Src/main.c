@@ -62,7 +62,11 @@
 /* USER CODE BEGIN PD */
 #define FIRMWARE_VERSION "v1.0.0"
 
-static const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[1][UI_HOR_RES*UI_VER_RES*3];
+#define BACKGROUND_EXT_ALLOC MX25LM51245G_SECTOR_64K * 13
+static const __attribute__((section(".ExtFlash_Section")))
+__attribute__((used))
+__attribute__((aligned(65536)))  // 64KB alignment
+uint8_t backgrounds_external[20][BACKGROUND_EXT_ALLOC];
 
 #define BKLT_MIN_DUTY 3
 #define BKLT_MAX_DUTY 100
@@ -1008,7 +1012,7 @@ int main(void)
   {
 	if( image_byte >= image_size )
 	{
-		uint32_t background_addr = VIEW_BACKGROUND_USER1_ADDR;
+		uint32_t background_addr = (uint32_t)&backgrounds_external[0];
 
 		// Memory can only be written when NOT in memory mapped mode.
 		if(BSP_HSPI_NOR_DisableMemoryMappedMode(0) == BSP_ERROR_NONE)

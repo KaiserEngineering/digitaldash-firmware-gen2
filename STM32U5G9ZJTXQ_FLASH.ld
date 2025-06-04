@@ -179,7 +179,7 @@ SECTIONS
  /*  Unitialized ExtFlash section into "ExtFlash" ExtFlash type memory [MMT section] */
  .ExtFlash_Section (NOLOAD) :
   {
-    . = ALIGN(4);
+    . = ALIGN(0x10000);
     KEEP (*(.ExtFlash_Section))
     . = ALIGN(4);
   } >ExtFlash

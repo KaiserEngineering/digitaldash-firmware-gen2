@@ -607,8 +607,8 @@ void spoof_config(void)
 	set_view_num_gauges(1, 1, true);
 	set_view_background(1, VIEW_BACKGROUND_USER1, true);
 	set_view_gauge_theme(1, 0, GAUGE_THEME_LINEAR, true);
-	set_view_gauge_pid(1, 0, MODE1_ENGINE_SPEED_UUID, true);
-	set_view_gauge_units(1, 0, PID_UNITS_RPM, true);
+	set_view_gauge_pid(1, 0, CALC1_TURBOCHARGER_COMPRESSOR_INLET_PRESSURE_UUID, true);
+	set_view_gauge_units(1, 0, PID_UNITS_PSI, true);
 
 	// Dynamic
 	set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, true);

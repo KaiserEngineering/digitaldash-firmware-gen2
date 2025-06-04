@@ -727,6 +727,14 @@ void CAN_Init(void)
 
 void show_build_info_overlay(void)
 {
+	#ifdef DEBUG
+		#define BUILD_TYPE "Debug"
+	#elif defined(RELEASE)
+		#define BUILD_TYPE "Release"
+	#else
+		#define BUILD_TYPE "Unknown"
+	#endif
+
     // Get the top layer
     lv_obj_t * top_layer = lv_layer_top();
 
@@ -735,7 +743,7 @@ void show_build_info_overlay(void)
 
     // Format the build info
     char buf[128];
-    snprintf(buf, sizeof(buf), "%s (%s) %s", BUILD_VERSION, BUILD_COMMIT, BUILD_TIMESTAMP);
+    snprintf(buf, sizeof(buf), "%s: %s (%s) %s", BUILD_TYPE, BUILD_VERSION, BUILD_COMMIT, BUILD_TIMESTAMP);
 
     lv_label_set_text(build_label, buf);
 

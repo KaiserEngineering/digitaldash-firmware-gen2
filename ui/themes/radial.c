@@ -17,12 +17,17 @@ static void event_cb(lv_event_t * e)
 	// Get the PID data
 	PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
     lv_obj_t * needle = lv_event_get_target(e);
-    lv_obj_t * value = lv_obj_get_child(needle, 0);
+    lv_obj_t * span_group = lv_obj_get_child(needle, 0);
+    lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
     lv_obj_t * minmax = lv_obj_get_child(needle, 1);
 
     lv_arc_set_value(needle, scale_float(data->pid_value, data->precision));
 
-    lv_label_set_text_fmt(value, float_with_units[data->precision], data->pid_value, data->unit_label);
+    char value_buf[16];
+    snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
+    lv_span_set_text(span_val, value_buf);
+    lv_spangroup_refresh(span_group);
+
     lv_label_set_text_fmt(minmax, two_float_with_slash[data->precision], data->pid_min, data->pid_max);
 }
 
@@ -55,6 +60,30 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA *
     lv_obj_set_user_data(needle, pid);
     lv_obj_add_event_cb(needle, event_cb, LV_EVENT_REFRESH, pid);
 
+    // Create span group for value and unit
+    lv_obj_t * span_group = lv_spangroup_create(needle);
+    lv_obj_set_size(span_group, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_align(span_group, LV_ALIGN_CENTER);
+    lv_obj_set_y(span_group, -50);
+    lv_spangroup_set_align(span_group, LV_TEXT_ALIGN_CENTER);
+
+    // Create spans
+    lv_span_t * span_val = lv_spangroup_new_span(span_group);
+    lv_style_set_text_font(lv_span_get_style(span_val), &lv_font_montserrat_30);
+    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_white());
+
+    lv_span_t * span_unit = lv_spangroup_new_span(span_group);
+    lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_20);
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBBB));
+
+    // Split value and unit (assuming value is number and unit is already stored)
+    char value_buf[16];
+    snprintf(value_buf, sizeof(value_buf), float_only[pid->precision], pid->pid_value);
+    lv_span_set_text(span_val, value_buf);
+    lv_span_set_text(span_unit, pid->unit_label);
+    lv_spangroup_refresh(span_group);
+
+    /*
     lv_obj_t * value = lv_label_create(needle);
     lv_obj_set_width(value, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(value, LV_SIZE_CONTENT);    /// 1
@@ -66,6 +95,7 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA *
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
                        LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
     lv_obj_set_style_text_font(value, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    */
 
     lv_obj_t * minmax = lv_label_create(needle);
     lv_obj_set_width(minmax, LV_SIZE_CONTENT);   /// 1

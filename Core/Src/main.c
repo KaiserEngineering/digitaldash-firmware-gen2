@@ -65,6 +65,7 @@ static const __attribute__((section(".ExtFlash_Section")))
 __attribute__((used))
 __attribute__((aligned(65536)))  // 64KB alignment
 uint8_t backgrounds_external[20][BACKGROUND_EXT_ALLOC];
+LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 
 #define BKLT_MIN_DUTY 3
 #define BKLT_MAX_DUTY 100
@@ -89,7 +90,7 @@ uint8_t backgrounds_external[20][BACKGROUND_EXT_ALLOC];
 digitaldash FordFocusSTRS;
 
 // UI Variables
-#define SPLASH_SCREEN_T 2500
+#define SPLASH_SCREEN_T 5000
 #define MIN_TO_MILLI (60 * 1000)
 #ifdef DEBUG
 #define SCREEN_SAVER_T 10 * MIN_TO_MILLI // 10 min
@@ -867,15 +868,15 @@ int main(void)
   lv_obj_set_style_bg_color(splash_screen, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
   lv_obj_set_style_bg_opa(splash_screen, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-  lv_obj_t * label;
-  label = lv_label_create(splash_screen);
-  lv_obj_set_width(label, LV_SIZE_CONTENT);   /// 1
-  lv_obj_set_height(label, LV_SIZE_CONTENT);    /// 1
-  lv_obj_set_x(label, 0);
-  lv_obj_set_y(label, -40);
-  lv_obj_set_align(label, LV_ALIGN_CENTER);
-  lv_label_set_text(label, "KE");
-  lv_obj_set_style_text_font(label, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+  lv_obj_t * splash_icon;
+  splash_icon = lv_image_create(splash_screen);
+  lv_image_set_src(splash_icon, &ui_img_ford_performance_logo_png);
+  lv_obj_set_width(splash_icon, LV_SIZE_CONTENT);   /// 1
+  lv_obj_set_height(splash_icon, LV_SIZE_CONTENT);    /// 1
+  lv_obj_set_x(splash_icon, 0);
+  lv_obj_set_y(splash_icon, 50);
+  lv_obj_set_align(splash_icon, LV_ALIGN_TOP_MID);
+  lv_obj_remove_flag(splash_icon, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
   // Create the base screen
   ui_screen = lv_obj_create(NULL);

@@ -1048,7 +1048,7 @@ int main(void)
   {
 	if( image_byte >= image_size )
 	{
-		uint32_t background_addr = (uint32_t)&backgrounds_external[0];
+		uint32_t background_addr = VIEW_BACKGROUND_USER1_ADDR;
 
 		// Memory can only be written when NOT in memory mapped mode.
 		if(BSP_HSPI_NOR_DisableMemoryMappedMode(0) == BSP_ERROR_NONE)
@@ -1065,7 +1065,7 @@ int main(void)
 			}
 
 			// Write the new background.
-			BSP_HSPI_NOR_Write(0, image_buffer, 0, image_size);
+			BSP_HSPI_NOR_Write(background_addr, image_buffer, 0, image_size);
 
 			// Re-enable Memory mapped mode.
 			if( BSP_HSPI_NOR_EnableMemoryMappedMode(0) != BSP_ERROR_NONE)

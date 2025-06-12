@@ -184,7 +184,7 @@ def write_get_source(file, prefix, cmd, depth):
             index = "[idx_" + prefix.lower().split('_')[0] + "][idx_" + prefix.lower().split('_')[1] + "]"
         else:
             input = "uint8_t idx, " + cmd["dataType"] + "* " + prefix + "_" + cmd["cmd"].lower()
-            index = "[idx][0]"
+            index = "[idx]"
       else:
         input = "void"
         index = ""
@@ -192,7 +192,7 @@ def write_get_source(file, prefix, cmd, depth):
       output = "settings_" + prefix + "_" + cmd["cmd"].lower() + index
 
       file.write("void get_" + prefix + "_" + cmd["cmd"].lower() + "(" + input + ")\n{\n")
-      file.write("    memcpy(" + prefix + "_" + cmd["cmd"].lower() + ", (char)" + output + ", " + cmd["EEBytes"].upper() + ");\n")
+      file.write("    memcpy(" + prefix + "_" + cmd["cmd"].lower() + ", " + output + ", " + cmd["EEBytes"].upper() + ");\n")
 
       file.write("}\n\n")
     else:
@@ -265,14 +265,20 @@ def write_set_source(file, prefix, cmd, depth):
     file.write("    // updated if immediate save is set\n")
     file.write("    if (save)\n    {\n")
     file.write("        // Reload the current setting saved in EEPROM\n")
-    file.write("        load_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + output + ");\n\n")
+    if( cmd["type"] == "string" ):
+      file.write("        load_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", " + output + ");\n\n")
+    else:
+       file.write("        load_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + output + ");\n\n")
     file.write("        if (settings_" + prefix + "_" + cmd["cmd"].lower() + var + " != " + prefix.lower() + "_" + cmd["cmd"].lower() + ")\n        {\n")
-    file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
+    if( cmd["type"] == "string" ):
+      file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", " + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
+    else:
+      file.write("            save_" + prefix + "_" + cmd["cmd"].lower() + "(" + index + ", &" + prefix.lower() + "_" + cmd["cmd"].lower() + ");\n")
     file.write("        }\n")
     file.write("    }\n\n")
 
     if( cmd["type"] == "string" ):
-      file.write("    memcpy(" + output + "[0], " + prefix.lower() + "_" + cmd["cmd"].lower() + ", " + cmd["EEBytes"].upper() + ");\n\n")
+      file.write("    memcpy(" + output + ", " + prefix.lower() + "_" + cmd["cmd"].lower() + ", " + cmd["EEBytes"].upper() + ");\n\n")
     else:
       file.write("    " + output + " = " + prefix.lower() + "_" + cmd["cmd"].lower() + ";\n\n")
     file.write("    return 1;\n" )
@@ -411,6 +417,10 @@ def write_define_load_setting( file, prefix, cmd, depth ):
       file.write( "static void load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "(void);\n")
 
 def write_load_setting( file, prefix, cmd, depth ):
+   if( cmd["type"] == "string"):
+      addr = ""
+   else:
+      addr = "&"
    if( depth == 2):
       variable1 = "idx_" + prefix.lower().split('_')[0]
       variable2 = "idx_" + prefix.lower().split('_')[1]
@@ -420,7 +430,7 @@ def write_load_setting( file, prefix, cmd, depth ):
    else:
       variable1 = "idx"
       file.write("    for( uint8_t " + variable1 + " = 0; " + variable1 + " < " + cmd["count"].upper() + "; " + variable1 +"++ )\n")
-      file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "(idx, &settings_" + prefix + "_" + cmd["cmd"].lower() +  "[" + variable1 + "]);\n\n")
+      file.write("        load_" + prefix.lower() + "_" + cmd["cmd"].lower() + "(idx, " + addr + "settings_" + prefix + "_" + cmd["cmd"].lower() +  "[" + variable1 + "]);\n\n")
    
 
 def write_load_source( file, prefix, cmd, depth ):

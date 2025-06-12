@@ -218,7 +218,18 @@ def write_get_source(file, prefix, cmd, depth):
       file.write("    return " + output + ";\n")
       file.write("}\n\n")
 
+def write_string_compare_declare(file, prefix, cmd, depth):
+   if( cmd["type"] == "list" ):
+    file.write( cmd["dataType"].upper() + " get_" + prefix + "_" + cmd["cmd"].lower() + "_from_string(const char *str);\n")
 
+def write_string_compare(file, prefix, cmd, depth):
+      if( cmd["type"] == "list" ):
+        file.write( "\n" + cmd["dataType"].upper() + " get_" + prefix + "_" + cmd["cmd"].lower() + "_from_string(const char *str)\n{\n")
+        for enum in cmd["options"]:
+          file.write("    if(strcmp(str, \"" + enum + "\") == 0) return " + cmd["dataType"] + "_" + enum.replace(" ", "_").upper() + ";\n")
+
+        file.write("    return " + cmd["dataType"].upper() + "_RESERVED" + ";\n")
+        file.write("}\n\n")
 
 def write_set_source(file, prefix, cmd, depth):
     if( cmd["type"] == "string" ):
@@ -490,6 +501,8 @@ def process_struct( prefix, cmd, depth ):
    write_set_source(config_c, prefix, cmd, depth)
    write_get_declare( config_h, prefix, cmd, depth )
    write_set_declare( config_h, prefix, cmd, depth )
+   write_string_compare_declare( config_h, prefix, cmd, depth )
+   write_string_compare( config_c, prefix, cmd, depth )
 
 for i, struct in enumerate(config["config"]["struct_list"]):
     if isinstance(struct, list):  # Check if the item is a list

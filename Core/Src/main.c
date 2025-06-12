@@ -62,9 +62,7 @@
 /* USER CODE BEGIN PD */
 #define BACKGROUND_EXT_ALLOC MX25LM51245G_SECTOR_64K * 13
 static const __attribute__((section(".ExtFlash_Section")))
-__attribute__((used))
-__attribute__((aligned(65536)))  // 64KB alignment
-uint8_t backgrounds_external[20][BACKGROUND_EXT_ALLOC];
+__attribute__((used)) uint8_t backgrounds_external[20][UI_HOR_RES*UI_VER_RES*UI_BYTES_PER_PIXEL];
 LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 
 #define BKLT_MIN_DUTY 3

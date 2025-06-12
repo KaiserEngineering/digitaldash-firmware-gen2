@@ -116,6 +116,10 @@ def write_custom_struct( file, prefix, cmd, depth ):
     file.write("    " + cmd["dataType"] + "_" + cmd["limit"].replace(" ", "_").upper() + "\n")
     file.write("} " + cmd["dataType"] + ";\n\n")
 
+def write_array_string_def_extern(file, prefix, cmd, depth):
+    if cmd["type"] == "list":
+        file.write("extern const char *" + cmd["dataType"].lower() + "_string[];\n")
+
 def write_array_string_def(file, prefix, cmd, depth):
     if cmd["type"] == "list":
         file.write("const char *" + cmd["dataType"].lower() + "_string[] = {\n")
@@ -476,7 +480,8 @@ def process_struct( prefix, cmd, depth ):
    write_comment_block( config_h, prefix, cmd, depth )
    write_comment_block( config_c, prefix, cmd, depth )
    write_custom_struct( config_h, prefix, cmd, depth )
-   write_array_string_def( config_h, prefix, cmd, depth )
+   write_array_string_def_extern( config_h, prefix, cmd, depth )
+   write_array_string_def( config_c, prefix, cmd, depth )
    write_verify_declare( config_h, prefix, cmd, depth )
    write_load_source( config_c, prefix, cmd, depth )
    write_save_source( config_c, prefix, cmd, depth )

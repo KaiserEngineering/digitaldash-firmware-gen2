@@ -142,7 +142,7 @@
         },
         {
             "index" : true,
-            "count" : "max_dynamics",
+            "count" : "max_alerts",
             "cmd": "threshold",
             "name": "Dynamic gauge threshold",
             "desc": "Comparison value of the dynamic gauge",
@@ -191,7 +191,7 @@
         },
         {
             "index" : true,
-            "count" : "max_alerts",
+            "count" : "max_dynamics",
             "cmd": "compare",
             "name": "Comparison type",
             "desc": "Configure the comparison used for the realtime value and alert threshold",

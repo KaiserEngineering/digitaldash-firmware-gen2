@@ -23,8 +23,8 @@ print("\n---- GENERATING SETTINGS ----\n")
 max_views = config["config"]["max_views"]
 print("Number of views: " + str(max_views))
 
-gauges_per_view = config["config"]["gauges_per_view"]
-print("Max gauges per view: " + str(gauges_per_view))
+max_gauges_per_view = config["config"]["max_gauges_per_view"]
+print("Max gauges per view: " + str(max_gauges_per_view))
 
 max_alerts = config["config"]["max_alerts"]
 print("Max Alerts: " + str(max_alerts))
@@ -32,8 +32,8 @@ print("Max Alerts: " + str(max_alerts))
 alert_message_len = config["config"]["alert_message_len"]
 print("Alert_Message_Len: " + str(alert_message_len))
 
-num_dynamic = config["config"]["num_dynamic"]
-print("num_dynamic: " + str(num_dynamic))
+max_dynamics = config["config"]["max_dynamics"]
+print("max_dynamics: " + str(max_dynamics))
 
 top_level_struc = config["config"]["top_level_struc"]
 top_level_name = config["config"]["top_level_name"]
@@ -61,11 +61,11 @@ config_h.write("typedef uint8_t(settings_read)(uint16_t bAdd);\n\n")
 config_h.write("void settings_setWriteHandler(settings_write *writeHandler);\n")
 config_h.write("void settings_setReadHandler(settings_read *readHandler);\n\n")
 
-config_h.write(f"#define GAUGES_PER_VIEW {gauges_per_view}\n")
+config_h.write(f"#define MAX_GAUGES_PER_VIEW {max_gauges_per_view}\n")
 config_h.write(f"#define MAX_ALERTS {max_alerts}\n")
 config_h.write(f"#define ALERT_MESSAGE_LEN {alert_message_len}\n")
 config_h.write(f"#define MAX_VIEWS {max_views}\n")
-config_h.write(f"#define NUM_DYNAMIC {num_dynamic}")
+config_h.write(f"#define MAX_DYNAMICS {max_dynamics}")
 
 config_c.write( "#include \"ke_config.h\"\n\n" )
 #config_c.write( "static " + top_level_struc + " " + top_level_name + ";\n\n")

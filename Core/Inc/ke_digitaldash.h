@@ -56,7 +56,7 @@
      uint8_t enabled; // Is the view enabled or not
      uint8_t num_gauges;
      VIEW_BACKGROUND background; // background of the specific view
-     digitaldash_gauge gauge[GAUGES_PER_VIEW]; // Gauge objects
+     digitaldash_gauge gauge[MAX_GAUGES_PER_VIEW]; // Gauge objects
  }digitaldash_view;
  
  typedef struct {
@@ -72,7 +72,7 @@
      digitaldash_view view[MAX_VIEWS];
      uint8_t num_views;
      digitaldash_alert alert[MAX_ALERTS];
-     digitaldash_dynamic dynamic[NUM_DYNAMIC];
+     digitaldash_dynamic dynamic[MAX_DYNAMICS];
  }digitaldash;
  
  bool digitaldash_to_json(const digitaldash *dash, char *buffer, size_t buffer_size);

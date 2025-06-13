@@ -101,8 +101,8 @@ lv_obj_t * ui_screen;
 lv_obj_t * splash_screen;
 lv_obj_t * ui_view[MAX_VIEWS];
 uint8_t active_view_idx = 0;
-uint32_t timestamp[MAX_VIEWS][GAUGES_PER_VIEW] = {0};
-float prev_pid_value[MAX_VIEWS][GAUGES_PER_VIEW] = {0};
+uint32_t timestamp[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
+float prev_pid_value[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
 
 uint32_t CAN_Filter_Count = 0;
 
@@ -944,7 +944,7 @@ int main(void)
 			  lv_obj_set_style_bg_color(ui_view[view], color, LV_PART_MAIN | LV_STATE_DEFAULT);
 		  }
 
-		  int x_pos[GAUGES_PER_VIEW] = {0};
+		  int x_pos[MAX_GAUGES_PER_VIEW] = {0};
 
 		  if( FordFocusSTRS.view[view].num_gauges == 1) {
 			  x_pos[0] = 0;
@@ -982,7 +982,7 @@ int main(void)
 	  }
   }
 
-  for(uint8_t idx = 0; idx < NUM_DYNAMIC; idx++)
+  for(uint8_t idx = 0; idx < MAX_DYNAMICS; idx++)
   {
 	  FordFocusSTRS.dynamic[idx].enabled = get_dynamic_enable(idx);
 

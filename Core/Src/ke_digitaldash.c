@@ -22,11 +22,11 @@ bool digitaldash_to_json(const digitaldash *dash, char *buffer, size_t buffer_si
         cJSON_AddStringToObject(view, "background", view_background_string[dash->view[i].background]);
 
         cJSON *gauges = cJSON_AddArrayToObject(view, "gauge");
-        for (int j = 0; j < GAUGES_PER_VIEW; j++) {
+        for (int j = 0; j < MAX_GAUGES_PER_VIEW; j++) {
             cJSON *g = cJSON_CreateObject();
             cJSON_AddStringToObject(g, "theme", gauge_theme_string[dash->view[i].gauge[j].theme]);
-            cJSON_AddStringToObject(g, "pid", "PID_FAKE");
-            cJSON_AddStringToObject(g, "obj", "lv_obj_fake");
+            cJSON_AddNumberToObject(g, "pid", dash->view[i].gauge[j].pid->pid_uuid);
+            cJSON_AddStringToObject(g, "units", "TODO");
             cJSON_AddItemToArray(gauges, g);
         }
         cJSON_AddItemToArray(views, view);
@@ -37,7 +37,7 @@ bool digitaldash_to_json(const digitaldash *dash, char *buffer, size_t buffer_si
     for (int i = 0; i < MAX_ALERTS; i++) {
         cJSON *a = cJSON_CreateObject();
         cJSON_AddNumberToObject(a, "enabled", dash->alert[i].enabled);
-        cJSON_AddStringToObject(a, "pid", "PID_FAKE");
+        cJSON_AddNumberToObject(a, "pid", dash->alert[i].pid->pid_uuid);
         cJSON_AddStringToObject(a, "compare", alert_comparison_string[dash->alert[i].compare]);
         cJSON_AddNumberToObject(a, "thresh", dash->alert[i].thresh);
         cJSON_AddStringToObject(a, "msg", dash->alert[i].msg);
@@ -46,11 +46,11 @@ bool digitaldash_to_json(const digitaldash *dash, char *buffer, size_t buffer_si
 
     // Dynamic
     cJSON *dyn = cJSON_AddArrayToObject(root, "dynamic");
-    for (int i = 0; i < NUM_DYNAMIC; i++) {
+    for (int i = 0; i < MAX_DYNAMICS; i++) {
         cJSON *d = cJSON_CreateObject();
         cJSON_AddNumberToObject(d, "enabled", dash->dynamic[i].enabled);
         cJSON_AddNumberToObject(d, "view_index", dash->dynamic[i].view_index);
-        cJSON_AddStringToObject(d, "pid", "PID_FAKE");
+        cJSON_AddNumberToObject(d, "pid", dash->dynamic[i].pid->pid_uuid);
         cJSON_AddStringToObject(d, "compare", dynamic_comparison_string[dash->dynamic[i].compare]);
         cJSON_AddNumberToObject(d, "thresh", dash->dynamic[i].thresh);
         cJSON_AddStringToObject(d, "priority", dynamic_priority_string[dash->dynamic[i].priority]);
@@ -77,7 +77,7 @@ bool json_to_digitaldash(const char* json_str, digitaldash* dash_out) {
         dash_out->view[i].num_gauges = cJSON_GetObjectItem(v, "num_gauges")->valueint;
 
         cJSON *gauges = cJSON_GetObjectItem(v, "gauge");
-        for (int j = 0; j < GAUGES_PER_VIEW && j < cJSON_GetArraySize(gauges); j++) {
+        for (int j = 0; j < MAX_GAUGES_PER_VIEW && j < cJSON_GetArraySize(gauges); j++) {
             // You would map string PID and theme here
             // dash_out->view[i].gauge[j].pid = lookup_pid_by_name(...);
         }
@@ -96,7 +96,7 @@ bool json_to_digitaldash(const char* json_str, digitaldash* dash_out) {
 
     // Dynamic
     cJSON *dyn = cJSON_GetObjectItem(root, "dynamic");
-    for (int i = 0; i < NUM_DYNAMIC && i < cJSON_GetArraySize(dyn); i++) {
+    for (int i = 0; i < MAX_DYNAMICS && i < cJSON_GetArraySize(dyn); i++) {
         cJSON *d = cJSON_GetArrayItem(dyn, i);
         dash_out->dynamic[i].enabled = cJSON_GetObjectItem(d, "enabled")->valueint;
         dash_out->dynamic[i].view_index = cJSON_GetObjectItem(d, "view_index")->valueint;

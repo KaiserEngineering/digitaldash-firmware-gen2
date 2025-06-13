@@ -2,9 +2,9 @@
     "config":
     {
         "max_views": 3,
-        "gauges_per_view": 3,
+        "max_gauges_per_view": 3,
         "max_alerts": 5,
-        "num_dynamic": 2,
+        "max_dynamics": 2,
         "alert_message_len": 64,
         "top_level_struc": "digitaldash",
         "top_level_name": "config",
@@ -34,7 +34,7 @@
         },
         {
             "index" : true,
-            "count" : "gauges_per_view",
+            "count" : "max_gauges_per_view",
             "cmd": "num_gauges",
             "name": "Number of gauges",
             "desc": "Define the number of gauges for view by index",
@@ -42,7 +42,7 @@
             "dataType": "uint8_t",
             "default": 0,
             "min": 0,
-            "max": "GAUGES_PER_VIEW",
+            "max": "max_gauges_per_view",
             "limit": "Reserved",
             "EEBytes": 1
         },
@@ -142,7 +142,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "threshold",
             "name": "Dynamic gauge threshold",
             "desc": "Comparison value of the dynamic gauge",
@@ -158,7 +158,7 @@
     "dynamic": [
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "enable",
             "name": "Dynamic enable",
             "desc": "Enable or disable view by index",
@@ -174,7 +174,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "priority",
             "name": "Priority",
             "desc": "Priority of the dynamic gauges, if both gauges comparisons are met then highest priority wins",
@@ -211,7 +211,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "Threshold",
             "name": "Dynamic gauge threshold",
             "desc": "Comparison value of the dynamic gauge",
@@ -225,7 +225,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "Index",
             "name": "View index",
             "desc": "Set which view should be enabled if the dynamic event is true",
@@ -239,7 +239,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "pid",
             "name": "PID assigned to the dynamic gauge",
             "desc": "Set the dynamic PID by dynamic index",
@@ -253,7 +253,7 @@
         },
         {
             "index" : true,
-            "count" : "num_dynamic",
+            "count" : "max_dynamics",
             "cmd": "units",
             "name": "PID units assigned to the dynamic",
             "desc": "Set the PID units by dynamic index",
@@ -269,7 +269,7 @@
     "gauge": [
         {
             "index" : true,
-            "count" : ["max_views", "gauges_per_view"],
+            "count" : ["max_views", "max_gauges_per_view"],
             "cmd": "theme",
             "name": "Theme assigned to the gauge",
             "desc": "Set the gauge theme by view and gauge index",
@@ -287,7 +287,7 @@
         },
         {
             "index" : true,
-            "count" : ["max_views", "gauges_per_view"],
+            "count" : ["max_views", "max_gauges_per_view"],
             "cmd": "pid",
             "name": "PID assigned to the gauge",
             "desc": "Set the gauge PID by view and gauge index",
@@ -301,7 +301,7 @@
         },
         {
             "index" : true,
-            "count" : ["max_views", "gauges_per_view"],
+            "count" : ["max_views", "max_gauges_per_view"],
             "cmd": "units",
             "name": "PID units assigned to the gauge",
             "desc": "Set the PID units by view and gauge index",

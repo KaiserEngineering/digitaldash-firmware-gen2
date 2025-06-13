@@ -588,6 +588,29 @@ for i, struct in enumerate(config["config"]["struct_list"]):
             write_define_load_setting( config_c, struct, cmd, 1)
 config_c.write("\n")
 
+config_c.write("bool config_to_json(char *buffer, size_t buffer_size) {\n")
+config_c.write("    cJSON *root = cJSON_CreateObject();\n\n")
+config_c.write("    if (!root) return false;\n\n")
+
+for i, struct in enumerate(config["config"]["struct_list"]):
+    if isinstance(struct, list):  # Check if the item is a list
+        parent_struct = config["config"]["struct_list"][i - 1]  # Get the parent struct name (previous item)
+        
+        for sub_struct in struct:  # Iterate through the sublist
+            print(f"Parent struct: {parent_struct}, Sub-struct: {sub_struct}")
+            config_c.write(f"    // Serialize {sub_struct}\n")
+            config_c.write(f"    cJSON *{sub_struct} = cJSON_AddArrayToObject(root, \"{sub_struct}\");\n")
+            config_c.write(f"    for(int i = 0; i < ; i++) \n")
+            for cmd in config[sub_struct]:
+                config_c.write(f"        // CMD {cmd["cmd"]}\n")
+    else:
+        # If it's not a list, just process the struct
+        config_c.write(f"    // Serialize {struct}\n")
+        config_c.write(f"    cJSON *{struct} = cJSON_AddArrayToObject(root, \"{struct}\");\n")
+        for cmd in config[struct]:
+           config_c.write(f"        // CMD {cmd["cmd"]}\n")
+
+
 config_c.write("static uint8_t cached_settings[" + str(TotalByteCount) + "];\n\n")
 
 config_c.write("static settings_write *write;\n")

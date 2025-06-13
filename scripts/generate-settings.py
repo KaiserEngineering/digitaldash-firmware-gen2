@@ -622,7 +622,7 @@ for i, struct in enumerate(config["config"]["struct_list"]):
           else:
             get_function = f"get_{struct}_{cmd["cmd"].lower()}(i)"
           config_c.write(f"        {function}({struct}, \"{cmd["cmd"]}\", {get_function});\n")
-          config_c.write(f"        cJSON_AddItemToArray({struct}s, {struct});\n")
+        config_c.write(f"        cJSON_AddItemToArray({struct}s, {struct});\n")
         config_c.write(f"    }}\n")
 config_c.write("\n    // Print into user buffer\n")
 config_c.write("    bool success = cJSON_PrintPreallocated(root, buffer, buffer_size, /*format*/ 1);\n")
@@ -666,7 +666,7 @@ config_c.write("}\n\n")
 
 config_h.write("\n\nvoid load_settings(void);\n")
 config_h.write("void write_eeprom(uint16_t bAdd, uint8_t bData);\n")
-config_h.write("uint8_t get_eeprom_byte(uint16_t bAdd);")
+config_h.write("uint8_t get_eeprom_byte(uint16_t bAdd);\n")
 config_h.write("bool config_to_json(char *buffer, size_t buffer_size);")
 
 config_c.write("void load_settings(void)\n{\n")

@@ -107,7 +107,9 @@
             "min": 1,
             "max": 255,
             "limit": "PID_UNITS_RESERVED",
-            "EEBytes": 1
+            "EEBytes": 1,
+            "jsonOverride": "string",
+            "getFunc": "get_unit_label"
         },
         {
             "index" : true,
@@ -264,7 +266,9 @@
             "min": 1,
             "max": 255,
             "limit": "PID_UNITS_RESERVED",
-            "EEBytes": 1
+            "EEBytes": 1,
+            "jsonOverride": "string",
+            "getFunc": "get_unit_label"
         }
     ],
     "gauge": [
@@ -313,7 +317,9 @@
             "min": 1,
             "max": 255,
             "limit": "PID_UNITS_RESERVED",
-            "EEBytes": 1
+            "EEBytes": 1,
+            "jsonOverride": "string",
+            "getFunc": "get_unit_label"
         }
     ]
 }

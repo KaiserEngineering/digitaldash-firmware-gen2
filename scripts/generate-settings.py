@@ -530,6 +530,35 @@ def write_json_entry(cmd, struct, config_c, indentation, depth):
     # Write the final cJSON call
     config_c.write(f'{indent}{function}({struct}, "{cmd["cmd"]}", {get_function});\n')
 
+def write_json_get_entry(cmd, struct, config_c, indentation, depth):
+    indent = " " * indentation
+    type_ = cmd.get("jsonOverride", cmd["type"])
+    datatype = cmd.get("dataType", "")
+    cmd_name = cmd["cmd"].lower()
+    index_args = "(i, j" if depth == 2 else "(i"
+
+    # Determine cJSON field based on type
+    if type_ in ("string", "list"):
+        cjson_field = "valuestring"
+    elif type_ == "number" and datatype == "float":
+        cjson_field = "valuedouble"
+    else:
+        cjson_field = "valueint"
+
+    # Determine conversion function
+    if type_ == "list":
+        convert_func = f"get_{struct}_{cmd_name}_from_string"
+    elif type_ == "string" and cmd["dataType"] != "char": 
+          convert_func = cmd.get("setFunc", f"get_{struct}_{cmd_name}_from_string")
+    else:
+        convert_func = ""
+
+    # Compose function call
+    value_expr = f'{convert_func}(cJSON_GetObjectItem({struct}, "{cmd["cmd"]}")->{cjson_field})' if convert_func else f'cJSON_GetObjectItem({struct}, "{cmd["cmd"]}")->{cjson_field}'
+    
+    config_c.write(f'{indent}set_{struct}_{cmd_name}{index_args}, {value_expr}, true);\n')
+
+
 def process_struct( prefix, cmd, depth ):
    write_comment_block( config_h, prefix, cmd, depth )
    write_comment_block( config_c, prefix, cmd, depth )
@@ -656,6 +685,39 @@ config_c.write("    cJSON_Delete(root);\n")
 config_c.write("    return success;\n")
 config_c.write("}\n\n")
 
+config_c.write("bool json_to_config(const char *json_str) {\n")
+config_c.write("    cJSON *root = cJSON_Parse(json_str);\n\n")
+config_c.write("    if (!root) return false;\n")
+
+for struct_entry in config["config"]["struct_list"]:
+    for parent_struct, sub_structs in struct_entry.items():
+        # Always process the parent struct
+        config_c.write(f"\n    // Get {parent_struct}\n")
+        config_c.write(f"    cJSON *{parent_struct}s = cJSON_GetObjectItem(root, \"{parent_struct}\");\n")
+        config_c.write(f"    for(int i = 0; (i < MAX_{parent_struct.upper()}S) && (i < cJSON_GetArraySize({parent_struct}s)); i++) {{\n")
+        config_c.write(f"        cJSON *{parent_struct} = cJSON_GetArrayItem({parent_struct}s, i);\n")
+        for cmd in config[parent_struct]:
+          write_json_get_entry(cmd, parent_struct, config_c, 8, 1)
+
+        if sub_structs:  # Parent has sub-items
+            for sub_struct in sub_structs:
+                config_c.write(f"\n        // Get {sub_struct} within {parent_struct}\n")
+                config_c.write(f"        cJSON *{parent_struct}_{sub_struct}s = cJSON_AddArrayToObject({parent_struct}, \"{sub_struct}\");\n")
+                config_c.write(f"        for(int j = 0; j < MAX_{sub_struct.upper()}S_PER_{parent_struct.upper()}; j++) {{\n")
+                config_c.write(f"            cJSON *{parent_struct}_{sub_struct} = cJSON_CreateObject();\n")
+                for cmd in config[sub_struct]:
+                  write_json_get_entry(cmd, (f"{parent_struct}_{sub_struct}"), config_c, 12, 2)
+                config_c.write(f"            cJSON_AddItemToArray({parent_struct}_{sub_struct}s, {parent_struct}_{sub_struct});\n")
+                config_c.write(f"        }}\n")
+
+        config_c.write(f"        cJSON_AddItemToArray({parent_struct}s, {parent_struct});\n")
+        config_c.write(f"    }}\n")
+
+config_c.write("\n    // Print into user buffer\n")
+config_c.write("    cJSON_Delete(root);\n")
+config_c.write("    return true;\n")
+config_c.write("}\n\n")
+
 
 config_c.write("static uint8_t cached_settings[" + str(TotalByteCount) + "];\n\n")
 
@@ -694,6 +756,7 @@ config_h.write("\n\nvoid load_settings(void);\n")
 config_h.write("void write_eeprom(uint16_t bAdd, uint8_t bData);\n")
 config_h.write("uint8_t get_eeprom_byte(uint16_t bAdd);\n")
 config_h.write("bool config_to_json(char *buffer, size_t buffer_size);")
+config_h.write("bool json_to_config(const char *json_str);")
 
 config_c.write("void load_settings(void)\n{\n")
 for struct_entry in config["config"]["struct_list"]:

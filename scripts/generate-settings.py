@@ -51,8 +51,8 @@ config_h.write("#ifdef __cplusplus\n")
 config_h.write("extern \"C\"\n{\n")
 config_h.write("#endif\n\n")
 
-config_h.write("#include \"stdbool.h\"\n")
-config_h.write("#include \"string.h\"\n")
+config_h.write("#include <stdbool.h>\n")
+config_h.write("#include <string.h>\n")
 config_h.write("#include \"cJSON.h\"\n")
 config_h.write("#include \"lib_pid.h\"\n\n")
 

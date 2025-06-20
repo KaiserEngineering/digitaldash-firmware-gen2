@@ -9,7 +9,7 @@
  #define INC_KE_DIGITALDASH_H_
  
  #include "lib_pid.h"
- #include "stdio.h"
+ #include <stdio.h>
  #include "ke_config.h"
  #include "lvgl.h"
  

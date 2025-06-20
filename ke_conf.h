@@ -90,7 +90,17 @@ typedef enum _ecu_comm {
 /********************************************************************
 * UI Configuration                                                  *
 ********************************************************************/
-#define SCREEN_FADE_INIT_T 1000 // Fading for when the screen first turns on
-#define SCREEN_FADE_T 250  // Fading for when the screen switches screens
+#define UI_ENABLED 1
+#if UI_ENABLED
+	#define SCREEN_FADE_INIT_T 1000 // Fading for when the screen first turns on
+	#define SCREEN_FADE_T 250  // Fading for when the screen switches screens
+
+	#define UI_HOR_RES    1024 // UI horizontal Resolution (This can be different from screen resolution)
+	#define UI_VER_RES    200  // UI vertical Resolution (This can be different from screen resolution)
+	#define UI_BYTES_PER_PIXEL 4 // Number of bytes per pixel (RGBA = 4)
+	#define ACT_HOR_RES    1024 // Screen horizontal resolution
+	#define ACT_VER_RES    600  // Screen vertical resolution
+	#define DISP_PARTIAL 0 // Enable/disable partial rendering
+#endif
 
 #endif /*End of "Content enable"*/

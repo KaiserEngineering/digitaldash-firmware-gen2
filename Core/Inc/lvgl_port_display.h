@@ -15,13 +15,6 @@ extern "C" {
  *      DEFINES
  *********************/
 
-#define UI_HOR_RES    1024
-#define UI_VER_RES    200
-#define UI_BYTES_PER_PIXEL 4
-#define ACT_HOR_RES    1024
-#define ACT_VER_RES    600
-#define DISP_PARTIAL 0
-
 // LCD Timing
 #define HSYNC 30
 #define HFP 16

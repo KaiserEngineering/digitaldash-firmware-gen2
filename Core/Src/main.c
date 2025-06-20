@@ -190,12 +190,12 @@ void eeprom_write(uint16_t bAdd, uint8_t bData)
 	eeprom_24cw_write(EEPROM_I2C, bAdd, bData);
 }
 
-static void switch_screen(struct _lv_obj_t * scr)
+static void switch_screen(struct _lv_obj_t *scr, uint32_t anim_t)
 {
-	if( lv_display_get_screen_active(NULL) != scr)
-	{
-		lv_screen_load(scr);
-	}
+    if (lv_disp_get_scr_act(NULL) != scr)
+    {
+    	lv_screen_load_anim(scr, LV_SCR_LOAD_ANIM_FADE_IN, anim_t, 0, false);
+    }
 }
 
 static void switch_view(uint8_t idx)
@@ -1073,7 +1073,7 @@ int main(void)
   }
 
   // Load the splash screen
-  switch_screen(splash_screen);
+  switch_screen(splash_screen, SCREEN_FADE_INIT_T);
 
   add_alert(ui_screen);
   show_build_info_overlay();
@@ -1136,13 +1136,13 @@ int main(void)
 	digitaldash_service();
 
 	if( HAL_GetTick() <= (SPLASH_SCREEN_T + boot_time) ) {
-		switch_screen(splash_screen);
+		switch_screen(splash_screen, SCREEN_FADE_T);
 	} else if( HAL_GetTick() >= next_screen_saver ) {
-		switch_screen(splash_screen);
+		switch_screen(splash_screen, SCREEN_FADE_T);
 		if( HAL_GetTick() >= (next_screen_saver + SCREEN_SAVER_DURATION_T) )
 			next_screen_saver = HAL_GetTick() + SCREEN_SAVER_T;
 	} else {
-		switch_screen(ui_screen);
+		switch_screen(ui_screen, SCREEN_FADE_T);
 	}
 
 	/* Log min/max values */

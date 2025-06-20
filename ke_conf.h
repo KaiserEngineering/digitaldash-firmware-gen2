@@ -87,4 +87,10 @@ typedef enum _ecu_comm {
 #define OS_BOOT_TIME_MAX 1000 // Reboot after 10 seconds
 #define OS_FRAME_TIMEOUT 60000
 
+/********************************************************************
+* UI Configuration                                                  *
+********************************************************************/
+#define SCREEN_FADE_INIT_T 1000 // Fading for when the screen first turns on
+#define SCREEN_FADE_T 250  // Fading for when the screen switches screens
+
 #endif /*End of "Content enable"*/

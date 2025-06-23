@@ -95,26 +95,47 @@ static void log_minmax( PID_DATA* pid )
 }
 
 /**
- * @brief Checks if a dynamic gauge condition is met and returns the corresponding view index.
+ * @brief Selects the highest priority dynamic gauge that should be displayed.
  *
- * This function evaluates a condition for a dynamic gauge defined in the given
- * `digitaldash` instance. It compares the current PID value against a threshold
- * using the specified comparison operator. If the condition is met, it returns
- * the associated view index to display. Otherwise, it returns 0.
+ * This function iterates through all dynamic gauges, starting from the highest
+ * priority level and descending to the lowest. For each priority level, it scans
+ * all configured dynamic gauges to find one that:
+ *   - Matches the current priority level,
+ *   - Is marked as enabled,
+ *   - Has a comparison that evaluates as true (e.g., RPM > 4000).
  *
- * @param dash Pointer to the `digitaldash` structure containing dynamic gauge definitions.
- * @param idx  Index of the dynamic gauge to check.
+ * The first dynamic gauge that satisfies all three conditions will be selected,
+ * and its view index will be returned.
  *
- * @return The view index to display if the condition is true, or 0 if not.
+ * If no matching dynamic gauge is found, the currently active view index is returned.
+ *
+ * @return uint8_t The view index of the highest-priority valid dynamic gauge,
+ *                 or the current active view index if none match.
  */
-/*static int8_t dynamic_gauge_check( digitaldash *dash, uint8_t idx )
+static uint8_t dynamic_gauge_check( void )
 {
-	if( compare_values(dash->dynamic[idx].pid->pid_value, dash->dynamic[idx].thresh, dash->dynamic[idx].compare) ) {
-		return dash->dynamic[idx].view_index;
-	} else {
-		return 0;
+	// Start from highest priority.
+	for( DYNAMIC_PRIORITY priority = DYNAMIC_PRIORITY_HIGH; priority > DYNAMIC_PRIORITY_LOW; priority--)
+	{
+		// Iterate through each dynamic gauge to find the current priority
+		for( uint8_t dynamic = 0; dynamic < MAX_DYNAMICS; dynamic++){
+			// Find the matching priority dynamic setting
+			if( get_dynamic_priority(dynamic) == priority ) {
+				// Once found, see if it is enabled
+				if( get_dynamic_enable(dynamic) == DYNAMIC_STATE_ENABLED ) {
+					// Verify the pid pointer is not null
+					if( ui_dynamic_pid[dynamic] == NULL ) {
+						continue;
+					// Now check if it should be enabled
+					} else if( compare_values( ui_dynamic_pid[dynamic]->pid_value, get_dynamic_threshold(dynamic), get_dynamic_compare(dynamic)) ) {
+						return get_dynamic_index(dynamic);
+					}
+				}
+			}
+		}
 	}
-}*/
+	return active_view_idx;
+}
 
 static void switch_view(uint8_t idx)
 {
@@ -361,7 +382,7 @@ void ui_service(void)
 	}
 
 	/* Check for dynamic gauge change */
-	//active_view_idx = dynamic_gauge_check(&FordFocusSTRS, 0);
+	active_view_idx = dynamic_gauge_check();
 
 	/* Switch to the active view, this can be called each loop. A check will
 	 * be made to ensure that the screen is only re-loaded if it is not active. */

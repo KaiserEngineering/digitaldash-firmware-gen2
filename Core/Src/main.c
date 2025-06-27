@@ -101,6 +101,9 @@ const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_
 #define EEPROM_I2C &hi2c2 /* EEPROM I2C channel */
 
 #define EXT_CAN_BUS &hfdcan1 /* External CAN bus channel */
+
+#define RX_BUFFER_SIZE 4096
+uint8_t rx_buffer[RX_BUFFER_SIZE];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -160,18 +163,6 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 	 //HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
 	 //HAL_SPI_Receive_IT(&hspi1, rx_buffer, sizeof(rx_buffer));
 }
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if( huart == ESP32_UART )
-	{
-		DigitalDash_Add_UART_byte(rx_byte);
-
-		/* Wait for the next byte */
-		HAL_UART_Receive_IT( ESP32_UART, &rx_byte, 1 );
-	}
-}
-
 
 /**
   * @brief  Tx Transfer completed callback.
@@ -520,10 +511,26 @@ static void esp32_reset( HOST_PWR_STATE state )
 
 static int esp32_tx( uint8_t *data, uint32_t len )
 {
-    if( HAL_UART_Transmit_IT(ESP32_UART, data, len) == HAL_OK )
+    if( HAL_UART_Transmit_DMA(ESP32_UART, data, len) == HAL_OK )
         return 1;
     else
         return 0;
+}
+
+void UART_IdleCallback(UART_HandleTypeDef *huart)
+{
+    // Disable DMA temporarily
+    HAL_UART_DMAStop(huart);
+
+    // Get how many bytes were received before idle
+    uint16_t received = RX_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(huart->hdmarx);
+
+    // Process the buffer
+    for( uint16_t i = 0; i < received; i++)
+    	DigitalDash_Add_UART_byte(rx_buffer[i]);
+
+    // Restart DMA for next transfer
+    HAL_UART_Receive_DMA(huart, rx_buffer, RX_BUFFER_SIZE);
 }
 
 
@@ -764,7 +771,8 @@ int main(void)
   settings_setWriteHandler(eeprom_write);
 
   // Enable UART interrupt
-  HAL_UART_Receive_IT( ESP32_UART, &rx_byte, 1 );
+  HAL_UART_Receive_DMA(ESP32_UART, rx_buffer, RX_BUFFER_SIZE);
+  __HAL_UART_ENABLE_IT(ESP32_UART, UART_IT_IDLE);
 
   // Start 1ms timer tick for Digital Dash
   if (HAL_TIM_Base_Start_IT(&htim17) != HAL_OK) {

@@ -683,7 +683,7 @@ for struct_entry in config["config"]["struct_list"]:
 
 config_c.write("\n")
 
-config_c.write("uint32_t options_to_json(char *buffer, size_t buffer_size) {\n")
+config_c.write("uint32_t options_to_json(char *buffer, uint32_t buffer_size) {\n")
 config_c.write("    cJSON *root = cJSON_CreateObject();\n\n")
 config_c.write("    if (!root) return 0;\n\n")
 config_c.write("    cJSON *list;\n\n")
@@ -729,7 +729,7 @@ config_c.write("    cJSON_Delete(root);\n")
 config_c.write("    return actual_len; // 0 means failure\n")
 config_c.write("}\n\n")
 
-config_c.write("uint32_t config_to_json(char *buffer, size_t buffer_size) {\n")
+config_c.write("uint32_t config_to_json(char *buffer, uint32_t buffer_size) {\n")
 config_c.write("    cJSON *root = cJSON_CreateObject();\n\n")
 config_c.write("    if (!root) return 0;\n\n")
 config_c.write("    char str_buf[1024];\n")
@@ -841,9 +841,9 @@ config_c.write("}\n\n")
 config_h.write("\n\nvoid load_settings(void);\n")
 config_h.write("void write_eeprom(uint16_t bAdd, uint8_t bData);\n")
 config_h.write("uint8_t get_eeprom_byte(uint16_t bAdd);\n")
-config_h.write("uint32_t options_to_json(char *buffer, size_t buffer_size);")
-config_h.write("uint32_t config_to_json(char *buffer, size_t buffer_size);")
-config_h.write("bool json_to_config(const char *json_str);")
+config_h.write("uint32_t options_to_json(char *buffer, uint32_t buffer_size);\n")
+config_h.write("uint32_t config_to_json(char *buffer, uint32_t buffer_size);\n")
+config_h.write("bool json_to_config(const char *json_str)\n;")
 
 config_c.write("void load_settings(void)\n{\n")
 for struct_entry in config["config"]["struct_list"]:

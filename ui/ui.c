@@ -46,22 +46,24 @@ static const uint32_t USER_BACKGROUND_ADDRESSES[BACKGROUND_IMAGE_COUNT] = {
     BACKGROUND_BASE_ADDRESS + 14 * BACKGROUND_IMAGE_SIZE
 };
 
+#define BACKGROUND_COLOR_FORMAT LV_COLOR_FORMAT_NATIVE_WITH_ALPHA
+
 const lv_image_dsc_t ui_background_user1 = {
     .header.w = UI_HOR_RES,
     .header.h = UI_VER_RES,
     .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL,
-    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+    .header.cf = BACKGROUND_COLOR_FORMAT,
     .header.magic = LV_IMAGE_HEADER_MAGIC,
-    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[0]
+    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[VIEW_BACKGROUND_USER1]
 };
 
 const lv_image_dsc_t ui_background_user2 = {
     .header.w = UI_HOR_RES,
     .header.h = UI_VER_RES,
     .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL,
-    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+    .header.cf = BACKGROUND_COLOR_FORMAT,
     .header.magic = LV_IMAGE_HEADER_MAGIC,
-    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[1]
+    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[VIEW_BACKGROUND_USER2]
 };
 
 // UI Variables

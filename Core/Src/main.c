@@ -22,6 +22,7 @@
 #include "dma2d.h"
 #include "fdcan.h"
 #include "flash.h"
+#include "gpdma.h"
 #include "gpu2d.h"
 #include "gtzc.h"
 #include "hspi.h"
@@ -733,6 +734,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_GPDMA1_Init();
   MX_DMA2D_Init();
   MX_HSPI1_Init();
   MX_I2C2_Init();
@@ -748,8 +750,8 @@ int main(void)
   MX_TIM17_Init();
   MX_I2C1_Init();
   MX_SPI3_Init();
-  MX_TIM15_Init();
   MX_TIM3_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
   // Indicate Boot has started
   HAL_GPIO_WritePin(DBG_LED1_GPIO_Port, DBG_LED1_Pin, GPIO_PIN_SET);

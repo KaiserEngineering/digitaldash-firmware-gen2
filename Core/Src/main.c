@@ -54,43 +54,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BACKGROUND_IMAGE_COUNT      (20U)
-#define BACKGROUND_BLOCK_SIZE       (0x10000U) // 64KB
-#define BACKGROUND_PIXEL_WIDTH      UI_HOR_RES
-#define BACKGROUND_PIXEL_HEIGHT     UI_VER_RES
-#define BACKGROUND_BYTES_PER_PIXEL  UI_BYTES_PER_PIXEL       // e.g. ARGB8888 = 4 bytes, RGB565 = 2 bytes
-#define BACKGROUND_BASE_ADDRESS    (0x00000000U)
-
-// Macro to perform integer ceiling division
-#define CEIL_DIV(x, y)              (((x) + (y) - 1) / (y))
-
-// Raw image size in bytes
-#define BACKGROUND_RAW_SIZE         (BACKGROUND_PIXEL_WIDTH * BACKGROUND_PIXEL_HEIGHT * BACKGROUND_BYTES_PER_PIXEL)
-
-// Aligned image size (to next 64KB boundary)
-#define BACKGROUND_IMAGE_SIZE       (CEIL_DIV(BACKGROUND_RAW_SIZE, BACKGROUND_BLOCK_SIZE) * BACKGROUND_BLOCK_SIZE)
-
-// Start addresses of backgrounds (computed for BACKGROUND_IMAGE_SIZE)
-static const uint32_t USER_BACKGROUND_ADDRESSES[BACKGROUND_IMAGE_COUNT] = {
-    BACKGROUND_BASE_ADDRESS,
-    BACKGROUND_BASE_ADDRESS + 1 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 2 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 3 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 4 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 5 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 6 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 7 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 8 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 9 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 10 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 11 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 12 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 13 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 14 * BACKGROUND_IMAGE_SIZE
-};
-
-const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[BACKGROUND_IMAGE_COUNT][BACKGROUND_IMAGE_SIZE];
-
 #define BKLT_MIN_DUTY 3
 #define BKLT_MAX_DUTY 100
 #define BKLT_TIM &htim15
@@ -456,7 +419,7 @@ void erase_background(uint32_t start_address)
 
 void write_background( uint8_t *image_buffer, uint32_t image_size, uint8_t idx )
 {
-	uint32_t background_addr = USER_BACKGROUND_ADDRESSES[idx];
+	uint32_t background_addr = 0;
 
 	// Memory can only be written when NOT in memory mapped mode.
 	if(BSP_HSPI_NOR_DisableMemoryMappedMode(0) == BSP_ERROR_NONE)
@@ -569,7 +532,7 @@ void spoof_config(void)
 	// View 0
 	set_view_enable(0, VIEW_STATE_ENABLED, true);
 	set_view_num_gauges(0, 3, true);
-	set_view_background(0, VIEW_BACKGROUND_USER1, true);
+	set_view_background(0, VIEW_BACKGROUND_USER2, true);
 	set_view_gauge_theme(0, 0, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 1, GAUGE_THEME_RADIAL, true);
 	set_view_gauge_theme(0, 2, GAUGE_THEME_RADIAL, true);

@@ -16,7 +16,7 @@ LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 #define BACKGROUND_PIXEL_WIDTH      UI_HOR_RES
 #define BACKGROUND_PIXEL_HEIGHT     UI_VER_RES
 #define BACKGROUND_BYTES_PER_PIXEL  UI_BYTES_PER_PIXEL       // e.g. ARGB8888 = 4 bytes, RGB565 = 2 bytes
-#define BACKGROUND_BASE_ADDRESS    (0x00000000U)
+#define BACKGROUND_BASE_ADDRESS    (0xA0000000U)
 
 // Macro to perform integer ceiling division
 #define CEIL_DIV(x, y)              (((x) + (y) - 1) / (y))
@@ -27,7 +27,42 @@ LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 // Aligned image size (to next 64KB boundary)
 #define BACKGROUND_IMAGE_SIZE       (CEIL_DIV(BACKGROUND_RAW_SIZE, BACKGROUND_BLOCK_SIZE) * BACKGROUND_BLOCK_SIZE)
 
-extern const __attribute__((section(".ExtFlash_Section"))) __attribute__((used)) uint8_t backgrounds_external[BACKGROUND_IMAGE_COUNT][BACKGROUND_IMAGE_SIZE];
+// Start addresses of backgrounds (computed for BACKGROUND_IMAGE_SIZE)
+static const uint32_t USER_BACKGROUND_ADDRESSES[BACKGROUND_IMAGE_COUNT] = {
+    BACKGROUND_BASE_ADDRESS,
+    BACKGROUND_BASE_ADDRESS + 1 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 2 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 3 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 4 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 5 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 6 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 7 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 8 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 9 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 10 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 11 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 12 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 13 * BACKGROUND_IMAGE_SIZE,
+    BACKGROUND_BASE_ADDRESS + 14 * BACKGROUND_IMAGE_SIZE
+};
+
+const lv_image_dsc_t ui_background_user1 = {
+    .header.w = UI_HOR_RES,
+    .header.h = UI_VER_RES,
+    .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL,
+    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[0]
+};
+
+const lv_image_dsc_t ui_background_user2 = {
+    .header.w = UI_HOR_RES,
+    .header.h = UI_VER_RES,
+    .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL,
+    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[1]
+};
 
 // UI Variables
 #define SPLASH_SCREEN_T 5000
@@ -234,28 +269,19 @@ void build_ui(void)
 			  const lv_image_dsc_t * img = NULL;
 			  lv_color_t color = {0};
 
-			  static lv_image_dsc_t ext_background = {
-			    .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
-			    .header.magic = LV_IMAGE_HEADER_MAGIC,
-			    .header.w = UI_HOR_RES,
-			    .header.h = UI_VER_RES,
-			    .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL,
-			    .data = (const uint8_t *)backgrounds_external[0],
-			  };
-
 			  switch( get_view_background(view) )
 			  {
-				  case VIEW_BACKGROUND_FLARE:
-					  //img = &ui_img_flare_png;
-					  is_image = 1;
-					  break;
 
 				  case VIEW_BACKGROUND_USER1:
-					  img = &ext_background;
+					  img = &ui_background_user1;
 					  is_image = 1;
 					  break;
 
-				  case VIEW_BACKGROUND_BLACK:
+				  case VIEW_BACKGROUND_USER2:
+					  img = &ui_background_user2;
+					  is_image = 1;
+					  break;
+
 				  default:
 					  color.red = 0;
 					  color.green = 0;

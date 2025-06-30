@@ -66,6 +66,15 @@ const lv_image_dsc_t ui_background_user2 = {
     .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[VIEW_BACKGROUND_USER2]
 };
 
+bool is_all_ff(const uint8_t *data, uint32_t size) {
+	for (uint32_t i = 0; i < size; i++) {
+		if (data[i] != 0xFF) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // UI Variables
 #define SPLASH_SCREEN_T 5000
 #define MIN_TO_MILLI (60 * 1000)
@@ -293,7 +302,13 @@ void build_ui(void)
 			  }
 
 			  if( is_image ) {
-				  lv_obj_set_style_bg_image_src(ui_view[view], img, LV_PART_MAIN | LV_STATE_DEFAULT);
+				  if( is_all_ff(img->data, img->data_size) )
+				  {
+					  lv_obj_set_style_bg_opa(ui_view[view], LV_OPA_COVER, LV_PART_MAIN);
+					  lv_obj_set_style_bg_color(ui_view[view], color, LV_PART_MAIN | LV_STATE_DEFAULT);
+				  } else {
+					  lv_obj_set_style_bg_image_src(ui_view[view], img, LV_PART_MAIN | LV_STATE_DEFAULT);
+				  }
 			  } else {
 				  lv_obj_set_style_bg_opa(ui_view[view], LV_OPA_COVER, LV_PART_MAIN);
 				  lv_obj_set_style_bg_color(ui_view[view], color, LV_PART_MAIN | LV_STATE_DEFAULT);

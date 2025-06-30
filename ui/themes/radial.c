@@ -74,7 +74,7 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DATA *
 
     lv_span_t * span_unit = lv_spangroup_new_span(span_group);
     lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_20);
-    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBBB));
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBB));
 
     // Split value and unit (assuming value is number and unit is already stored)
     char value_buf[16];

@@ -41,5 +41,6 @@ typedef enum {
 } ADDR_MEMORYMAPPED_MODE;
 
 uint32_t get_background_addr(uint8_t idx, ADDR_MEMORYMAPPED_MODE mode);
+uint32_t calc_crc32(uint8_t idx, uint32_t reserved);
 
 #endif /* UI_H_ */

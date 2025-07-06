@@ -11,7 +11,7 @@
 
 LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 
-#define BACKGROUND_IMAGE_COUNT      (20U)
+#define BACKGROUND_IMAGE_COUNT      (15U)
 #define BACKGROUND_BLOCK_SIZE       (0x10000U) // 64KB
 #define BACKGROUND_PIXEL_WIDTH      UI_HOR_RES
 #define BACKGROUND_PIXEL_HEIGHT     UI_VER_RES
@@ -82,7 +82,7 @@ DEFINE_BACKGROUND_USER(13);
 DEFINE_BACKGROUND_USER(14);
 DEFINE_BACKGROUND_USER(15);
 
-bool is_all_ff(const uint8_t *data, uint32_t size) {
+static bool is_all_ff(const uint8_t *data, uint32_t size) {
 	for (uint32_t i = 0; i < size; i++) {
 		if (data[i] != 0xFF) {
 			return false;
@@ -91,20 +91,41 @@ bool is_all_ff(const uint8_t *data, uint32_t size) {
 	return true;
 }
 
-uint32_t calc_crc32(const uint8_t *data, uint32_t size) {
-    uint32_t crc = 0xFFFFFFFF;
+static uint32_t crc32_table[256];
 
-    for (uint32_t i = 0; i < size; i++) {
-        crc ^= data[i];
-        for (int j = 0; j < 8; j++) {
-            if (crc & 1)
-                crc = (crc >> 1) ^ 0xEDB88320;
+void crc32_init_table(void) {
+    for (uint32_t i = 0; i < 256; ++i) {
+        uint32_t c = i;
+        for (int j = 0; j < 8; ++j) {
+            if (c & 1)
+                c = 0xEDB88320L ^ (c >> 1);
             else
-                crc >>= 1;
+                c >>= 1;
         }
+        crc32_table[i] = c;
     }
+}
 
-    return ~crc;
+uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len) {
+    crc ^= 0xFFFFFFFF;
+    for (size_t i = 0; i < len; ++i) {
+        crc = (crc >> 8) ^ crc32_table[(crc ^ buf[i]) & 0xFF];
+    }
+    return crc ^ 0xFFFFFFFF;
+}
+
+uint32_t calc_crc32(uint8_t idx, uint32_t reserved) {
+    if (idx >= BACKGROUND_IMAGE_COUNT) return 0;
+
+    // Cast address to data pointer
+    const uint8_t *data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[idx];
+    uint32_t size = BACKGROUND_RAW_SIZE;
+
+    // Ensure the lookup table is initialized
+    crc32_init_table();
+
+    // Use optimized table-based CRC
+    return crc32_update(0xFFFFFFFF, data, size);
 }
 
 // UI Variables
@@ -268,6 +289,9 @@ void show_build_info_overlay(void)
 
 void build_ui(void)
 {
+	  // Initialize the CRC32 table
+	  crc32_init_table();
+
 	  // Create the screen
 	  lv_disp_t * dispp = lv_display_get_default();
 	  lv_theme_t * theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), true, LV_FONT_DEFAULT);

@@ -27,23 +27,14 @@ LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 // Aligned image size (to next 64KB boundary)
 #define BACKGROUND_IMAGE_SIZE       (CEIL_DIV(BACKGROUND_RAW_SIZE, BACKGROUND_BLOCK_SIZE) * BACKGROUND_BLOCK_SIZE)
 
+// Define background address macro
+#define BG_ADDR(n) (BACKGROUND_BASE_ADDRESS + ((n) * BACKGROUND_IMAGE_SIZE))
+
 // Start addresses of backgrounds (computed for BACKGROUND_IMAGE_SIZE)
 static const uint32_t USER_BACKGROUND_ADDRESSES[BACKGROUND_IMAGE_COUNT] = {
-    BACKGROUND_BASE_ADDRESS,
-    BACKGROUND_BASE_ADDRESS + 1 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 2 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 3 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 4 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 5 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 6 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 7 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 8 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 9 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 10 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 11 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 12 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 13 * BACKGROUND_IMAGE_SIZE,
-    BACKGROUND_BASE_ADDRESS + 14 * BACKGROUND_IMAGE_SIZE
+    BG_ADDR(0), BG_ADDR(1), BG_ADDR(2), BG_ADDR(3), BG_ADDR(4),
+    BG_ADDR(5), BG_ADDR(6), BG_ADDR(7), BG_ADDR(8), BG_ADDR(9),
+    BG_ADDR(10), BG_ADDR(11), BG_ADDR(12), BG_ADDR(13), BG_ADDR(14)
 };
 
 uint32_t get_background_addr(uint8_t idx, ADDR_MEMORYMAPPED_MODE mode)
@@ -82,17 +73,37 @@ DEFINE_BACKGROUND_USER(13);
 DEFINE_BACKGROUND_USER(14);
 DEFINE_BACKGROUND_USER(15);
 
-static bool is_all_ff(const uint8_t *data, uint32_t size) {
-	for (uint32_t i = 0; i < size; i++) {
-		if (data[i] != 0xFF) {
-			return false;
-		}
-	}
-	return true;
+/**
+ * @brief Check if a memory block is completely erased (all bytes are 0xFF).
+ *
+ * This utility function scans a block of memory and returns `true` if all bytes
+ * are equal to `0xFF`, which typically indicates an erased flash memory region.
+ *
+ * @param data Pointer to the memory block to check.
+ * @param size Number of bytes to check.
+ * @return true if all bytes are 0xFF, false otherwise.
+ */
+static bool is_all_ff(const uint8_t *data, uint32_t size)
+{
+    for (uint32_t i = 0; i < size; i++) {
+        if (data[i] != 0xFF) {
+            return false;
+        }
+    }
+    return true;
 }
 
 static uint32_t crc32_table[256];
 
+/**
+ * @brief Initialize the CRC32 lookup table.
+ *
+ * This function precomputes the CRC32 lookup table used for efficient CRC
+ * calculations. It populates the global `crc32_table` array with the
+ * polynomial-remainder values for all 256 possible byte values.
+ *
+ * The polynomial used is 0xEDB88320 (standard CRC32).
+ */
 void crc32_init_table(void) {
     for (uint32_t i = 0; i < 256; ++i) {
         uint32_t c = i;
@@ -106,7 +117,19 @@ void crc32_init_table(void) {
     }
 }
 
-uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len) {
+/**
+ * @brief Compute CRC32 of a buffer using the precomputed lookup table.
+ *
+ * Updates the CRC value by processing a buffer of bytes using the
+ * precomputed `crc32_table`. This function assumes the table is already
+ * initialized by `crc32_init_table()`.
+ *
+ * @param crc Initial CRC value (typically 0xFFFFFFFF).
+ * @param buf Pointer to the input buffer.
+ * @param len Length of the buffer in bytes.
+ * @return Updated CRC32 value after processing the buffer.
+ */
+static uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len) {
     crc ^= 0xFFFFFFFF;
     for (size_t i = 0; i < len; ++i) {
         crc = (crc >> 8) ^ crc32_table[(crc ^ buf[i]) & 0xFF];
@@ -114,6 +137,17 @@ uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len) {
     return crc ^ 0xFFFFFFFF;
 }
 
+/**
+ * @brief Calculate the CRC32 checksum of a background image by index.
+ *
+ * Calculates the CRC32 checksum of the background image data stored at
+ * `USER_BACKGROUND_ADDRESSES[idx]`. The size of the data is fixed as
+ * `BACKGROUND_RAW_SIZE`. The CRC table is initialized automatically on each call.
+ *
+ * @param idx Index of the background image to checksum (must be < BACKGROUND_IMAGE_COUNT).
+ * @param reserved Reserved parameter, currently unused.
+ * @return CRC32 checksum of the image data, or 0 if index is invalid.
+ */
 uint32_t calc_crc32(uint8_t idx, uint32_t reserved) {
     if (idx >= BACKGROUND_IMAGE_COUNT) return 0;
 
@@ -174,12 +208,21 @@ static uint8_t compare_values(float a, float b, ALERT_COMPARISON comparison)
 	}
 }
 
-static void switch_screen(struct _lv_obj_t *scr, uint32_t anim_t)
+/**
+ * @brief Switch to the specified screen with a fade-in animation.
+ *
+ * If the given screen is not currently active, this function performs
+ * a screen transition using a fade-in animation for the specified duration.
+ *
+ * @param scr     Pointer to the target screen object.
+ * @param anim_ms Duration of the fade-in animation in milliseconds. Use 0 for immediate switch.
+ */
+static void switch_screen(lv_obj_t *scr, uint32_t anim_ms)
 {
-    if (lv_disp_get_scr_act(NULL) != scr)
-    {
-    	lv_screen_load_anim(scr, LV_SCR_LOAD_ANIM_FADE_IN, anim_t, 0, false);
-    }
+    if (scr == NULL || lv_disp_get_scr_act(NULL) == scr)
+        return;
+
+    lv_screen_load_anim(scr, LV_SCR_LOAD_ANIM_FADE_IN, anim_ms, 0, false);
 }
 
 static void log_minmax( PID_DATA* pid )
@@ -211,79 +254,95 @@ static void log_minmax( PID_DATA* pid )
  * @return uint8_t The view index of the highest-priority valid dynamic gauge,
  *                 or the current active view index if none match.
  */
-static uint8_t dynamic_gauge_check( void )
+static uint8_t dynamic_gauge_check(void)
 {
-	// Start from highest priority.
-	for( DYNAMIC_PRIORITY priority = DYNAMIC_PRIORITY_HIGH; priority > DYNAMIC_PRIORITY_LOW; priority--)
-	{
-		// Iterate through each dynamic gauge to find the current priority
-		for( uint8_t dynamic = 0; dynamic < MAX_DYNAMICS; dynamic++){
-			// Find the matching priority dynamic setting
-			if( get_dynamic_priority(dynamic) == priority ) {
-				// Once found, see if it is enabled
-				if( get_dynamic_enable(dynamic) == DYNAMIC_STATE_ENABLED ) {
-					// Verify the pid pointer is not null
-					if( ui_dynamic_pid[dynamic] == NULL ) {
-						continue;
-					// Now check if it should be enabled
-					} else if( compare_values( ui_dynamic_pid[dynamic]->pid_value, get_dynamic_threshold(dynamic), get_dynamic_compare(dynamic)) ) {
-						return get_dynamic_index(dynamic);
-					}
-				}
-			}
-		}
-	}
-	return active_view_idx;
+    // Iterate from highest to lowest priority
+    for (DYNAMIC_PRIORITY priority = DYNAMIC_PRIORITY_HIGH; priority > DYNAMIC_PRIORITY_LOW; priority--)
+    {
+        for (uint8_t i = 0; i < MAX_DYNAMICS; i++)
+        {
+            if (get_dynamic_priority(i) != priority)
+                continue;
+
+            if (get_dynamic_enable(i) != DYNAMIC_STATE_ENABLED)
+                continue;
+
+            const PID_DATA *pid = ui_dynamic_pid[i];
+            if (pid == NULL)
+                continue;
+
+            if (compare_values(pid->pid_value, get_dynamic_threshold(i), get_dynamic_compare(i)))
+                return get_dynamic_index(i);
+        }
+    }
+
+    return active_view_idx;
 }
 
+/**
+ * @brief Switch the currently visible view to the specified index.
+ *
+ * This function checks if the view at the given index is already visible.
+ * If it is hidden, it hides all other views and makes the selected view visible.
+ *
+ * Views are assumed to be stored in the `ui_view[]` array. Views that are `NULL`
+ * are skipped safely. The visibility is controlled using the `LV_OBJ_FLAG_HIDDEN` flag.
+ *
+ * @param idx Index of the view to activate.
+ */
 static void switch_view(uint8_t idx)
 {
-	// Check if the selected view is hidden
-	if( lv_obj_has_flag(ui_view[idx], LV_OBJ_FLAG_HIDDEN) )
-	{
-		// Hide all views except the active
-		for( uint8_t i = 0; i < MAX_VIEWS; i++)
-		{
-			if( ui_view[i] == NULL )
-				continue;  // Skip null entries
-			else if( i == idx )
-				lv_obj_remove_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
-			else
-				lv_obj_add_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
-		}
+    if (!lv_obj_has_flag(ui_view[idx], LV_OBJ_FLAG_HIDDEN))
+        return;  // View is already active
 
-	}
+    for (uint8_t i = 0; i < MAX_VIEWS; i++) {
+        if (ui_view[i] == NULL)
+            continue;
+
+        if (i == idx)
+        	lv_obj_remove_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+        else
+            lv_obj_add_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
+/**
+ * @brief Display a build information overlay on the top LVGL layer.
+ *
+ * This function creates a label on the top-most screen layer showing the current
+ * build type (Debug, Release, or Unknown), version, commit hash, and build timestamp.
+ * It's typically used for developer diagnostics or QA purposes.
+ *
+ * The overlay appears semi-transparent in white text and is aligned to the bottom center
+ * of the screen. It uses the `lv_font_montserrat_16` font.
+ */
 void show_build_info_overlay(void)
 {
-	#ifdef DEBUG
-		#define BUILD_TYPE "Debug"
-	#elif defined(RELEASE)
-		#define BUILD_TYPE "Release"
-	#else
-		#define BUILD_TYPE "Unknown"
-	#endif
+    // Determine build type string
+#if defined(DEBUG)
+    #define BUILD_TYPE "Debug"
+#elif defined(RELEASE)
+    #define BUILD_TYPE "Release"
+#else
+    #define BUILD_TYPE "Unknown"
+#endif
 
-    // Get the top layer
-    lv_obj_t * top_layer = lv_layer_top();
+    // Create label on the top-most LVGL layer
+    lv_obj_t *top_layer = lv_layer_top();
+    lv_obj_t *build_label = lv_label_create(top_layer);
 
-    // Create the label
-    lv_obj_t * build_label = lv_label_create(top_layer);
-
-    // Format the build info
+    // Format build info text
     char buf[128];
     snprintf(buf, sizeof(buf), "%s: %s (%s) %s", BUILD_TYPE, BUILD_VERSION, BUILD_COMMIT, BUILD_TIMESTAMP);
-
     lv_label_set_text(build_label, buf);
 
-    // Optional: Make background transparent
-    lv_obj_set_style_text_opa(build_label, LV_OPA_COVER, 0); // Semi-transparent text
-    lv_obj_set_style_text_color(build_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(build_label, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // Style the label
+    lv_obj_set_style_text_color(build_label, lv_color_white(), 0);
+    lv_obj_set_style_text_opa(build_label, LV_OPA_COVER, 0);
+    lv_obj_set_style_text_font(build_label, &lv_font_montserrat_18, 0);
 
-    // Align it to the bottom-right corner (or wherever you prefer)
-    lv_obj_align(build_label, LV_ALIGN_BOTTOM_MID, -0, -5);
+    // Align to bottom center with small vertical padding
+    lv_obj_align(build_label, LV_ALIGN_BOTTOM_MID, 0, -5);
 }
 
 

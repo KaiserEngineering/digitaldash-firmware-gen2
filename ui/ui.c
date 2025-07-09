@@ -251,7 +251,10 @@ static void log_minmax( PID_DATA* pid )
  * The first dynamic gauge that satisfies all three conditions will be selected,
  * and its view index will be returned.
  *
- * If no matching dynamic gauge is found, the currently active view index is returned.
+ * If no matching dynamic gauge is found, the lowest priority (default) dynamic
+ * gauge view index is returned.
+ *
+ * On error the currently active view index is returned.
  *
  * @return uint8_t The view index of the highest-priority valid dynamic gauge,
  *                 or the current active view index if none match.
@@ -263,6 +266,9 @@ static uint8_t dynamic_gauge_check(void)
     {
         for (uint8_t i = 0; i < MAX_DYNAMICS; i++)
         {
+        	if (get_dynamic_priority(i) == DYNAMIC_PRIORITY_LOW)
+        		return get_dynamic_index(i);
+
             if (get_dynamic_priority(i) != priority)
                 continue;
 

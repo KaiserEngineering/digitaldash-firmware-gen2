@@ -15,7 +15,7 @@ lv_obj_t * add_alert( lv_obj_t * parent ){
 	  lv_obj_remove_style_all(ui_alert_container);
 	  lv_obj_set_width(ui_alert_container, 670);
 	  lv_obj_set_height(ui_alert_container, 75);
-	  lv_obj_set_x(ui_alert_container, 0);
+	  lv_obj_set_x(ui_alert_container, X_OFFSET);
 	  lv_obj_set_y(ui_alert_container, 5);
 	  lv_obj_set_align(ui_alert_container, LV_ALIGN_TOP_MID);
 	  //lv_obj_add_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);     /// Flags

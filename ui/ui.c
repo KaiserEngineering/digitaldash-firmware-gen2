@@ -374,7 +374,7 @@ void build_ui(void)
 	  lv_obj_set_width(splash_icon, LV_SIZE_CONTENT);   /// 1
 	  lv_obj_set_height(splash_icon, LV_SIZE_CONTENT);    /// 1
 	  lv_obj_set_x(splash_icon, 0 + X_OFFSET);
-	  lv_obj_set_y(splash_icon, 20);
+	  lv_obj_set_y(splash_icon, 45);
 	  lv_obj_set_align(splash_icon, LV_ALIGN_TOP_MID);
 	  lv_obj_remove_flag(splash_icon, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 

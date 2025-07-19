@@ -10,7 +10,7 @@
 
 LV_IMG_DECLARE(ui_img_grumpy_png);
 
-#define GRUMPY_START_POS 50
+#define GRUMPY_START_POS 92
 #define GRUMPY_END_POS 0
 
 static void event_cb(lv_event_t * e)
@@ -73,7 +73,7 @@ lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, lv_obj_t * parent, PID_DA
     lv_obj_remove_flag(value, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC | LV_OBJ_FLAG_SCROLL_MOMENTUM |
                        LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
-    lv_obj_set_style_text_font(value, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(value, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     return needle;
 }

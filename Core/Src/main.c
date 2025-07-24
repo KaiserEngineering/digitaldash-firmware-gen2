@@ -568,7 +568,7 @@ void spoof_config(void)
 	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, true);
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, true);
 	set_dynamic_threshold(0, 5, true);
-	set_dynamic_index(0, 1, true);
+	set_dynamic_view_index(0, 1, true);
 
 	set_dynamic_enable(1, DYNAMIC_STATE_DISABLED, true);
 	set_dynamic_pid(1, MODE1_ENGINE_SPEED_UUID, true);
@@ -576,7 +576,7 @@ void spoof_config(void)
 	set_dynamic_priority(1, DYNAMIC_PRIORITY_LOW, true);
 	set_dynamic_compare(1, DYNAMIC_COMPARISON_GREATER_THAN, true);
 	set_dynamic_threshold(1, 8000, true);
-	set_dynamic_index(1, 0, true);
+	set_dynamic_view_index(1, 0, true);
 
 	// Alert 0
 	set_alert_enable(0, ALERT_STATE_ENABLED, true );

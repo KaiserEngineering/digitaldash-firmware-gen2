@@ -272,7 +272,7 @@ static uint8_t dynamic_gauge_check(void)
         for (uint8_t i = 0; i < MAX_DYNAMICS; i++)
         {
         	if (get_dynamic_priority(i) == DYNAMIC_PRIORITY_LOW)
-        		return get_dynamic_index(i);
+        		return get_dynamic_view_index(i);
 
             if (get_dynamic_priority(i) != priority)
                 continue;
@@ -285,7 +285,7 @@ static uint8_t dynamic_gauge_check(void)
                 continue;
 
             if (compare_values(pid->pid_value, get_dynamic_threshold(i), get_dynamic_compare(i)))
-                return get_dynamic_index(i);
+                return get_dynamic_view_index(i);
         }
     }
 

@@ -242,7 +242,7 @@
         {
             "index" : true,
             "count" : "max_dynamics",
-            "cmd": "index",
+            "cmd": "view_index",
             "name": "View index",
             "desc": "Set which view should be enabled if the dynamic event is true",
             "type": "number",

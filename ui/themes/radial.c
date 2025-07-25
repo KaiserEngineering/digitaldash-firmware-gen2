@@ -11,23 +11,35 @@
 #define RADIAL_START_ANGLE 180
 #define RADIAL_END_ANGLE 0
 #define RADIAL_SIZE 230
+#define ANIM_SPEED 250
 
 static void event_cb(lv_event_t * e)
 {
-	// Get the PID data
-	PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
+    PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
     lv_obj_t * needle = lv_event_get_target(e);
     lv_obj_t * span_group = lv_obj_get_child(needle, 0);
     lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
     lv_obj_t * minmax = lv_obj_get_child(needle, 1);
 
-    lv_arc_set_value(needle, scale_float(data->pid_value, data->precision));
+    int32_t target_value = scale_float(data->pid_value, data->precision);
 
+    // Animate to the new value
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, needle);
+    lv_anim_set_values(&a, lv_arc_get_value(needle), target_value);
+    lv_anim_set_duration(&a, ANIM_SPEED);
+    lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_arc_set_value);
+    lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
+    lv_anim_start(&a);
+
+    // Update text value immediately
     char value_buf[16];
     snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
     lv_span_set_text(span_val, value_buf);
     lv_spangroup_refresh(span_group);
 
+    // Update min/max label
     lv_label_set_text_fmt(minmax, two_float_with_slash[data->precision], data->pid_min, data->pid_max);
 }
 

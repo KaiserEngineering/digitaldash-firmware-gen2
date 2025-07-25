@@ -16,7 +16,7 @@
 #define X_OFFSET 21 // Screen is not perfectly centered, shift by X to center in housing
 #define Y_HEIGHT 118
 #define X_PADDING 50
-#define ANIM_SPEED 200
+#define ANIM_SPEED 150
 
 extern const char *float_with_units[3];
 extern const char *float_only[3];

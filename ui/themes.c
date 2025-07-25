@@ -50,3 +50,34 @@ lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_
 			return add_stock_st_gauge( x, y, w, h, parent, pid);
 	}
 }
+
+// Convert HSV to RGB — full saturation and value
+static lv_color_t lv_color_from_hue(float hue_deg)
+{
+    float c = 1.0f; // Chroma (fully saturated)
+    float x = 1.0f - fabsf(fmodf(hue_deg / 60.0f, 2) - 1.0f);
+    float r = 0, g = 0, b = 0;
+
+    if (hue_deg < 60)       { r = c; g = x; b = 0; }
+    else if (hue_deg < 120) { r = x; g = c; b = 0; }
+    else if (hue_deg < 180) { r = 0; g = c; b = x; }
+    else if (hue_deg < 240) { r = 0; g = x; b = c; }
+    else if (hue_deg < 300) { r = x; g = 0; b = c; }
+    else                    { r = c; g = 0; b = x; }
+
+    return lv_color_make((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255));
+}
+
+lv_color_t get_needle_color_from_value(float value, float min, float max)
+{
+    float ratio = 0.0f;
+    if (max > min) {
+        ratio = (value - min) / (max - min);
+        if (ratio < 0.0f) ratio = 0.0f;
+        if (ratio > 1.0f) ratio = 1.0f;
+    }
+
+    // Hue: 240 (blue) → 0 (red)
+    float hue = 240.0f - (240.0f * ratio);  // In degrees
+    return lv_color_from_hue(hue);
+}

@@ -28,7 +28,8 @@ static void event_cb(lv_event_t * e)
 	PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
 	lv_obj_t * gauge = lv_event_get_target(e);
     lv_obj_t * needle = lv_obj_get_child(gauge, 1);
-    lv_obj_t * value = lv_obj_get_child(gauge, 2);
+    lv_obj_t * span_group = lv_obj_get_child(gauge, 2);
+    lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
     lv_obj_t * min = lv_obj_get_child(gauge, 3);
     lv_obj_t * max = lv_obj_get_child(gauge, 4);
 
@@ -38,28 +39,13 @@ static void event_cb(lv_event_t * e)
 
     lv_obj_set_style_bg_color(needle, needle_color, LV_PART_INDICATOR);
 
-    // Update the numbers
-    switch( data->precision )
-    {
-		case 2:
-			lv_label_set_text_fmt(value, "%.2f%s", data->pid_value, data->unit_label);
-			lv_label_set_text_fmt(min, "%.2f", data->pid_min);
-			lv_label_set_text_fmt(max, "%.2f", data->pid_max);
-			break;
+    char value_buf[16];
+    snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
+    lv_span_set_text(span_val, value_buf);
+    lv_spangroup_refresh(span_group);
 
-		case 1:
-			lv_label_set_text_fmt(value, "%.1f%s", data->pid_value, data->unit_label);
-			lv_label_set_text_fmt(min, "%.1f", data->pid_min);
-			lv_label_set_text_fmt(max, "%.1f", data->pid_max);
-			break;
-
-		case 0:
-		default:
-			lv_label_set_text_fmt(value, "%.0f%s", data->pid_value, data->unit_label);
-			lv_label_set_text_fmt(min, "%.0f", data->pid_min);
-			lv_label_set_text_fmt(max, "%.0f", data->pid_max);
-			break;
-    }
+    lv_label_set_text_fmt(min, float_only[data->precision], data->pid_min);
+    lv_label_set_text_fmt(max, float_only[data->precision], data->pid_min);
 }
 
 lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
@@ -100,12 +86,28 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     //Compensating for LVGL9.1 draw crash with bar/slider max value when top-padding is nonzero and right-padding is 0
     if(lv_obj_get_style_pad_top(needle, LV_PART_MAIN) > 0) lv_obj_set_style_pad_right(needle, lv_obj_get_style_pad_right(needle, LV_PART_MAIN) + 1, LV_PART_MAIN);
 
-    lv_obj_t * value = lv_label_create(gauge);
-    lv_obj_set_width(value, LV_SIZE_CONTENT);
-    lv_obj_set_height(value, LV_SIZE_CONTENT);    /// 1
-    lv_obj_align(value, LV_ALIGN_TOP_MID, 0, BAR_LABEL_Y);
-    lv_label_set_text(value, "value");
-    lv_obj_set_style_text_font(value, BAR_FONT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // Create span group for value and unit
+    lv_obj_t * span_group = lv_spangroup_create(gauge);
+    lv_obj_set_size(span_group, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_align(span_group, LV_ALIGN_CENTER);
+    lv_obj_align(span_group, LV_ALIGN_TOP_MID, 0, BAR_LABEL_Y);
+
+    // Create spans
+    lv_span_t * span_val = lv_spangroup_new_span(span_group);
+    lv_style_set_text_font(lv_span_get_style(span_val), &lv_font_montserrat_38);
+    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_white());
+
+    lv_span_t * span_unit = lv_spangroup_new_span(span_group);
+    lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_24);
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBB));
+
+    // Split value and unit (assuming value is number and unit is already stored)
+    char buf[16];
+    snprintf(buf, sizeof(buf), float_only[pid->precision], pid->pid_value);
+    lv_span_set_text(span_val, buf);
+    snprintf(buf, sizeof(buf), " %s", pid->unit_label);
+    lv_span_set_text(span_unit, buf);
+    lv_spangroup_refresh(span_group);
 
     lv_obj_t * min = lv_label_create(gauge);
     lv_obj_set_width(min, LV_SIZE_CONTENT);

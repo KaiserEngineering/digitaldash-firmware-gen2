@@ -124,8 +124,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     char buf[24];
     snprintf(buf, sizeof(buf), float_only[pid->precision], pid->pid_value);
     lv_span_set_text(span_val, buf);
-    snprintf(buf, sizeof(buf), " %s", pid->unit_label);
-    lv_span_set_text(span_unit, buf);
+    lv_span_set_text(span_unit, pid->unit_label);
     snprintf(buf, sizeof(buf), " %s", pid->label);
     lv_span_set_text(span_pid, buf);
     lv_spangroup_refresh(span_group);

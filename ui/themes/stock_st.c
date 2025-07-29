@@ -8,8 +8,8 @@
 #include "ui.h"
 #include "lib_pid.h"
 
-LV_IMG_DECLARE(ui_img_gauge200_png);    // assets/gauge200.png
-LV_IMG_DECLARE(ui_img_needle200_png);    // assets/needle200.png
+LV_IMG_DECLARE(ui_img_oem_st_gauge_png);
+LV_IMG_DECLARE(ui_img_oem_strs_needle_png);
 
 #define STOCK_ST_START_ANGLE -600
 #define STOCK_ST_END_ANGLE 600
@@ -71,10 +71,10 @@ lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_ob
 	#endif
 
 	lv_obj_t * scale = lv_image_create(gauge);
-    lv_image_set_src(scale, &ui_img_gauge200_png);
+    lv_image_set_src(scale, &ui_img_oem_st_gauge_png);
     lv_obj_set_width(scale, LV_SIZE_CONTENT);   /// 125
     lv_obj_set_height(scale, LV_SIZE_CONTENT);    /// 125
-    lv_obj_align(scale, LV_ALIGN_TOP_MID, 0, 5);
+    lv_obj_align(scale, LV_ALIGN_CENTER, 0, 70-Y_ADJUST);
 
     lv_obj_t * pid_label = lv_label_create(gauge);
     lv_obj_set_width(pid_label, LV_SIZE_CONTENT);   /// 1
@@ -149,10 +149,10 @@ lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_ob
 
     lv_obj_t * needle;
     needle = lv_image_create(gauge);
-    lv_image_set_src(needle, &ui_img_needle200_png);
+    lv_image_set_src(needle, &ui_img_oem_strs_needle_png);
     lv_obj_set_width(needle, LV_SIZE_CONTENT);   /// 125
     lv_obj_set_height(needle, LV_SIZE_CONTENT);    /// 125
-    lv_obj_align(needle, LV_TEXT_ALIGN_CENTER, 0, 0);
+    lv_obj_align(needle, LV_ALIGN_CENTER, 0, 45);
     lv_image_set_rotation(needle, STOCK_ST_START_ANGLE);
 
     lv_obj_t * min = lv_label_create(gauge);

@@ -9,12 +9,21 @@
 #include "lib_pid.h"
 
 LV_IMG_DECLARE(ui_img_oem_st_gauge_png);
+LV_IMG_DECLARE(ui_img_oem_rs_gauge_png);
 LV_IMG_DECLARE(ui_img_oem_strs_needle_png);
 
 #define STOCK_ST_START_ANGLE -600
 #define STOCK_ST_END_ANGLE 600
 #define CONTAINER_H_EXTEND 50
 #define Y_ADJUST CONTAINER_H_EXTEND/2
+
+typedef enum
+{
+    STOCK_ST,
+	STOCK_RS,
+} STOCK_GAUGE;
+
+static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
 
 static void event_cb(lv_event_t * e)
 {
@@ -56,6 +65,17 @@ static void event_cb(lv_event_t * e)
 
 lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
 {
+	return add_stock_gauge( STOCK_ST, x, y, w, h, parent, pid);
+}
+
+lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+{
+	return add_stock_gauge( STOCK_RS, x, y, w, h, parent, pid);
+}
+
+
+static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+{
 	lv_obj_t * gauge = lv_obj_create(parent);
     lv_obj_remove_style_all(gauge);
     lv_obj_set_width(gauge, w);
@@ -71,7 +91,10 @@ lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_ob
 	#endif
 
 	lv_obj_t * scale = lv_image_create(gauge);
-    lv_image_set_src(scale, &ui_img_oem_st_gauge_png);
+	if( type == STOCK_RS )
+		lv_image_set_src(scale, &ui_img_oem_rs_gauge_png);
+	else
+		lv_image_set_src(scale, &ui_img_oem_st_gauge_png);
     lv_obj_set_width(scale, LV_SIZE_CONTENT);   /// 125
     lv_obj_set_height(scale, LV_SIZE_CONTENT);    /// 125
     lv_obj_align(scale, LV_ALIGN_CENTER, 0, 70-Y_ADJUST);

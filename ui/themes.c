@@ -45,6 +45,8 @@ lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_
 			return add_linear_gauge( x, y, w, h, parent, pid);
 		case GAUGE_THEME_RADIAL:
 			return add_radial_gauge( x, y, w, h, parent, pid);
+		case GAUGE_THEME_STOCK_RS:
+			return add_stock_rs_gauge( x, y, w, h, parent, pid);
 		case GAUGE_THEME_STOCK_ST:
 		default:
 			return add_stock_st_gauge( x, y, w, h, parent, pid);

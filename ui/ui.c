@@ -533,38 +533,66 @@ void build_ui(void)
 	  splash_screen_t = ui_tick_cnt + SPLASH_SCREEN_T;
 }
 
+/**
+ * @brief Main UI service loop.
+ *
+ * This function should be called periodically (e.g., in the main loop or from a timer).
+ * It performs several tasks related to UI operation:
+ *
+ * - Handles the LVGL timer to keep the UI responsive.
+ * - Manages screen switching logic between splash screen, UI screen, and screen saver.
+ * - Logs min/max values for each gauge in enabled views.
+ * - Checks and switches to the active view if necessary.
+ * - Evaluates and triggers alerts based on threshold conditions.
+ * - Updates gauges on the current active view when new data is received.
+ *
+ * It is designed to be lightweight and responsive, ensuring the UI remains up-to-date
+ * with minimal CPU overhead.
+ */
 void ui_service(void)
 {
 	lv_timer_handler();
 
-	if( ui_tick_cnt <= splash_screen_t ) {
-			switch_screen(splash_screen, SCREEN_FADE_T);
-	} else if( ui_tick_cnt >= next_screen_saver ) {
-		switch_screen(splash_screen, SCREEN_FADE_T);
-		if( ui_tick_cnt >= (next_screen_saver + SCREEN_SAVER_DURATION_T) )
-			next_screen_saver = ui_tick_cnt + SCREEN_SAVER_T;
+	// Determine which screen to show based on elapsed UI time
+	if (ui_tick_cnt <= splash_screen_t) {
+	    // If we're still within the splash screen duration, keep showing the splash screen
+	    switch_screen(splash_screen, SCREEN_FADE_T);
+
+	} else if (ui_tick_cnt >= next_screen_saver) {
+	    // If it's time to activate the screen saver, switch to splash screen
+	    switch_screen(splash_screen, SCREEN_FADE_T);
+
+	    // If the screen saver duration has passed, schedule the next screen saver
+	    if (ui_tick_cnt >= (next_screen_saver + SCREEN_SAVER_DURATION_T)) {
+	        next_screen_saver = ui_tick_cnt + SCREEN_SAVER_T;
+	    }
+
 	} else {
-		switch_screen(ui_screen, SCREEN_FADE_T);
+	    // Otherwise, show the regular UI screen
+	    switch_screen(ui_screen, SCREEN_FADE_T);
 	}
 
-	/* Log min/max values */
-	for( uint8_t view = 0; view < MAX_VIEWS; view++) {
-		if( get_view_enable(view) == VIEW_STATE_ENABLED ) {
-			for( uint8_t gauge = 0; gauge < get_view_num_gauges(view); gauge++) {
-				log_minmax(ui_gauge_pid[view][gauge]);
-			}
-		}
+	// Log minimum and maximum values for all enabled views
+	for (uint8_t view = 0; view < MAX_VIEWS; view++) {
+	    // Check if the current view is enabled
+	    if (get_view_enable(view) == VIEW_STATE_ENABLED) {
+	        // Loop through all gauges in the enabled view
+	        for (uint8_t gauge = 0; gauge < get_view_num_gauges(view); gauge++) {
+	            // Log the min/max values for the PID associated with this gauge
+	            log_minmax(ui_gauge_pid[view][gauge]);
+	        }
+	    }
 	}
 
-	/* Check for dynamic gauge change */
+	// Check for dynamic gauge change
 	active_view_idx = dynamic_gauge_check();
 
-	/* Switch to the active view, this can be called each loop. A check will
-	 * be made to ensure that the screen is only re-loaded if it is not active. */
+	// Switch to the active view, this can be called each loop. A check will
+	// be made to ensure that the screen is only re-loaded if it is not active.
 	if( get_view_enable(active_view_idx) == VIEW_STATE_ENABLED )
 		switch_view(active_view_idx);
 
-	/* Parse through each alert and check if it needs to be activated */
+	// Parse through each alert and check if it needs to be activated
 	for(uint8_t idx = 0; idx < MAX_ALERTS; idx++)
 	{
 		if( get_alert_enable(idx) == ALERT_STATE_DISABLED ) {
@@ -580,7 +608,7 @@ void ui_service(void)
 		}
 	}
 
-	/* Update gauges on current view */
+	// Update gauges on current view
 	for( uint8_t i = 0; i < get_view_num_gauges(active_view_idx); i++)
 	{
 		// Check if new pid data has been received.
@@ -605,6 +633,13 @@ void ui_service(void)
 	}
 }
 
+/**
+ * @brief Increments the UI tick counter.
+ *
+ * This function is called every 1ms to increment the `ui_tick_cnt`
+ * variable, which can be used to track elapsed time or trigger
+ * periodic UI updates.
+ */
 void ui_tick( void )
 {
 	ui_tick_cnt++;

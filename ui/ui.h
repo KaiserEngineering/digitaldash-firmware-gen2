@@ -33,6 +33,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
 lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
 lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
 lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
+lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
 
 lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
 int32_t scale_float( float val, uint8_t precision );

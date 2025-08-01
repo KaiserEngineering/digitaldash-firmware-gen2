@@ -54,10 +54,25 @@ bool get_alert(void)
 	return lv_obj_has_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
 }
 
-void set_alert( char *msg )
+void set_alert(char *msg)
 {
-	lv_label_set_text(ui_alert, msg);
-	lv_obj_remove_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_text(ui_alert, msg);
+    lv_obj_clear_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
+
+    // Allow label size to update
+    lv_obj_update_layout(ui_alert);  // force layout update so size is valid
+
+    int label_width = lv_obj_get_width(ui_alert);
+    int padding = 60;  // padding for left/right sides
+
+    // Set container width based on label width plus padding, min 200, max 670
+    int new_width = label_width + padding;
+    if (new_width < 300) new_width = 300;
+    if (new_width > UI_HOR_RES - X_PADDING) new_width = UI_HOR_RES - X_PADDING;
+
+    lv_obj_set_width(ui_alert_container, new_width);
+
+    lv_obj_remove_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
 }
 
 void clear_alert(void)

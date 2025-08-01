@@ -234,6 +234,9 @@ void skip_splash(void)
 
 static void log_minmax( PID_DATA* pid )
 {
+	if( pid == NULL )
+		return;
+
 	// Only log min/max if a value has been read
 	if( pid->timestamp > 0 ) {
 		if( pid->pid_value > pid->pid_max )
@@ -595,8 +598,8 @@ void ui_service(void)
 	// Parse through each alert and check if it needs to be activated
 	for(uint8_t idx = 0; idx < MAX_ALERTS; idx++)
 	{
-		if( get_alert_enable(idx) == ALERT_STATE_DISABLED ) {
-			// Skip if not enabled
+		if( (get_alert_enable(idx) == ALERT_STATE_DISABLED) || (ui_alert_pid[idx] == NULL) ) {
+			// Skip if not enabled or if NULL
 		} else if( compare_values(ui_alert_pid[idx]->pid_value, get_alert_threshold(idx), get_alert_compare(idx) ) ) {
 			if(get_alert()) {
 				char msg[ALERT_MESSAGE_LEN] = {0};
@@ -627,8 +630,9 @@ void ui_service(void)
 				// Some values are interrupt driven, log the min/max incase they were missed in the main loop
 				log_minmax(ui_gauge_pid[active_view_idx][i]);
 
-				// Send an event to the gauge
-				lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, ui_gauge_pid[active_view_idx][i]);
+				if (ui_gauge[active_view_idx][i])
+					// Send an event to the gauge
+					lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, ui_gauge_pid[active_view_idx][i]);
 			}
 		}
 	}

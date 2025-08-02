@@ -134,7 +134,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_span_set_text(span_pid, buf);
     lv_spangroup_refresh(span_group);
 
-    if( w >= 350 )
+    if( w >= 500 )
     {
 		lv_obj_t * min = lv_label_create(gauge);
 		lv_obj_set_width(min, LV_SIZE_CONTENT);

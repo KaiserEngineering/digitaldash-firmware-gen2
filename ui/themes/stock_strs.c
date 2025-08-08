@@ -27,31 +27,47 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
 
 static void event_cb(lv_event_t * e)
 {
-	// Get the PID data
-	PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
-	lv_obj_t * gauge = lv_event_get_target(e);
-	lv_obj_t * span_group = lv_obj_get_child(gauge, 2);
-	lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
+    // Get the PID data
+    PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
+    lv_obj_t * gauge = lv_event_get_target(e);
+    lv_obj_t * span_group = lv_obj_get_child(gauge, 2);
+    lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
     lv_obj_t * needle = lv_obj_get_child(gauge, 3);
     lv_obj_t * min = lv_obj_get_child(gauge, 4);
     lv_obj_t * max = lv_obj_get_child(gauge, 5);
 
-    int32_t angle = 0;
-
-    // Calculate the needle angle
+    // Calculate target angle based on value
+    int32_t angle;
     if( data->pid_value >= data->upper_limit )
-    	angle = STOCK_ST_END_ANGLE;
+        angle = STOCK_ST_END_ANGLE;
     else if ( data->pid_value <= data->lower_limit )
-    	angle = STOCK_ST_START_ANGLE;
+        angle = STOCK_ST_START_ANGLE;
     else {
-    	angle = STOCK_ST_START_ANGLE + ((data->pid_value - data->lower_limit) / (data->upper_limit - data->lower_limit)) * (STOCK_ST_END_ANGLE - STOCK_ST_START_ANGLE);
+        float normalized = (float)(data->pid_value - data->lower_limit) / (data->upper_limit - data->lower_limit);
+        angle = STOCK_ST_START_ANGLE + (int32_t)(normalized * (STOCK_ST_END_ANGLE - STOCK_ST_START_ANGLE));
     }
 
-    // Check if the image needs to be refreshed
-    if( lv_image_get_rotation(needle) != angle )
-    	lv_image_set_rotation(needle, angle);
+    // Get current needle angle
+    int32_t current_angle = lv_image_get_rotation(needle);
 
-    // Update text display
+    // Animate if changed
+    if(current_angle != angle) {
+        // Handle wraparound to choose shortest path
+        int32_t diff = angle - current_angle;
+        if(diff > 1800)      angle -= 3600;
+        else if(diff < -1800) angle += 3600;
+
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_var(&a, needle);
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_image_set_rotation);
+        lv_anim_set_values(&a, current_angle, angle);
+        lv_anim_set_duration(&a, ANIM_SPEED+50);
+        lv_anim_set_path_cb(&a, lv_anim_path_ease_out);
+        lv_anim_start(&a);
+    }
+
+    // Update value text
     char value_buf[16];
     snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
     lv_span_set_text(span_val, value_buf);

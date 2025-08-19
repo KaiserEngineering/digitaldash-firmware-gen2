@@ -80,6 +80,28 @@ bool pid_value_label_changed(GAUGE_DATA *data)
 	}
 }
 
+bool pid_min_label_changed(GAUGE_DATA *data)
+{
+	if( data->min_label != round_to_precision(data->pid->pid_min, data->pid->precision) )
+	{
+		data->min_label = round_to_precision(data->pid->pid_min, data->pid->precision);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool pid_max_label_changed(GAUGE_DATA *data)
+{
+	if( data->max_label != round_to_precision(data->pid->pid_max, data->pid->precision) )
+	{
+		data->max_label = round_to_precision(data->pid->pid_max, data->pid->precision);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA * data)
 {
 	switch(theme)

@@ -82,6 +82,8 @@ void label_set_text_fmt_with_check(lv_obj_t * obj, const char * fmt, ...);
 lv_color_t get_needle_color_from_value(float value, float min, float max);
 bool pid_value_changed(GAUGE_DATA *data);
 bool pid_value_label_changed(GAUGE_DATA *data);
+bool pid_min_label_changed(GAUGE_DATA *data);
+bool pid_max_label_changed(GAUGE_DATA *data);
 
 lv_obj_t * add_alert( lv_obj_t * parent );
 bool get_alert(void);

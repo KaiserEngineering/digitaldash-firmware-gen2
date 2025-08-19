@@ -11,21 +11,27 @@
 
 static void event_cb(lv_event_t * e)
 {
-    PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
+	GAUGE_DATA * data = (GAUGE_DATA *)lv_event_get_param(e);
     lv_obj_t * guage = lv_event_get_target(e);
     lv_obj_t * span_group = lv_obj_get_child(guage, 0);
     lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
     lv_obj_t * minmax = lv_obj_get_child(guage, 1);
 
-    // Update text value immediately
-    char value_buf[16];
-    snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
-    lv_span_set_text(span_val, value_buf);
-    lv_spangroup_refresh(span_group);
+    if( pid_value_label_changed(data) )
+    {
+		// Update text value immediately
+		char value_buf[16];
+		snprintf(value_buf, sizeof(value_buf), float_only[data->pid->precision], data->pid->pid_value);
+		lv_span_set_text(span_val, value_buf);
+		lv_spangroup_refresh(span_group);
 
-    // Update min/max label
-    if( minmax != NULL )
-    	lv_label_set_text_fmt(minmax, two_float_with_slash[data->precision], data->pid_min, data->pid_max);
+		// Update min/max label if needed
+		if( pid_min_label_changed(data) || pid_max_label_changed(data) )
+		{
+			if( minmax != NULL )
+				lv_label_set_text_fmt(minmax, two_float_with_slash[data->pid->precision], data->pid->pid_min,  data->pid->pid_max);
+		}
+    }
 }
 
 lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)

@@ -24,7 +24,7 @@
 
 static void event_cb(lv_event_t * e)
 {
-    PID_DATA * data = (PID_DATA *)lv_event_get_param(e);
+	GAUGE_DATA * data = (GAUGE_DATA *)lv_event_get_param(e);
     lv_obj_t * gauge = lv_event_get_target(e);
     lv_obj_t * needle = lv_obj_get_child(gauge, 1);
     lv_obj_t * span_group = lv_obj_get_child(gauge, 2);
@@ -32,35 +32,41 @@ static void event_cb(lv_event_t * e)
     lv_obj_t * min = lv_obj_get_child(gauge, 3);
     lv_obj_t * max = lv_obj_get_child(gauge, 4);
 
-    // New target value
-    int32_t new_value = scale_float(data->pid_value, data->precision);
-    int32_t current_value = lv_bar_get_value(needle);
+    if( pid_value_changed(data) )
+    {
+		// New target value
+		int32_t new_value = scale_float(data->pid->pid_value, data->pid->precision);
+		int32_t current_value = lv_bar_get_value(needle);
 
-    if (current_value != new_value) {
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_var(&a, needle);
-        lv_anim_set_values(&a, current_value, new_value);
-        lv_anim_set_duration(&a, ANIM_SPEED); // Animation duration
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_bar_set_value);
-        lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out); // <- smooth animation
-        lv_anim_start(&a);
+		if (current_value != new_value) {
+			lv_anim_t a;
+			lv_anim_init(&a);
+			lv_anim_set_var(&a, needle);
+			lv_anim_set_values(&a, current_value, new_value);
+			lv_anim_set_duration(&a, ANIM_SPEED); // Animation duration
+			lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_bar_set_value);
+			lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out); // <- smooth animation
+			lv_anim_start(&a);
+		}
+
+		// Update needle color immediately
+		lv_color_t needle_color = get_needle_color_from_value(data->pid->pid_value, data->pid->lower_limit, data->pid->upper_limit);
+		lv_obj_set_style_bg_color(needle, needle_color, LV_PART_INDICATOR);
+
+		if( pid_value_label_changed(data) )
+		{
+			// Update text display
+			char value_buf[16];
+			snprintf(value_buf, sizeof(value_buf), float_only[data->pid->precision], data->pid->pid_value);
+			lv_span_set_text(span_val, value_buf);
+			lv_spangroup_refresh(span_group);
+		}
+
+		if( pid_min_label_changed(data) && (min != NULL) )
+			lv_label_set_text_fmt(min, float_only[data->pid->precision], data->pid->pid_min);
+		if( pid_max_label_changed(data) && (max != NULL) )
+			lv_label_set_text_fmt(max, float_only[data->pid->precision], data->pid->pid_max);
     }
-
-    // Update needle color immediately
-    lv_color_t needle_color = get_needle_color_from_value(data->pid_value, data->lower_limit, data->upper_limit);
-    lv_obj_set_style_bg_color(needle, needle_color, LV_PART_INDICATOR);
-
-    // Update text display
-    char value_buf[16];
-    snprintf(value_buf, sizeof(value_buf), float_only[data->precision], data->pid_value);
-    lv_span_set_text(span_val, value_buf);
-    lv_spangroup_refresh(span_group);
-
-    if( min != NULL )
-        lv_label_set_text_fmt(min, float_only[data->precision], data->pid_min);
-    if( max != NULL )
-        lv_label_set_text_fmt(max, float_only[data->precision], data->pid_max);
 }
 
 lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)

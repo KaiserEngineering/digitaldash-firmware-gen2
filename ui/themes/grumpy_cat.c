@@ -56,7 +56,7 @@ static void event_cb(lv_event_t * e)
 		// Apply smoothed value
 		lv_obj_set_y(guage, data->smoothed_y);
 
-		if( pid_value_label_changed(data) )//data->label_value != round_to_precision(data->pid->pid_value, data->pid->precision) )
+		if( pid_value_label_changed(data) )
 		{
 			// Update value text
 			char value_buf[16];

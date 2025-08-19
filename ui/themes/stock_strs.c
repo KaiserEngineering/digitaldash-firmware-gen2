@@ -23,7 +23,7 @@ typedef enum
 	STOCK_RS,
 } STOCK_GAUGE;
 
-static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
+static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 
 static void event_cb(lv_event_t * e)
 {
@@ -79,18 +79,18 @@ static void event_cb(lv_event_t * e)
         lv_label_set_text_fmt(max, float_only[data->precision], data->pid_max);
 }
 
-lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)
 {
-	return add_stock_gauge( STOCK_ST, x, y, w, h, parent, pid);
+	return add_stock_gauge( STOCK_ST, x, y, w, h, parent, data);
 }
 
-lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)
 {
-	return add_stock_gauge( STOCK_RS, x, y, w, h, parent, pid);
+	return add_stock_gauge( STOCK_RS, x, y, w, h, parent, data);
 }
 
 
-static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)
 {
 	lv_obj_t * gauge = lv_obj_create(parent);
     lv_obj_remove_style_all(gauge);
@@ -98,8 +98,8 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
     lv_obj_set_height(gauge, h+CONTAINER_H_EXTEND);
     lv_obj_align(gauge, LV_ALIGN_TOP_MID, x, y);
     lv_obj_remove_flag(gauge, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_user_data(gauge, pid);
-    lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, pid);
+    lv_obj_set_user_data(gauge, data);
+    lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, data);
 	#if UI_CONTAINER_DEBUG
 	lv_obj_set_style_border_width(gauge, 2, 0);                    // Thickness of the outline
 	lv_obj_set_style_border_color(gauge, lv_color_white(), 0);    // White outline
@@ -119,7 +119,7 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
     lv_obj_set_width(pid_label, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(pid_label, LV_SIZE_CONTENT);    /// 1
     lv_obj_align(pid_label, LV_ALIGN_CENTER, 0, 35-Y_ADJUST);
-    lv_label_set_text(pid_label, pid->label);
+    lv_label_set_text(pid_label, data->pid->label);
     lv_obj_set_style_text_font(pid_label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /*
@@ -181,9 +181,9 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
 
     // Split value and unit (assuming value is number and unit is already stored)
     char value_buf[16];
-    snprintf(value_buf, sizeof(value_buf), float_only[pid->precision], pid->pid_value);
+    snprintf(value_buf, sizeof(value_buf), float_only[data->pid->precision], data->pid->pid_value);
     lv_span_set_text(span_val, value_buf);
-    lv_span_set_text(span_unit, pid->unit_label);
+    lv_span_set_text(span_unit, data->pid->unit_label);
     lv_spangroup_refresh(span_group);
 
     lv_obj_t * needle;

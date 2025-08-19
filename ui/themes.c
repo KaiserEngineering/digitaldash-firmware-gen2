@@ -80,22 +80,23 @@ bool pid_value_label_changed(GAUGE_DATA *data)
 	}
 }
 
+lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA * data)
 {
 	switch(theme)
 	{
 		case GAUGE_THEME_GRUMPY_CAT:
-			return add_grumpy_cat_gauge( x, y, w, h, parent, pid);
+			return add_grumpy_cat_gauge( x, y, w, h, parent, data);
 		case GAUGE_THEME_LINEAR:
-			return add_linear_gauge( x, y, w, h, parent, pid);
+			return add_linear_gauge( x, y, w, h, parent, data);
 		case GAUGE_THEME_RADIAL:
-			return add_radial_gauge( x, y, w, h, parent, pid);
+			return add_radial_gauge( x, y, w, h, parent, data);
 		case GAUGE_THEME_DIGITAL:
-			return add_digital_gauge( x, y, w, h, parent, pid);
+			return add_digital_gauge( x, y, w, h, parent, data);
 		case GAUGE_THEME_STOCK_RS:
-			return add_stock_rs_gauge( x, y, w, h, parent, pid);
+			return add_stock_rs_gauge( x, y, w, h, parent, data);
 		case GAUGE_THEME_STOCK_ST:
 		default:
-			return add_stock_st_gauge( x, y, w, h, parent, pid);
+			return add_stock_st_gauge( x, y, w, h, parent, data);
 	}
 }
 

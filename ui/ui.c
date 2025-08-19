@@ -162,12 +162,10 @@ lv_obj_t * ui_screen;
 lv_obj_t * splash_screen;
 lv_obj_t * ui_view[MAX_VIEWS];
 uint8_t active_view_idx = 0;
-uint32_t timestamp[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
-float prev_pid_value[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {{5698.561}};
 
 /* Collection of gauges and the associated pid */
 lv_obj_t * ui_gauge[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
-PID_DATA * ui_gauge_pid[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
+GAUGE_DATA ui_gauge_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW];
 PID_DATA * ui_dynamic_pid[MAX_DYNAMICS] = {0};
 PID_DATA * ui_alert_pid[MAX_ALERTS] = {0};
 
@@ -469,10 +467,10 @@ void build_ui(void)
 					  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
 
 				  // Start the PID stream and save the pointer
-				  ui_gauge_pid[view][gauge] = DigitalDash_Add_PID_To_Stream( &pid_req );
+				  ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req );
 
 				  // Finally, add the gauge to the view
-				  ui_gauge[view][gauge] = add_gauge(get_view_gauge_theme(view, gauge), x_pos[gauge], 0, width, height, ui_view[view], ui_gauge_pid[view][gauge]);
+				  ui_gauge[view][gauge] = add_gauge(get_view_gauge_theme(view, gauge), x_pos[gauge], 0, width, height, ui_view[view], &ui_gauge_data[view][gauge]);
 			  }
 		  }
 	  }
@@ -569,7 +567,7 @@ void ui_service(void)
 	        // Loop through all gauges in the enabled view
 	        for (uint8_t gauge = 0; gauge < get_view_num_gauges(view); gauge++) {
 	            // Log the min/max values for the PID associated with this gauge
-	            log_minmax(ui_gauge_pid[view][gauge]);
+	            log_minmax(ui_gauge_data[view][gauge].pid);
 	        }
 	    }
 	}
@@ -601,25 +599,23 @@ void ui_service(void)
 	// Update gauges on current view
 	for( uint8_t i = 0; i < get_view_num_gauges(active_view_idx); i++)
 	{
-		if( ui_gauge_pid[active_view_idx][i] == NULL ) { }
 		// Check if new pid data has been received.
-		else if( timestamp[active_view_idx][i] != ui_gauge_pid[active_view_idx][i]->timestamp )
+		if( ui_gauge_data[active_view_idx][i].timestamp != ui_gauge_data[active_view_idx][i].pid->timestamp )
 		{
 			// Log the timestamp
-			timestamp[active_view_idx][i] = ui_gauge_pid[active_view_idx][i]->timestamp;
+			ui_gauge_data[active_view_idx][i].timestamp = ui_gauge_data[active_view_idx][i].pid->timestamp;
 
 			// Check if the value has changed
-			if( prev_pid_value[active_view_idx][i] != ui_gauge_pid[active_view_idx][i]->pid_value )
+			if( ui_gauge_data[active_view_idx][i].pid_value != ui_gauge_data[active_view_idx][i].pid->pid_value )
 			{
-				// Log the value
-				prev_pid_value[active_view_idx][i] = ui_gauge_pid[active_view_idx][i]->pid_value;
-
 				// Some values are interrupt driven, log the min/max incase they were missed in the main loop
-				log_minmax(ui_gauge_pid[active_view_idx][i]);
+				log_minmax(ui_gauge_data[active_view_idx][i].pid);
 
-				if (ui_gauge[active_view_idx][i])
-					// Send an event to the gauge
-					lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, ui_gauge_pid[active_view_idx][i]);
+				// Send an event to the gauge
+				lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, &ui_gauge_data[active_view_idx][i]);
+
+				// Log the value
+				ui_gauge_data[active_view_idx][i].pid_value = ui_gauge_data[active_view_idx][i].pid->pid_value;
 			}
 		}
 	}

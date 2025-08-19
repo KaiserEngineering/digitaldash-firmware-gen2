@@ -43,7 +43,7 @@ static void event_cb(lv_event_t * e)
     	//lv_label_set_text_fmt(minmax, two_float_with_slash[data->precision], data->pid_min, data->pid_max);
 }
 
-lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid)
+lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data)
 {
 	lv_obj_t * gauge = lv_obj_create(parent);
     lv_obj_remove_style_all(gauge);
@@ -53,8 +53,8 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_obj_set_y(gauge, y);
     lv_obj_set_align(gauge, LV_ALIGN_TOP_MID);
     lv_obj_remove_flag(gauge, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_user_data(gauge, pid);
-    lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, pid);
+    lv_obj_set_user_data(gauge, data);
+    lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, data);
 	#if UI_CONTAINER_DEBUG
     lv_obj_set_style_border_width(gauge, 2, 0);                    // Thickness of the outline
     lv_obj_set_style_border_color(gauge, lv_color_white(), 0);    // White outline
@@ -70,13 +70,13 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_obj_remove_flag(needle, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE |
                        LV_OBJ_FLAG_GESTURE_BUBBLE | LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_SCROLL_ELASTIC |
                        LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_CHAIN);     /// Flags
-    lv_arc_set_range(needle, scale_float(pid->lower_limit, pid->precision), scale_float(pid->upper_limit, pid->precision));
+    lv_arc_set_range(needle, scale_float(data->pid->lower_limit, data->pid->precision), scale_float(data->pid->upper_limit, data->pid->precision));
 
     // TODO fix this
-    if( abs(pid->lower_limit) == pid->upper_limit )
+    if( abs(data->pid->lower_limit) == data->pid->upper_limit )
     	lv_arc_set_mode(needle, LV_ARC_MODE_SYMMETRICAL);
 
-    lv_arc_set_value(needle, pid->pid_value);
+    lv_arc_set_value(needle, data->pid->pid_value);
     lv_arc_set_bg_angles(needle, RADIAL_START_ANGLE, RADIAL_END_ANGLE);
     lv_obj_set_style_arc_color(needle, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_arc_opa(needle, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -90,8 +90,8 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
 
     lv_obj_set_style_bg_color(needle, lv_color_hex(0xFFFFFF), LV_PART_KNOB | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(needle, 0, LV_PART_KNOB | LV_STATE_DEFAULT);
-    lv_obj_set_user_data(needle, pid);
-    lv_obj_add_event_cb(needle, event_cb, LV_EVENT_REFRESH, pid);
+    lv_obj_set_user_data(needle, data);
+    lv_obj_add_event_cb(needle, event_cb, LV_EVENT_REFRESH, data);
 
     // Create span group for value and unit
     lv_obj_t * span_group = lv_spangroup_create(needle);
@@ -111,9 +111,9 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
 
     // Split value and unit (assuming value is number and unit is already stored)
     char value_buf[16];
-    snprintf(value_buf, sizeof(value_buf), float_only[pid->precision], pid->pid_value);
+    snprintf(value_buf, sizeof(value_buf), float_only[data->pid->precision], data->pid->pid_value);
     lv_span_set_text(span_val, value_buf);
-    lv_span_set_text(span_unit, pid->unit_label);
+    lv_span_set_text(span_unit, data->pid->unit_label);
     lv_spangroup_refresh(span_group);
     /*
     lv_obj_t * minmax = lv_label_create(needle);
@@ -132,7 +132,7 @@ lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_obj_set_x(label, 0);
     lv_obj_set_y(label, -22);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
-    lv_label_set_text(label, pid->label);
+    lv_label_set_text(label, data->pid->label);
     lv_obj_set_style_text_font(label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     return needle;

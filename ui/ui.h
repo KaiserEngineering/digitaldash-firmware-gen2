@@ -40,19 +40,42 @@ extern const char *float_with_units[3];
 extern const char *float_only[3];
 extern const char *two_float_with_slash[3];
 
+typedef struct {
+	// PID real-time data
+	PID_DATA * pid;
+
+	// Last gauge update
+	uint32_t timestamp;
+
+	// Last recorded pid_value (different than tracked pid value)
+	float pid_value;
+
+	// Value that is currently on-screen, may be scaled (e.g. 254.69 --> 25469)
+	int32_t value_label;
+
+	// Min that is currently on-screen, may be scaled (e.g. 254.69 --> 25469)
+	int32_t min_label;
+
+	// Max that is currently on-screen, may be scaled (e.g. 254.69 --> 25469)
+	int32_t max_label;
+
+	// Used for smoothing when needed
+	int32_t smoothed_y;
+} GAUGE_DATA;
+
 void build_ui(void);
 void ui_service(void);
 void ui_tick();
 void skip_splash(void);
 
-lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
-lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
-lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
-lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
-lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
-lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
+lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 
-lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, PID_DATA * pid);
+lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 int32_t scale_float( float val, uint8_t precision );
 int32_t round_to_precision( float val, uint8_t precision );
 void label_set_text_fmt_with_check(lv_obj_t * obj, const char * fmt, ...);

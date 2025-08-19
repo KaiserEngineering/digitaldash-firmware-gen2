@@ -18,7 +18,7 @@ static void event_cb(lv_event_t * e)
     lv_obj_t * needle = lv_event_get_target(e);
     lv_obj_t * span_group = lv_obj_get_child(needle, 0);
     lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
-    lv_obj_t * minmax = lv_obj_get_child(needle, 1);
+    //lv_obj_t * minmax = lv_obj_get_child(needle, 1);
 
     if( pid_value_changed(data) )
     {

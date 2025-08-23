@@ -543,14 +543,17 @@ void spoof_config(void)
 	set_view_enable(0, VIEW_STATE_ENABLED, true);
 	set_view_num_gauges(0, 3, true);
 	set_view_background(0, VIEW_BACKGROUND_USER1, true);
-	set_view_gauge_theme(0, 0, GAUGE_THEME_RADIAL, true);
-	set_view_gauge_theme(0, 1, GAUGE_THEME_RADIAL, true);
-	set_view_gauge_theme(0, 2, GAUGE_THEME_RADIAL, true);
+	set_view_gauge_theme(0, 0, GAUGE_THEME_LINEAR, true);
+	set_view_gauge_theme(0, 1, GAUGE_THEME_STOCK_ST, true);
+	set_view_gauge_theme(0, 2, GAUGE_THEME_DIGITAL, true);
+
 	set_view_gauge_pid(0, 0, MODE1_ENGINE_SPEED_UUID, true);
 	set_view_gauge_units(0, 0, PID_UNITS_RPM, true);
+
 	set_view_gauge_pid(0, 1, CALC1_BOOST_VACUUM_UUID, true);
 	set_view_gauge_units(0, 1, PID_UNITS_PSI, true);
-	set_view_gauge_pid(0, 2, MODE1_ENGINE_COOLANT_TEMP_UUID, true);
+
+	set_view_gauge_pid(0, 2, MODE1_OIL_TEMP_UUID, true);
 	set_view_gauge_units(0, 2, PID_UNITS_FAHRENHEIT, true);
 
 	// View 1
@@ -565,18 +568,18 @@ void spoof_config(void)
 	set_dynamic_enable(0, DYNAMIC_STATE_ENABLED, true);
 	set_dynamic_pid(0, CALC1_BOOST_VACUUM_UUID, true);
 	set_dynamic_units(0, PID_UNITS_PSI, true);
-	set_dynamic_priority(0, DYNAMIC_PRIORITY_HIGH, true);
+	set_dynamic_priority(0, DYNAMIC_PRIORITY_LOW, true);
 	set_dynamic_compare(0, DYNAMIC_COMPARISON_GREATER_THAN, true);
-	set_dynamic_threshold(0, 5, true);
-	set_dynamic_view_index(0, 1, true);
+	set_dynamic_threshold(0, 12, true);
+	set_dynamic_view_index(0, 0, true);
 
-	set_dynamic_enable(1, DYNAMIC_STATE_DISABLED, true);
+	set_dynamic_enable(1, DYNAMIC_STATE_ENABLED, true);
 	set_dynamic_pid(1, MODE1_ENGINE_SPEED_UUID, true);
 	set_dynamic_units(1, PID_UNITS_RPM, true);
-	set_dynamic_priority(1, DYNAMIC_PRIORITY_LOW, true);
+	set_dynamic_priority(1, DYNAMIC_PRIORITY_HIGH, true);
 	set_dynamic_compare(1, DYNAMIC_COMPARISON_GREATER_THAN, true);
 	set_dynamic_threshold(1, 8000, true);
-	set_dynamic_view_index(1, 0, true);
+	set_dynamic_view_index(1, 2, true);
 
 	// Alert 0
 	set_alert_enable(0, ALERT_STATE_ENABLED, true );
@@ -761,7 +764,9 @@ int main(void)
   }
 
   // Spoof a config if EEPROM isn't present
-  // spoof_config();
+  //spoof_config();
+
+  //set_general_ee_version(0, 255, true);
 
   // Initialize the external flash
   flash_init();

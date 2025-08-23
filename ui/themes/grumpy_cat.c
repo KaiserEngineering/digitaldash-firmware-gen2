@@ -76,6 +76,7 @@ lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_
     lv_obj_align(gauge, LV_ALIGN_TOP_MID, x, y);
     lv_obj_remove_flag(gauge, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_user_data(gauge, data);
+    lv_obj_set_y(gauge, GRUMPY_START_POS);
     lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, data);
 	#if UI_CONTAINER_DEBUG
 	lv_obj_set_style_border_width(gauge, 2, 0);                    // Thickness of the outline

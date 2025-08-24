@@ -59,8 +59,8 @@ typedef struct {
 	// Max that is currently on-screen, may be scaled (e.g. 254.69 --> 25469)
 	int32_t max_label;
 
-	// Used for smoothing when needed
-	int32_t smoothed_y;
+	// The target position of the object, used for smoothing when needed
+	int32_t target_y;
 } GAUGE_DATA;
 
 void build_ui(void);

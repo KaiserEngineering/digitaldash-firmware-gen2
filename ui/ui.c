@@ -236,7 +236,7 @@ static void init_gauge_struct(void)
 	        ui_gauge_data[v][g].min_label = 99999;
 	        ui_gauge_data[v][g].pid_value = -99999;
 	        ui_gauge_data[v][g].value_label = -99999;
-	        ui_gauge_data[v][g].smoothed_y = 0;
+	        ui_gauge_data[v][g].target_y = -99999;
 	        ui_gauge_data[v][g].timestamp = 0;
 	        ui_gauge_data[v][g].pid = NULL;
 	    }
@@ -624,18 +624,14 @@ void ui_service(void)
 			// Log the timestamp
 			ui_gauge_data[active_view_idx][i].timestamp = ui_gauge_data[active_view_idx][i].pid->timestamp;
 
-			// Check if the value has changed
-			if( ui_gauge_data[active_view_idx][i].pid_value != ui_gauge_data[active_view_idx][i].pid->pid_value )
-			{
-				// Some values are interrupt driven, log the min/max incase they were missed in the main loop
-				log_minmax(ui_gauge_data[active_view_idx][i].pid);
+			// Some values are interrupt driven, log the min/max incase they were missed in the main loop
+			log_minmax(ui_gauge_data[active_view_idx][i].pid);
 
-				// Send an event to the gauge
-				lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, &ui_gauge_data[active_view_idx][i]);
+			// Send an event to the gauge
+			lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, &ui_gauge_data[active_view_idx][i]);
 
-				// Log the value
-				ui_gauge_data[active_view_idx][i].pid_value = ui_gauge_data[active_view_idx][i].pid->pid_value;
-			}
+			// Log the value
+			ui_gauge_data[active_view_idx][i].pid_value = ui_gauge_data[active_view_idx][i].pid->pid_value;
 		}
 	}
 }

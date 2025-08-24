@@ -228,6 +228,21 @@ static void log_minmax( PID_DATA* pid )
 	}
 }
 
+static void init_gauge_struct(void)
+{
+	for (int v = 0; v < MAX_VIEWS; v++) {
+	    for (int g = 0; g < MAX_GAUGES_PER_VIEW; g++) {
+	        ui_gauge_data[v][g].max_label = -99999;
+	        ui_gauge_data[v][g].min_label = 99999;
+	        ui_gauge_data[v][g].pid_value = -99999;
+	        ui_gauge_data[v][g].value_label = -99999;
+	        ui_gauge_data[v][g].smoothed_y = 0;
+	        ui_gauge_data[v][g].timestamp = 0;
+	        ui_gauge_data[v][g].pid = NULL;
+	    }
+	}
+}
+
 /**
  * @brief Selects the highest priority dynamic gauge that should be displayed.
  *
@@ -373,6 +388,9 @@ void build_ui(void)
 	  // Create the base screen
 	  ui_screen = lv_obj_create(NULL);
 	  lv_obj_remove_flag(ui_screen, LV_OBJ_FLAG_SCROLLABLE);
+
+	  // Init the data struct
+	  init_gauge_struct();
 
 	  // Iterate through each view
 	  for(uint8_t view = 0; view < MAX_VIEWS; view++)

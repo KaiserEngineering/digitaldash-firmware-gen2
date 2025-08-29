@@ -54,7 +54,7 @@
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.initCommands" value=""/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.ipAddress" value="localhost"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.jtagDeviceId" value="com.st.stm32cube.ide.mcu.debug.stlink"/>
-    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.pcRegister" value="08010084"/>
+    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.pcRegister" value="0801000"/>
     <intAttribute key="org.eclipse.cdt.debug.gdbjtag.core.portNumber" value="61234"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.runCommands" value=""/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setPcRegister" value="true"/>

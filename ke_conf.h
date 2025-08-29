@@ -13,7 +13,7 @@
 #define FIRMWARE_VERSION_MINOR  0
 #define FIRMWARE_VERSION_HOTFIX 8
 
-#define SPOOF_DATA 1
+#define SPOOF_DATA 0
 #define ENABLE_WHEN_ENGINE_ON 0
 #define SAFE_SHUTDOWN 0 // This is only needed for the Pi
 #define LCD_ALWAYS_ON 1
@@ -44,6 +44,7 @@
 #define HW_CAN_FILTERS 1
 #define BACKGROUND_IMG_SAVE 1
 #define SPLASH_OVERRIDE 1
+#define BOOTLOADER_ACTIVATION 1
 
 #define POWER_CYCLE_TIME 1000
 #define FORD_MAX_BRIGHTNESS 31

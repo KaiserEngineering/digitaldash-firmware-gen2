@@ -45,7 +45,7 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
 /* Start MX regions */
-  FLASH	(rx)	: ORIGIN = 0x08010080, LENGTH = 0x3F0880
+  FLASH	(rx)	: ORIGIN = 0x08012000, LENGTH = 0x003EE000
   ExtFlash	(rx)	: ORIGIN = 0xa0000000, LENGTH = 65536K
   RAM	(xrw)	: ORIGIN = 0x20000000, LENGTH = 3008K
 /* End MX regions */

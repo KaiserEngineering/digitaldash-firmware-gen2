@@ -506,6 +506,17 @@ bool read_splash_override( void )
 		return false;
 }
 
+void activate_bootloader(void)
+{
+	HAL_PWR_EnableBkUpAccess();
+
+	// Set bootloader flag (so bootloader knows to receive firmware)
+	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0xDEADBEEF);
+
+	// Trigger software reset
+	NVIC_SystemReset();
+}
+
 /**
  * @brief Initializes the Digital Dash system with required configuration.
  *
@@ -532,6 +543,7 @@ void Digitaldash_Init( void )
     config.dd_background_save      = &write_background;
     config.dd_ke_tx                = &esp32_tx;
     config.dd_splash_override      = &read_splash_override;
+    config.dd_bootloader_activate  = &activate_bootloader;
 
     if( digitaldash_init( &config ) != DIGITALDASH_INIT_OK )
         Error_Handler();

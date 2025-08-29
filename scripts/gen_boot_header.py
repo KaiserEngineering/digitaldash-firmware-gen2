@@ -23,13 +23,13 @@ hash_words = struct.unpack(">8I", sha256)
 
 # Create boot header (56 bytes)
 boot_header_bin = struct.pack(
-    ">6I8I",
+    "<6I8I",
     0xB00710AD,             # magic
     app_size,               # img_size
     crc32,                  # crc32
     1,                      # version
     0x08010000,             # load_addr
-    0x08010000 + 0x1000,    # entry (after header)
+    0x08012000,             # entry (after header)
     *hash_words
 )
 

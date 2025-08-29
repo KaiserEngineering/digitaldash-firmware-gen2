@@ -732,7 +732,7 @@ int main(void)
   MX_GTZC_Init();
 
   /* USER CODE BEGIN SysInit */
-
+  __enable_irq();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -765,8 +765,6 @@ int main(void)
   // Attach EEPROM read and write handlers
   settings_setReadHandler(eeprom_read);
   settings_setWriteHandler(eeprom_write);
-
-  __enable_irq();
 
   // Enable UART interrupt
   HAL_UART_Receive_DMA(ESP32_UART, rx_buffer, RX_BUFFER_SIZE);

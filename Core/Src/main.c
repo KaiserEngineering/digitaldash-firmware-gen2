@@ -449,6 +449,10 @@ bool write_background( char *image_buffer, uint32_t image_size, uint8_t idx )
 		HAL_DCACHE_Invalidate(&hdcache2);
 		HAL_ICACHE_Invalidate();
 
+		// Force full-screen refresh
+		lv_obj_invalidate(lv_scr_act());
+		lv_refr_now(lv_disp_get_default());
+
 		// Indicate completion.
 		HAL_GPIO_WritePin(DBG_LED2_GPIO_Port, DBG_LED2_Pin, GPIO_PIN_RESET);
 

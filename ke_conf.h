@@ -49,8 +49,8 @@
 #define POWER_CYCLE_TIME 1000
 #define FORD_MAX_BRIGHTNESS 31
 #define FORD_MIN_BRIGHTNESS 1
-#define LCD_MAX_BRIGHTNESS 255
-#define LCD_MIN_BRIGHTNESS 20
+#define LCD_MAX_BRIGHTNESS 100
+#define LCD_MIN_BRIGHTNESS 3
 #define LCD_BKLT_TIMEOUT 1000
 
 /* How long to wait in ms until resuming CAN communication */

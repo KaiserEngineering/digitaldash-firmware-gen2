@@ -10,7 +10,7 @@
 
 LV_IMG_DECLARE(ui_img_grumpy_png);
 
-#define GRUMPY_START_POS 80
+#define GRUMPY_START_POS 70
 #define GRUMPY_END_POS 0
 #define CONTAINER_H_EXTEND 50
 #define Y_ADJUST CONTAINER_H_EXTEND/2
@@ -26,6 +26,25 @@ static void event_cb(lv_event_t * e)
         lv_obj_t * span_group = lv_obj_get_child(guage, 1);
         lv_span_t * span_val = lv_spangroup_get_child(span_group, 0);
 
+        // Calculate the needle angle
+        if( data->pid->pid_value >= data->pid->upper_limit )
+        	lv_obj_set_y(guage, GRUMPY_END_POS);
+        else if ( data->pid->pid_value <= data->pid->lower_limit )
+        	lv_obj_set_y(guage, GRUMPY_START_POS);
+        else {
+            float value = data->pid->pid_value;
+            float lower = data->pid->lower_limit;
+            float upper = data->pid->upper_limit;
+
+            // Normalize the value between 0.0 and 1.0
+            float normalized = (value - lower) / (upper - lower);
+
+            data->target_y = GRUMPY_START_POS + (int32_t)(normalized * (GRUMPY_END_POS - GRUMPY_START_POS));
+
+        	lv_obj_set_y(guage, data->target_y);
+        }
+
+        /*
         // Calculate the needle angle
         if ( data->pid->pid_value >= data->pid->upper_limit )
             data->target_y = GRUMPY_END_POS;
@@ -44,6 +63,7 @@ static void event_cb(lv_event_t * e)
             data->target_y = GRUMPY_START_POS +
                              (int32_t)(normalized * (GRUMPY_END_POS - GRUMPY_START_POS));
         }
+        */
 
         if ( pid_value_label_changed(data) )
         {
@@ -55,6 +75,7 @@ static void event_cb(lv_event_t * e)
             lv_spangroup_refresh(span_group);
         }
 
+        /*
         // --- Restartable LVGL animation ---
         // Cancel any previous needle animation
         lv_anim_delete(guage, (lv_anim_exec_xcb_t)lv_obj_set_y);
@@ -68,6 +89,7 @@ static void event_cb(lv_event_t * e)
         lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_y);
         lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out); // easing
         lv_anim_start(&a);
+        */
     }
 }
 

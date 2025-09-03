@@ -335,7 +335,8 @@
                 "Grumpy Cat",
                 "Linear",
                 "Radial",
-                "Digital"
+                "Digital",
+                "Arc"
             ],
             "limit": "Reserved",
             "EEBytes": 1

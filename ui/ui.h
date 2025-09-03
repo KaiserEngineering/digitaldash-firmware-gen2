@@ -73,6 +73,7 @@ void skip_splash(void);
 lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_radial_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_arc_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);

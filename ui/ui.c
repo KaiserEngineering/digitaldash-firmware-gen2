@@ -262,11 +262,11 @@ static void init_gauge_struct(void)
 static uint8_t dynamic_gauge_check(void)
 {
     // Iterate from highest to lowest priority
-    for (DYNAMIC_PRIORITY priority = DYNAMIC_PRIORITY_HIGH; priority > DYNAMIC_PRIORITY_LOW; priority--)
+    for (DYNAMIC_PRIORITY priority = DYNAMIC_PRIORITY_HIGH; priority >= DYNAMIC_PRIORITY_LOW; priority--)
     {
         for (uint8_t i = 0; i < MAX_DYNAMICS; i++)
         {
-        	if (get_dynamic_priority(i) == DYNAMIC_PRIORITY_LOW)
+        	if ((get_dynamic_priority(i) == DYNAMIC_PRIORITY_LOW) && (priority == DYNAMIC_PRIORITY_LOW))
         		return get_dynamic_view_index(i);
 
             if (get_dynamic_priority(i) != priority)

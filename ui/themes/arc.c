@@ -143,7 +143,7 @@ lv_obj_t * add_arc_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t *
     lv_obj_set_width(minmax, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(minmax, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(minmax, 0);
-    lv_obj_set_y(minmax, -15);
+    lv_obj_set_y(minmax, -22);
     lv_obj_set_align(minmax, LV_ALIGN_CENTER);
     lv_label_set_text(minmax, "min/max");
     lv_obj_set_style_text_font(minmax, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -152,10 +152,10 @@ lv_obj_t * add_arc_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t *
     lv_obj_set_width(label, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(label, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_x(label, 0);
-    lv_obj_set_y(label, -40);
+    lv_obj_set_y(label, -45);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
     lv_label_set_text(label, data->pid->label);
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     return needle;
 }

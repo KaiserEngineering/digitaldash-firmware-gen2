@@ -147,7 +147,7 @@ uint32_t calc_crc32(uint8_t idx, uint32_t reserved) {
 #ifdef DEBUG
 #define SCREEN_SAVER_T 10 * MIN_TO_MILLI // 10 min
 #else
-#define SCREEN_SAVER_T 120 * MIN_TO_MILLI // 120 min
+#define SCREEN_SAVER_T 480 * MIN_TO_MILLI // 8 hrs
 #endif
 #define SCREEN_SAVER_DURATION_T 1 * MIN_TO_MILLI // 1 min
 uint32_t splash_screen_t = 0;

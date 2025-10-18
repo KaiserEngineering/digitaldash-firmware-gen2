@@ -41,7 +41,7 @@ extern RTC_HandleTypeDef hrtc;
 void MX_RTC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_RTC_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

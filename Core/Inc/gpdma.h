@@ -39,7 +39,7 @@ extern "C" {
 void MX_GPDMA1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_GPDMA1_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

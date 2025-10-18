@@ -39,7 +39,7 @@ extern "C" {
 void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_ICACHE_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

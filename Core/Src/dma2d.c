@@ -103,5 +103,18 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef* dma2dHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_DMA2D_DeInit(void)
+{
+  // De-initialize the DMA2D peripheral via HAL
+  if (HAL_DMA2D_DeInit(&hdma2d) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
+  // Disable the peripheral clock
+  __HAL_RCC_DMA2D_CLK_DISABLE();
+
+  // Disable NVIC IRQs if you enabled them elsewhere (optional)
+  // HAL_NVIC_DisableIRQ(DMA2D_IRQn);
+}
 /* USER CODE END 1 */

@@ -127,5 +127,35 @@ void HAL_DCACHE_MspDeInit(DCACHE_HandleTypeDef* dcacheHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_DCACHE1_DeInit(void)
+{
+  // Optional: clean/flush before disabling to ensure memory consistency
+  if (HAL_DCACHE_Invalidate(&hdcache1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_DCACHE_DeInit(&hdcache1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // DCACHE1 clock is now disabled by HAL_DCACHE_MspDeInit
+}
+
+void MX_DCACHE2_DeInit(void)
+{
+  if (HAL_DCACHE_Invalidate(&hdcache2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_DCACHE_DeInit(&hdcache2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // DCACHE2 clock is now disabled by HAL_DCACHE_MspDeInit
+}
 
 /* USER CODE END 1 */

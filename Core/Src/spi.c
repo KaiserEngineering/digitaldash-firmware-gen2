@@ -149,5 +149,24 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_SPI3_DeInit(void)
+{
+  // Abort ongoing transfers safely
+  (void)HAL_SPI_Abort(&hspi3);
+
+  if (HAL_SPI_DeInit(&hspi3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // Belt-and-suspenders: force reset to clear all SPI3 registers/FIFOs
+  __HAL_RCC_SPI3_FORCE_RESET();
+  __HAL_RCC_SPI3_RELEASE_RESET();
+
+  // At this point:
+  // - SPI3 clock is disabled
+  // - PC10, PC11, PC12 are de-initialized
+  // - SPI3_IRQn is disabled
+}
 
 /* USER CODE END 1 */

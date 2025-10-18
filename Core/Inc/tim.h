@@ -49,7 +49,9 @@ void MX_TIM17_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_TIM3_DeInit(void);
+void MX_TIM15_DeInit(void);
+void MX_TIM17_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

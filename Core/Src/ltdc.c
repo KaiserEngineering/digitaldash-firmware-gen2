@@ -260,5 +260,22 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* ltdcHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_LTDC_DeInit(void)
+{
+  // Optional: blank layers before shutdown to avoid last-frame ghosting
+  if (hltdc.Instance && __HAL_RCC_LTDC_IS_CLK_ENABLED()) {
+    __HAL_LTDC_LAYER_DISABLE(&hltdc, 0);
+    __HAL_LTDC_DISABLE(&hltdc);
+  }
 
+  if (HAL_LTDC_DeInit(&hltdc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // If PLL3 was dedicated to LTDC and nothing else needs it,
+  // you may also turn it off here to save power.
+  // Be careful: only do this if no other peripheral uses PLL3 outputs.
+  __HAL_RCC_PLL3_DISABLE();
+}
 /* USER CODE END 1 */

@@ -202,5 +202,17 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_USART1_UART_DeInit(void)
+{
+  // Optional: abort ongoing transfers before shutting down
+  HAL_UART_Abort(&huart1);
+  HAL_UART_DMAStop(&huart1);
 
+  if (HAL_UART_DeInit(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // USART1, its GPIOs, DMA channels, and NVIC are now deinitialized
+}
 /* USER CODE END 1 */

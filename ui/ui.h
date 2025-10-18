@@ -68,6 +68,7 @@ typedef struct {
 void build_ui(void);
 void ui_service(void);
 void ui_tick();
+void ui_reset(void);
 void skip_splash(void);
 
 lv_obj_t * add_grumpy_cat_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);

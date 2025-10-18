@@ -242,5 +242,21 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_I2C1_DeInit(void)
+{
+  if (HAL_I2C_DeInit(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  // Now I2C1 clock is gated, GPIOs released, NVIC disabled
+}
 
+void MX_I2C2_DeInit(void)
+{
+  if (HAL_I2C_DeInit(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  // Now I2C2 clock is gated and GPIOs released
+}
 /* USER CODE END 1 */

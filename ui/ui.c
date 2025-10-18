@@ -640,3 +640,8 @@ void ui_tick( void )
 {
 	ui_tick_cnt++;
 }
+
+void ui_reset( void )
+{
+	ui_tick_cnt = 0;
+}

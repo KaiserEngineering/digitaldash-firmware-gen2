@@ -41,7 +41,7 @@ extern GPU2D_HandleTypeDef hgpu2d;
 void MX_GPU2D_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_GPU2D_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

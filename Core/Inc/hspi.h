@@ -41,7 +41,7 @@ extern XSPI_HandleTypeDef hxspi1;
 void MX_HSPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_HSPI1_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

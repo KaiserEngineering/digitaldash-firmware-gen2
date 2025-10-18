@@ -310,5 +310,57 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* tim_pwmHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_TIM3_DeInit(void)
+{
+  // Stop input capture on CH3 (ignore status if not started)
+  (void)HAL_TIM_IC_Stop_IT(&htim3, TIM_CHANNEL_3);
+  (void)HAL_TIM_IC_Stop(&htim3, TIM_CHANNEL_3);
+
+  if (HAL_TIM_IC_DeInit(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // Belt-and-suspenders: fully reset registers (also clears slave/trigger state)
+  __HAL_RCC_TIM3_FORCE_RESET();
+  __HAL_RCC_TIM3_RELEASE_RESET();
+  // GPIO for PE5 (TIM3_CH3) is deinitialized by HAL_TIM_Base_MspDeInit()
+}
+
+void MX_TIM15_DeInit(void)
+{
+  // Backlight PWM on CH2: drive 0% then stop to avoid glitches
+  __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, 0);
+  (void)HAL_TIM_PWM_Stop(&htim15, TIM_CHANNEL_2);
+
+  if (HAL_TIM_PWM_DeInit(&htim15) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // Optional: fully reset the peripheral
+  __HAL_RCC_TIM15_FORCE_RESET();
+  __HAL_RCC_TIM15_RELEASE_RESET();
+
+  // CubeMX didn’t deinit PB15 in MspDeInit; release it here to save power
+  HAL_GPIO_DeInit(GPIOB, GPIO_PIN_15);
+}
+
+void MX_TIM17_DeInit(void)
+{
+  // If running with update interrupt, stop it first
+  (void)HAL_TIM_Base_Stop_IT(&htim17);
+  (void)HAL_TIM_Base_Stop(&htim17);
+
+  if (HAL_TIM_Base_DeInit(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // Ensure all registers return to reset defaults
+  __HAL_RCC_TIM17_FORCE_RESET();
+  __HAL_RCC_TIM17_RELEASE_RESET();
+  // NVIC IRQ is disabled in HAL_TIM_Base_MspDeInit()
+}
 
 /* USER CODE END 1 */

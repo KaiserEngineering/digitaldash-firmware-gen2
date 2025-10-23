@@ -300,18 +300,41 @@ static uint8_t dynamic_gauge_check(void)
  */
 static void switch_view(uint8_t idx)
 {
+    if (idx >= MAX_VIEWS) return;
+    if (ui_view[idx] == NULL) return;
+
+    // If already visible/active, nothing to do
     if (!lv_obj_has_flag(ui_view[idx], LV_OBJ_FLAG_HIDDEN))
-        return;  // View is already active
+        return;
 
+    // Hide other views; if any were visible, remove their PID streams
     for (uint8_t i = 0; i < MAX_VIEWS; i++) {
-        if (ui_view[i] == NULL)
-            continue;
+        if (ui_view[i] == NULL) continue;
 
-        if (i == idx)
-        	lv_obj_remove_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
-        else
-            lv_obj_add_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+        if (i == idx) {
+            lv_obj_remove_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+
+        const bool was_visible = !lv_obj_has_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
+        if (was_visible) {
+            const uint8_t num_gauges = get_view_num_gauges(i);
+            for (uint8_t gauge = 0; gauge < num_gauges; gauge++) {
+            	if(ui_gauge_data[i][gauge].pid)
+            		DigitalDash_Pause_PID_In_Stream(ui_gauge_data[i][gauge].pid);
+            }
+        }
+        lv_obj_add_flag(ui_view[i], LV_OBJ_FLAG_HIDDEN);
     }
+
+	// Iterate through each gauge in the view
+    const uint8_t num_gauges = get_view_num_gauges(idx);
+	for(uint8_t gauge = 0; gauge < num_gauges; gauge++)
+	{
+		// Resume the data now that the view is active
+		if(ui_gauge_data[idx][gauge].pid)
+			DigitalDash_Resume_PID_In_Stream(ui_gauge_data[idx][gauge].pid);
+	}
 }
 
 /**
@@ -464,21 +487,23 @@ void build_ui(void)
 			  // Iterate through each gauge in the view
 			  for(uint8_t gauge = 0; gauge < num_gauges; gauge++)
 			  {
-				  PID_DATA pid_req;
+					PID_DATA pid_req;
 
-				  // Get PID universally unique ID, PID, and mode
-				  pid_req.pid_uuid = get_view_gauge_pid(view, gauge);
+					// Get PID universally unique ID, PID, and mode
+					pid_req.pid_uuid = get_view_gauge_pid(view, gauge);
 
-				  // Load the unit and default to base unit if error
-				  pid_req.pid_unit = get_view_gauge_units(view, gauge);
-				  if( pid_req.pid_unit == PID_UNITS_RESERVED )
+					// Load the unit and default to base unit if error
+					pid_req.pid_unit = get_view_gauge_units(view, gauge);
+					if( pid_req.pid_unit == PID_UNITS_RESERVED )
 					  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
 
-				  // Start the PID stream and save the pointer
-				  ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req );
+					// Start the PID stream and save the pointer
+					ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req );
 
-				  // Finally, add the gauge to the view
-				  ui_gauge[view][gauge] = add_gauge(get_view_gauge_theme(view, gauge), x_pos[gauge], 0, width, height, ui_view[view], &ui_gauge_data[view][gauge]);
+					DigitalDash_Pause_PID_In_Stream(ui_gauge_data[view][gauge].pid);
+
+				    // Finally, add the gauge to the view
+				    ui_gauge[view][gauge] = add_gauge(get_view_gauge_theme(view, gauge), x_pos[gauge], 0, width, height, ui_view[view], &ui_gauge_data[view][gauge]);
 			  }
 		  }
 	  }

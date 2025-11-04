@@ -53,5 +53,18 @@ void MX_ICACHE_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_ICACHE_DeInit(void)
+{
+  if (HAL_ICACHE_Disable() != HAL_OK)
+  {
+    Error_Handler();
+  }
 
+  /* Optional: reset ICACHE registers if your HAL/device supports it
+     __HAL_RCC_ICACHE_FORCE_RESET();
+     __HAL_RCC_ICACHE_RELEASE_RESET();
+  */
+
+  // Instruction cache disabled; flash access now direct
+}
 /* USER CODE END 1 */

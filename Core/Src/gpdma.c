@@ -51,5 +51,13 @@ void MX_GPDMA1_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_GPDMA1_DeInit(void)
+{
+  /* GPDMA1 interrupt DeInit */
+  HAL_NVIC_DisableIRQ(GPDMA1_Channel0_IRQn);
+  HAL_NVIC_DisableIRQ(GPDMA1_Channel1_IRQn);
 
+  /* Peripheral clock disable */
+  __HAL_RCC_GPDMA1_CLK_DISABLE();
+}
 /* USER CODE END 1 */

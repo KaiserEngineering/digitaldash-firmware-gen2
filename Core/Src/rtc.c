@@ -118,5 +118,17 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_RTC_DeInit(void)
+{
+  // Optional: clear alarms/wakeup timers before shutting down
+  HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+  HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
 
+  if (HAL_RTC_DeInit(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // RTC and its APB clocks are now disabled
+}
 /* USER CODE END 1 */

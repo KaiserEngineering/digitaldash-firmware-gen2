@@ -41,7 +41,7 @@ extern SPI_HandleTypeDef hspi3;
 void MX_SPI3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_SPI3_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -141,5 +141,26 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* fdcanHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_FDCAN1_DeInit(void)
+{
+  // Put the CAN transceiver into standby mode before shutting down FDCAN
+  HAL_GPIO_WritePin(CAN_STBY_GPIO_Port, CAN_STBY_Pin, GPIO_PIN_SET);
 
+  if (HAL_FDCAN_DeInit(&hfdcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // Hard reset the peripheral to wipe filters/RAM and all registers to reset defaults
+  __HAL_RCC_FDCAN1_FORCE_RESET();
+  __HAL_RCC_FDCAN1_RELEASE_RESET();
+
+  // (Optional) Make absolutely sure its IRQ is disabled (MspDeInit already does this)
+  HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+
+  // At this point:
+  // - FDCAN1 clock is disabled
+  // - PB8/PB9 pins are de-initialized
+  // - NVIC interrupt for FDCAN1 is disabled
+}
 /* USER CODE END 1 */

@@ -166,5 +166,13 @@ void HAL_XSPI_MspDeInit(XSPI_HandleTypeDef* xspiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_HSPI1_DeInit(void)
+{
+  if (HAL_XSPI_DeInit(&hxspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
+  // At this point HSPI1 clock is gated and pins are de-initialized
+}
 /* USER CODE END 1 */

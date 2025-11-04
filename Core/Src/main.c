@@ -396,13 +396,7 @@ static uint8_t ECU_CAN_Tx( uint8_t data[], uint8_t len )
 
 static void LCD_Brightness( uint8_t brightness )
 {
-	if( brightness > 0 )
-		__HAL_TIM_SET_COMPARE(BKLT_TIM, BKLT_TIM_CHANNEL, 64*brightness);
-	else {
-		if (HAL_TIM_PWM_Stop(BKLT_TIM, BKLT_TIM_CHANNEL) != HAL_OK) {
-			Error_Handler();
-		}
-	}
+	__HAL_TIM_SET_COMPARE(BKLT_TIM, BKLT_TIM_CHANNEL, 64*brightness);
 }
 
 void erase_background(uint32_t start_address)
@@ -481,6 +475,123 @@ static void esp32_reset( HOST_PWR_STATE state )
 		HAL_GPIO_WritePin(ESP32_RESET_N_GPIO_Port, ESP32_RESET_N_Pin, GPIO_PIN_SET);
 }
 
+static void System_Power_Hold( bool state )
+{
+	if( state )
+		HAL_GPIO_WritePin( PWR_HOLD_GPIO_Port, PWR_HOLD_Pin, GPIO_PIN_SET );
+	else
+		HAL_GPIO_WritePin( PWR_HOLD_GPIO_Port, PWR_HOLD_Pin, GPIO_PIN_RESET );
+}
+
+static void system_power( HOST_PWR_STATE state )
+{
+    if( state == HOST_PWR_ENABLED )
+    {
+    	// Enable the OSPI in XIP mode
+    	// BSP_HSPI_NOR_LeaveDeepPowerDown(0);
+    	// HAL_Delay(1);
+    	BSP_HSPI_NOR_EnableMemoryMappedMode(0);
+
+    	// Enable the ESP32
+    	esp32_reset( HOST_PWR_ENABLED );
+
+    	/*
+    	if (!__HAL_RCC_GPDMA1_IS_CLK_ENABLED())
+    	    MX_GPDMA1_Init();
+
+    	if (!__HAL_RCC_DMA2D_IS_CLK_ENABLED())
+    	    MX_DMA2D_Init();
+
+    	if (!__HAL_RCC_HSPI1_IS_CLK_ENABLED())
+    	    MX_HSPI1_Init();
+
+    	if (!__HAL_RCC_I2C2_IS_CLK_ENABLED())
+    	    MX_I2C2_Init();
+
+    	if (!HAL_ICACHE_IsEnabled())
+    	    MX_ICACHE_Init();
+
+    	if (!__HAL_RCC_LTDC_IS_CLK_ENABLED())
+    	    MX_LTDC_Init();
+
+    	if (!__HAL_RCC_RTCAPB_IS_CLK_ENABLED())
+    	    MX_RTC_Init();
+
+    	if (!__HAL_RCC_USART1_IS_CLK_ENABLED())
+    	    MX_USART1_UART_Init();
+
+    	if (!__HAL_RCC_GPU2D_IS_CLK_ENABLED())
+    	    MX_GPU2D_Init();
+
+    	if (!__HAL_RCC_DCACHE1_IS_CLK_ENABLED())
+    	    MX_DCACHE1_Init();
+
+    	if (!__HAL_RCC_DCACHE2_IS_CLK_ENABLED())
+    	    MX_DCACHE2_Init();
+
+    	if (!__HAL_RCC_FDCAN1_IS_CLK_ENABLED())
+    	    MX_FDCAN1_Init();
+
+    	if (!__HAL_RCC_TIM17_IS_CLK_ENABLED())
+    	    MX_TIM17_Init();
+
+    	if (!__HAL_RCC_I2C1_IS_CLK_ENABLED())
+    	    MX_I2C1_Init();
+
+    	if (!__HAL_RCC_SPI3_IS_CLK_ENABLED())
+    	    MX_SPI3_Init();
+
+    	if (!__HAL_RCC_TIM3_IS_CLK_ENABLED())
+    	    MX_TIM3_Init();
+
+    	if (!__HAL_RCC_TIM15_IS_CLK_ENABLED())
+    	    MX_TIM15_Init();
+*/
+    } else
+    {
+    	// Force LCD driver on due to hardware constraint
+    	HAL_GPIO_WritePin(LCD_EN_GPIO_Port, LCD_EN_Pin, GPIO_PIN_SET);
+
+    	// Turn off the ESP32
+    	esp32_reset( HOST_PWR_DISABLED );
+
+    	// Allow the vehicle to shutdown the Digital Dash
+    	System_Power_Hold(0);
+
+    	// Turn off the screen if it is not already
+        LCD_Brightness(0);
+
+        // Shut down OSPI
+        BSP_HSPI_NOR_DisableMemoryMappedMode(0);
+
+        /*
+		//MX_GPIO_Init();
+        MX_GPDMA1_DeInit();
+        MX_DMA2D_DeInit();
+		MX_HSPI1_DeInit();
+		MX_I2C1_DeInit();
+		MX_I2C2_DeInit();
+		MX_ICACHE_DeInit();
+		MX_LTDC_DeInit();
+		MX_RTC_DeInit();
+		MX_USART1_UART_DeInit();
+		MX_GPU2D_DeInit();
+		MX_DCACHE1_DeInit();
+		MX_DCACHE2_DeInit();
+		// MX_FDCAN1_DeInit(); <--- Keep CAN Bus active
+		MX_TIM3_DeInit();
+		MX_TIM15_DeInit();
+		MX_TIM17_DeInit();
+		MX_SPI3_DeInit();
+
+        //HAL_SuspendTick();  // optional: avoid SysTick instantly waking you
+        //HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI); // or WFE
+        //HAL_ResumeTick();
+        //NVIC_SystemReset();
+         */
+    }
+}
+
 static int esp32_tx( uint8_t *data, uint32_t len )
 {
     if( HAL_UART_Transmit_DMA(ESP32_UART, data, len) == HAL_OK )
@@ -544,7 +655,7 @@ void Digitaldash_Init( void )
 {
     DIGITALDASH_CONFIG config;
     config.dd_ecu_tx               = &ECU_CAN_Tx;
-    config.dd_host_ctrl            = &esp32_reset;
+    config.dd_host_ctrl            = &system_power;
     config.dd_set_backlight        = &LCD_Brightness;
     config.dd_filter               = &CAN_Filter;
     config.dd_background_save      = &write_background;

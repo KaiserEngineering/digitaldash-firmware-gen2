@@ -49,7 +49,7 @@ extern LTDC_HandleTypeDef hltdc;
 void MX_LTDC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_LTDC_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

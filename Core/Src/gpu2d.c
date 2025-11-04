@@ -90,5 +90,22 @@ void HAL_GPU2D_MspDeInit(GPU2D_HandleTypeDef* gpu2dHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void MX_GPU2D_DeInit(void)
+{
+  // If you might have a command list in flight, ensure GPU2D is idle here.
+  // e.g., wait on your own "gpu2d_idle" flag if you maintain one.
 
+  if (HAL_GPU2D_DeInit(&hgpu2d) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  // HAL_GPU2D_DeInit() calls HAL_GPU2D_MspDeInit() -> disables GPU2D/DCACHE2 clocks and IRQ.
+  // If you also enabled GPU2D error IRQ elsewhere (GPU2D_ER_IRQn), disable it too, e.g.:
+  // HAL_NVIC_DisableIRQ(GPU2D_ER_IRQn);
+
+  // Optional: force-reset for a belt-and-suspenders clean state:
+  __HAL_RCC_GPU2D_FORCE_RESET();
+  __HAL_RCC_GPU2D_RELEASE_RESET();
+}
 /* USER CODE END 1 */

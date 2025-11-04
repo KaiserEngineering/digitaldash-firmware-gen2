@@ -14,7 +14,9 @@
 #define FIRMWARE_VERSION_HOTFIX 0
 
 #define SPOOF_DATA 0
+#ifndef ENABLE_WHEN_ENGINE_ON
 #define ENABLE_WHEN_ENGINE_ON 0
+#endif
 #define SAFE_SHUTDOWN 0 // This is only needed for the Pi
 #define LCD_ALWAYS_ON 1
 
@@ -29,6 +31,13 @@
 #define VEHICLE_FORD_FOCUS_STRS_2013_2018 2
 
 #define VEHICLE FORD_FOCUS_STRS_2013_2018
+
+#define DD_DEV_SYSTEM        0
+#define DD_DEV_COPROCESSOR   1
+#define DD_DEV_VEHICLE_DATA  2
+#define DD_DEV_UI_VIEW       3
+#define DD_DEV_UI_DYNAMIC    4
+#define DD_DEV_UI_ALERT      5
 
 
 /********************************************************************
@@ -59,7 +68,7 @@
 #define TESTER_PRESENT_DELAY 10000
 
 /* How long to wait in ms to shutdown if the engine is OFF */
-#define ENGINE_OFF_SHUTDOWN_TIME 100000
+#define ENGINE_OFF_SHUTDOWN_TIME 1000
 
 #define FORCE_USB_ON     0
 

@@ -44,7 +44,8 @@ void MX_DCACHE1_Init(void);
 void MX_DCACHE2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void MX_DCACHE1_DeInit(void);
+void MX_DCACHE2_DeInit(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

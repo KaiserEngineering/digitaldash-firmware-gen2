@@ -218,6 +218,7 @@ def write_get_source(file, prefix, cmd, depth):
 
       file.write("void get_" + prefix + "_" + cmd["cmd"].lower() + "(" + input + ")\n{\n")
       file.write("    memcpy(" + prefix + "_" + cmd["cmd"].lower() + ", " + output + ", " + cmd["EEBytes"].upper() + ");\n")
+      file.write("    " + prefix + "_" + cmd["cmd"].lower() + "[" + cmd["EEBytes"].upper() + " - 1] = '\\0';\n")
 
       file.write("}\n\n")
     else:
@@ -507,6 +508,8 @@ def write_save_source( file, prefix, cmd, depth ):
     if( get_eeprom_size(cmd) > 0 ):
         file.write( "    uint8_t bytes[EE_SIZE_" + prefix.upper() + "_" + cmd["cmd"].upper() + "];\n\n" )
         file.write("    memcpy(bytes, " + prefix.lower() + "_" + cmd["cmd"].lower() + ", EE_SIZE_" + prefix.upper() + "_" + cmd["cmd"].upper() + ");\n\n")
+        if( cmd["type"] == "string" ):
+            file.write("    bytes[EE_SIZE_ALERT_MESSAGE - 1] = '\\0';\n\n")
         #file.write("    if (" + eeprom_status_check + ")\n    {\n");
         byte_count = 1
         while byte_count <= get_eeprom_size(cmd):

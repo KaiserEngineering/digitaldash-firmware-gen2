@@ -247,3 +247,29 @@ void clear_system_message(void)
 	if (ui_system_message_container != NULL)
 		lv_obj_add_flag(ui_system_message_container, LV_OBJ_FLAG_HIDDEN);
 }
+
+void system_message_deinit(void)
+{
+	uint32_t primask;
+
+	if (ui_system_message_timer != NULL)
+	{
+		lv_timer_delete(ui_system_message_timer);
+		ui_system_message_timer = NULL;
+	}
+
+	ui_system_message_container = NULL;
+	ui_system_message = NULL;
+	ui_system_message_expiration = NULL;
+	system_message_started_ms = 0U;
+	system_message_duration_ms = 0U;
+	system_message_show_expiration = false;
+
+	primask = __get_PRIMASK();
+	__disable_irq();
+	pending_system_message.id = SYSTEM_MESSAGE_NONE;
+	pending_system_message.duration_ms = 0U;
+	pending_system_message.show_expiration = false;
+	if (primask == 0U)
+		__enable_irq();
+}

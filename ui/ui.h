@@ -66,6 +66,8 @@ typedef struct {
 } GAUGE_DATA;
 
 void build_ui(void);
+void ui_request_rebuild(void);
+void ui_rebuild(void);
 void ui_service(void);
 void ui_tick();
 void ui_reset(void);
@@ -93,6 +95,7 @@ lv_obj_t * add_alert( lv_obj_t * parent );
 bool get_alert(void);
 void set_alert(char *msg);
 void clear_alert(void);
+void alert_deinit(void);
 lv_obj_t * add_system_message( lv_obj_t * parent );
 bool get_system_message(void);
 typedef enum {
@@ -104,6 +107,7 @@ typedef enum {
 void set_system_message(SYSTEM_MESSAGE_ID id, uint32_t duration_ms, bool show_expiration);
 void system_message_service(void);
 void clear_system_message(void);
+void system_message_deinit(void);
 
 typedef enum {
 	ADDR_MEMORYMAPPED_DISABLED,

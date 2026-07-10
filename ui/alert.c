@@ -80,3 +80,9 @@ void clear_alert(void)
 	lv_label_set_text(ui_alert, "No error set");
 	lv_obj_add_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
 }
+
+void alert_deinit(void)
+{
+	ui_alert = NULL;
+	ui_alert_container = NULL;
+}

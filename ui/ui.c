@@ -167,8 +167,16 @@ GAUGE_DATA ui_gauge_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW];
 PID_DATA * ui_dynamic_pid[MAX_DYNAMICS] = {0};
 PID_DATA * ui_alert_pid[MAX_ALERTS] = {0};
 static PID_DATA unsupported_pid_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
+static lv_obj_t *build_info_overlay = NULL;
+static volatile bool ui_rebuild_requested = false;
+static bool ui_rebuild_in_progress = false;
 
 static uint32_t ui_tick_cnt = 0;
+
+void ui_request_rebuild(void)
+{
+	ui_rebuild_requested = true;
+}
 
 static uint8_t compare_values(float a, float b, ALERT_COMPARISON comparison)
 {
@@ -371,20 +379,102 @@ void show_build_info_overlay(void)
 
     // Create label on the top-most LVGL layer
     lv_obj_t *top_layer = lv_layer_top();
-    lv_obj_t *build_label = lv_label_create(top_layer);
+    build_info_overlay = lv_label_create(top_layer);
 
     // Format build info text
     char buf[128];
     snprintf(buf, sizeof(buf), "%s: %s (%s) %s", BUILD_TYPE, BUILD_VERSION, BUILD_COMMIT, BUILD_TIMESTAMP);
-    lv_label_set_text(build_label, buf);
+    lv_label_set_text(build_info_overlay, buf);
 
     // Style the label
-    lv_obj_set_style_text_color(build_label, lv_color_white(), 0);
-    lv_obj_set_style_text_opa(build_label, LV_OPA_COVER, 0);
-    lv_obj_set_style_text_font(build_label, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_color(build_info_overlay, lv_color_white(), 0);
+    lv_obj_set_style_text_opa(build_info_overlay, LV_OPA_COVER, 0);
+    lv_obj_set_style_text_font(build_info_overlay, &lv_font_montserrat_18, 0);
 
     // Align to bottom center with small vertical padding
-    lv_obj_align(build_label, LV_ALIGN_BOTTOM_MID, 0 + X_OFFSET, -5);
+    lv_obj_align(build_info_overlay, LV_ALIGN_BOTTOM_MID, 0 + X_OFFSET, -5);
+}
+
+static void ui_release_pid_streams(void)
+{
+	for (uint8_t view = 0; view < MAX_VIEWS; view++)
+	{
+		for (uint8_t gauge = 0; gauge < MAX_GAUGES_PER_VIEW; gauge++)
+		{
+			if (ui_gauge_data[view][gauge].pid != NULL)
+				DigitalDash_Remove_PID_From_Stream(ui_gauge_data[view][gauge].pid, DD_DEV_UI_VIEW);
+		}
+	}
+
+	for (uint8_t idx = 0; idx < MAX_DYNAMICS; idx++)
+	{
+		if (ui_dynamic_pid[idx] != NULL)
+			DigitalDash_Remove_PID_From_Stream(ui_dynamic_pid[idx], DD_DEV_UI_DYNAMIC);
+	}
+
+	for (uint8_t idx = 0; idx < MAX_ALERTS; idx++)
+	{
+		if (ui_alert_pid[idx] != NULL)
+			DigitalDash_Remove_PID_From_Stream(ui_alert_pid[idx], DD_DEV_UI_ALERT);
+	}
+}
+
+void ui_rebuild(void)
+{
+	uint8_t requested_view = active_view_idx;
+	lv_obj_t *temporary_screen = lv_obj_create(NULL);
+
+	/* Never delete the currently active screen or a screen in transition. */
+	lv_screen_load(temporary_screen);
+
+	ui_release_pid_streams();
+	system_message_deinit();
+	alert_deinit();
+
+	if ((build_info_overlay != NULL) && lv_obj_is_valid(build_info_overlay))
+		lv_obj_delete(build_info_overlay);
+	build_info_overlay = NULL;
+
+	if ((ui_screen != NULL) && lv_obj_is_valid(ui_screen))
+		lv_obj_delete(ui_screen);
+	if ((splash_screen != NULL) && lv_obj_is_valid(splash_screen))
+		lv_obj_delete(splash_screen);
+
+	ui_screen = NULL;
+	splash_screen = NULL;
+	memset(ui_view, 0, sizeof(ui_view));
+	memset(ui_gauge, 0, sizeof(ui_gauge));
+	memset(ui_gauge_data, 0, sizeof(ui_gauge_data));
+	memset(ui_dynamic_pid, 0, sizeof(ui_dynamic_pid));
+	memset(ui_alert_pid, 0, sizeof(ui_alert_pid));
+	memset(unsupported_pid_data, 0, sizeof(unsupported_pid_data));
+
+	ui_rebuild_in_progress = true;
+	build_ui();
+	ui_rebuild_in_progress = false;
+
+	if ((requested_view >= MAX_VIEWS) ||
+		(get_view_enable(requested_view) != VIEW_STATE_ENABLED))
+	{
+		requested_view = 0;
+		for (uint8_t view = 0; view < MAX_VIEWS; view++)
+		{
+			if (get_view_enable(view) == VIEW_STATE_ENABLED)
+			{
+				requested_view = view;
+				break;
+			}
+		}
+	}
+
+	active_view_idx = requested_view;
+	switch_view(active_view_idx);
+	lv_screen_load(ui_screen);
+	lv_obj_delete(temporary_screen);
+
+	/* A hot reload returns directly to the UI rather than replaying splash. */
+	splash_screen_t = 0U;
+	next_screen_saver = ui_tick_cnt + SCREEN_SAVER_T;
 }
 
 
@@ -567,7 +657,8 @@ void build_ui(void)
 	  }
 
 	  // Load the splash screen
-	  switch_screen(splash_screen, SCREEN_FADE_INIT_T);
+	  if (!ui_rebuild_in_progress)
+		  switch_screen(splash_screen, SCREEN_FADE_INIT_T);
 
 	  add_alert(ui_screen);
 	  add_system_message(ui_screen);
@@ -597,6 +688,13 @@ void build_ui(void)
  */
 void ui_service(void)
 {
+	if (ui_rebuild_requested)
+	{
+		ui_rebuild_requested = false;
+		ui_rebuild();
+		return;
+	}
+
 	lv_timer_handler();
 	system_message_service();
 

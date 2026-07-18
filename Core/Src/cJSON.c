@@ -44,6 +44,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <float.h>
+#include <stdint.h>
 
 #ifdef ENABLE_LOCALES
 #include <locale.h>
@@ -57,6 +58,7 @@
 #endif
 
 #include "cJSON.h"
+#include "cjson_shared.h"
 
 /* define our own boolean type */
 #ifdef true
@@ -3188,4 +3190,96 @@ CJSON_PUBLIC(void) cJSON_free(void *object)
 {
     global_hooks.deallocate(object);
     object = NULL;
+}
+
+#define CJSON_SHARED_ALIGN      (sizeof(uintptr_t))
+#define CJSON_SHARED_ALIGN_MASK (CJSON_SHARED_ALIGN - 1U)
+
+static uint8_t *cjson_workspace = NULL;
+static size_t cjson_workspace_size = 0;
+static size_t cjson_workspace_offset = 0;
+static size_t cjson_workspace_peak = 0;
+static cJSON_bool cjson_workspace_in_use = false;
+static cJSON_bool cjson_hooks_ready = false;
+
+static size_t cjson_align_size(size_t size)
+{
+    return (size + CJSON_SHARED_ALIGN_MASK) & ~CJSON_SHARED_ALIGN_MASK;
+}
+
+static void *cjson_shared_malloc(size_t size)
+{
+    if(!cjson_workspace_in_use || (size == 0U))
+        return NULL;
+
+    size_t aligned_size = cjson_align_size(size);
+
+    if((cjson_workspace == NULL) || (aligned_size > cjson_workspace_offset))
+        return NULL;
+
+    cjson_workspace_offset -= aligned_size;
+    void *ptr = &cjson_workspace[cjson_workspace_offset];
+
+    size_t used = cjson_workspace_size - cjson_workspace_offset;
+    if(used > cjson_workspace_peak)
+        cjson_workspace_peak = used;
+
+    return ptr;
+}
+
+static void cjson_shared_free(void *ptr)
+{
+    (void)ptr;
+}
+
+void cjson_shared_init(void)
+{
+    if(cjson_hooks_ready)
+        return;
+
+    cJSON_Hooks hooks = {
+        .malloc_fn = cjson_shared_malloc,
+        .free_fn = cjson_shared_free
+    };
+
+    cJSON_InitHooks(&hooks);
+    cjson_hooks_ready = true;
+}
+
+void cjson_shared_set_buffer(uint8_t *buffer, size_t size)
+{
+    cjson_workspace = buffer;
+    cjson_workspace_size = size;
+
+    if(!cjson_workspace_in_use)
+        cjson_workspace_offset = cjson_workspace_size;
+}
+
+bool cjson_shared_acquire(void)
+{
+    cjson_shared_init();
+
+    if(cjson_workspace_in_use || (cjson_workspace == NULL) || (cjson_workspace_size == 0U))
+        return false;
+
+    cjson_workspace_offset = cjson_workspace_size;
+    cjson_workspace_in_use = true;
+
+    return true;
+}
+
+void cjson_shared_release(void)
+{
+    cjson_workspace_offset = cjson_workspace_size;
+    cjson_workspace_in_use = false;
+}
+
+size_t cjson_shared_used(void)
+{
+    return cjson_workspace_size - cjson_workspace_offset;
+}
+
+size_t cjson_shared_peak(void)
+{
+    return cjson_workspace_peak;
 }

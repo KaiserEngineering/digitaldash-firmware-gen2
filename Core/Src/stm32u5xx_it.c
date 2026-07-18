@@ -62,6 +62,8 @@ extern I2C_HandleTypeDef hi2c1;
 extern LTDC_HandleTypeDef hltdc;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim17;
+extern DMA_NodeTypeDef Node_GPDMA1_Channel1;
+extern DMA_QListTypeDef List_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
@@ -285,17 +287,16 @@ void I2C1_ER_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
+  if ((__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET) &&
+      (__HAL_UART_GET_IT_SOURCE(&huart1, UART_IT_IDLE) != RESET))
+  {
+      __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+      UART_IdleCallback(&huart1);
+  }
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-  if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
-  {
-      __HAL_UART_CLEAR_IDLEFLAG(&huart1);
 
-      // Handle the received data
-      UART_IdleCallback(&huart1);
-  }
   /* USER CODE END USART1_IRQn 1 */
 }
 

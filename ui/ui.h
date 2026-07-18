@@ -78,12 +78,13 @@ lv_obj_t * add_arc_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t *
 lv_obj_t * add_stock_st_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_stock_rs_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
+lv_obj_t * add_graph_gauge(   int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 
 lv_obj_t * add_gauge( GAUGE_THEME theme, int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_t * parent, GAUGE_DATA* data);
 int32_t scale_float( float val, uint8_t precision );
 int32_t round_to_precision( float val, uint8_t precision );
 void label_set_text_fmt_with_check(lv_obj_t * obj, const char * fmt, ...);
-lv_color_t get_needle_color_from_value(float value, float min, float max);
+lv_color_t get_needle_color_from_value(float value, float min, float max, const PID_DATA *pid);
 bool pid_value_changed(GAUGE_DATA *data);
 bool pid_value_label_changed(GAUGE_DATA *data);
 bool pid_min_label_changed(GAUGE_DATA *data);
@@ -95,7 +96,14 @@ void set_alert(char *msg);
 void clear_alert(void);
 lv_obj_t * add_system_message( lv_obj_t * parent );
 bool get_system_message(void);
-void set_system_message(char *msg);
+typedef enum {
+	SYSTEM_MESSAGE_NONE = 0,
+	SYSTEM_MESSAGE_TESTER_PRESENT,
+	SYSTEM_MESSAGE_DYNAMIC_VIEW_DISABLED,
+	SYSTEM_MESSAGE_RESERVED
+} SYSTEM_MESSAGE_ID;
+void set_system_message(SYSTEM_MESSAGE_ID id, uint32_t duration_ms, bool show_expiration);
+void system_message_service(void);
 void clear_system_message(void);
 
 typedef enum {

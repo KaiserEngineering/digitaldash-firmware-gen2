@@ -8,6 +8,8 @@
 #include "ui.h"
 #include "lib_digital_dash.h"
 #include "../build_info.h"
+#include <stdio.h>
+#include <string.h>
 
 LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 
@@ -30,6 +32,7 @@ uint32_t get_background_addr(uint8_t idx, ADDR_MEMORYMAPPED_MODE mode)
 }
 
 #define BACKGROUND_COLOR_FORMAT LV_COLOR_FORMAT_NATIVE_WITH_ALPHA
+#define DYNAMIC_VIEW_MESSAGE_DURATION_MS 500U
 
 #define DEFINE_BACKGROUND_USER(n) \
 const lv_image_dsc_t ui_background_user##n = { \
@@ -163,6 +166,7 @@ lv_obj_t * ui_gauge[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
 GAUGE_DATA ui_gauge_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW];
 PID_DATA * ui_dynamic_pid[MAX_DYNAMICS] = {0};
 PID_DATA * ui_alert_pid[MAX_ALERTS] = {0};
+static PID_DATA unsupported_pid_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
 
 static uint32_t ui_tick_cnt = 0;
 
@@ -209,20 +213,6 @@ void skip_splash(void)
 	switch_screen(ui_screen, 0);
 }
 
-static void log_minmax( PID_DATA* pid )
-{
-	if( pid == NULL )
-		return;
-
-	// Only log min/max if a value has been read
-	if( pid->timestamp > 0 ) {
-		if( pid->pid_value > pid->pid_max )
-			pid->pid_max = pid->pid_value;
-		if( pid->pid_value < pid->pid_min )
-			pid->pid_min = pid->pid_value;
-	}
-}
-
 static void init_gauge_struct(void)
 {
 	for (int v = 0; v < MAX_VIEWS; v++) {
@@ -236,6 +226,30 @@ static void init_gauge_struct(void)
 	        ui_gauge_data[v][g].pid = NULL;
 	    }
 	}
+}
+
+static PID_DATA *init_unsupported_pid(uint8_t view, uint8_t gauge, uint32_t attempted_pid_uuid)
+{
+	PID_DATA *unsupported_pid = &unsupported_pid_data[view][gauge];
+
+	memset(unsupported_pid, 0, sizeof(*unsupported_pid));
+	unsupported_pid->pid_initialized = true;
+	unsupported_pid->pid_uuid = attempted_pid_uuid;
+	unsupported_pid->pid_unit = PID_UNITS_NONE;
+	unsupported_pid->base_unit = PID_UNITS_NONE;
+	unsupported_pid->precision = 0;
+	unsupported_pid->lower_limit = 0.0f;
+	unsupported_pid->upper_limit = 1.0f;
+	unsupported_pid->pid_value = 0.0f;
+	unsupported_pid->pid_min = 0.0f;
+	unsupported_pid->pid_max = 0.0f;
+
+	snprintf(unsupported_pid->label, sizeof(unsupported_pid->label),
+			 "0x%06lX", (unsigned long)attempted_pid_uuid);
+	snprintf(unsupported_pid->desc, sizeof(unsupported_pid->desc),
+			 "Unsupported PID 0x%06lX", (unsigned long)attempted_pid_uuid);
+
+	return unsupported_pid;
 }
 
 /**
@@ -342,7 +356,7 @@ static void switch_view(uint8_t idx)
  * It's typically used for developer diagnostics or QA purposes.
  *
  * The overlay appears semi-transparent in white text and is aligned to the bottom center
- * of the screen. It uses the `lv_font_montserrat_16` font.
+ * of the screen. It uses the `lv_font_montserrat_16` font by default,  @cl-eav changed to custom font.
  */
 void show_build_info_overlay(void)
 {
@@ -367,7 +381,7 @@ void show_build_info_overlay(void)
     // Style the label
     lv_obj_set_style_text_color(build_label, lv_color_white(), 0);
     lv_obj_set_style_text_opa(build_label, LV_OPA_COVER, 0);
-    lv_obj_set_style_text_font(build_label, &lv_font_montserrat_18, 0);
+    lv_obj_set_style_text_font(build_label, &Discongnate_18, 0);
 
     // Align to bottom center with small vertical padding
     lv_obj_align(build_label, LV_ALIGN_BOTTOM_MID, 0 + X_OFFSET, -5);
@@ -477,6 +491,7 @@ void build_ui(void)
 					  x_pos[0] = (-1*width) + X_OFFSET - GAUGE_PADDING;
 					  x_pos[1] = 0 + X_OFFSET;
 					  x_pos[2] = width + X_OFFSET + GAUGE_PADDING;
+					  num_gauges = 3;
 					  break;
 
 			  }
@@ -489,15 +504,21 @@ void build_ui(void)
 					// Get PID universally unique ID, PID, and mode
 					pid_req.pid_uuid = get_view_gauge_pid(view, gauge);
 
-					// Load the unit and default to base unit if error
-					pid_req.pid_unit = get_view_gauge_units(view, gauge);
-					if( pid_req.pid_unit == PID_UNITS_RESERVED )
-					  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
+					if(is_pid_supported(pid_req.pid_uuid))
+					{
+						// Load the unit and default to base unit if error
+						pid_req.pid_unit = get_view_gauge_units(view, gauge);
+						if( pid_req.pid_unit == PID_UNITS_RESERVED )
+						  pid_req.pid_unit = get_pid_base_unit(pid_req.pid_uuid);
 
-					// Start the PID stream and save the pointer
-					ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req, DD_DEV_UI_VIEW );
+						// Start the PID stream and save the pointer
+						ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req, DD_DEV_UI_VIEW );
 
-					DigitalDash_Pause_PID_In_Stream(ui_gauge_data[view][gauge].pid, DD_DEV_UI_VIEW);
+						DigitalDash_Pause_PID_In_Stream(ui_gauge_data[view][gauge].pid, DD_DEV_UI_VIEW);
+					} else {
+						PID_DATA *unsupported_pid = init_unsupported_pid(view, gauge, pid_req.pid_uuid);
+						ui_gauge_data[view][gauge].pid = unsupported_pid;
+					}
 
 				    // Finally, add the gauge to the view
 				    ui_gauge[view][gauge] = add_gauge(get_view_gauge_theme(view, gauge), x_pos[gauge], 0, width, height, ui_view[view], &ui_gauge_data[view][gauge]);
@@ -577,6 +598,7 @@ void build_ui(void)
 void ui_service(void)
 {
 	lv_timer_handler();
+	system_message_service();
 
 	// Determine which screen to show based on elapsed UI time
 	if (ui_tick_cnt <= splash_screen_t) {
@@ -597,33 +619,16 @@ void ui_service(void)
 	    switch_screen(ui_screen, SCREEN_FADE_T);
 	}
 
-	// Log minimum and maximum values for all enabled views
-	for (uint8_t view = 0; view < MAX_VIEWS; view++) {
-	    // Check if the current view is enabled
-	    if (get_view_enable(view) == VIEW_STATE_ENABLED) {
-	        // Loop through all gauges in the enabled view
-	        for (uint8_t gauge = 0; gauge < get_view_num_gauges(view); gauge++) {
-	            // Log the min/max values for the PID associated with this gauge
-	            log_minmax(ui_gauge_data[view][gauge].pid);
-	        }
-	    }
-	}
-
 	// Check for dynamic gauge change
 	active_view_idx = dynamic_gauge_check();
 
 	// Switch to the active view, this can be called each loop. A check will
 	// be made to ensure that the screen is only re-loaded if it is not active.
 	if( get_view_enable(active_view_idx) == VIEW_STATE_ENABLED ){
-		if( get_system_message() == false ) {
-			clear_system_message();
-		}
 		switch_view(active_view_idx);
 	} else {
-		if( get_system_message() == true ) {
-			char *msg = "Selected dynamic view is not enabled";
-			set_system_message(msg);
-		}
+		set_system_message(SYSTEM_MESSAGE_DYNAMIC_VIEW_DISABLED,
+		                   DYNAMIC_VIEW_MESSAGE_DURATION_MS, false);
 	}
 
 	// Parse through each alert and check if it needs to be activated
@@ -656,9 +661,6 @@ void ui_service(void)
 			{
 				// Log the timestamp
 				ui_gauge_data[active_view_idx][i].timestamp = ui_gauge_data[active_view_idx][i].pid->timestamp;
-
-				// Some values are interrupt driven, log the min/max incase they were missed in the main loop
-				log_minmax(ui_gauge_data[active_view_idx][i].pid);
 
 				// Send an event to the gauge
 				lv_obj_send_event(ui_gauge[active_view_idx][i], LV_EVENT_REFRESH, &ui_gauge_data[active_view_idx][i]);

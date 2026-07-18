@@ -13,12 +13,12 @@
 #define BAR_WIDTH 600
 #define BAR_HEIGHT 50
 #define BAR_LABEL_Y 30
-#define BAR_FONT &lv_font_montserrat_22
+#define BAR_FONT &Discongnate_22
 #elif UI_HOR_RES == 1024
 #define BAR_PADDING 100
 #define BAR_Y_OFFSET 20
 #define BAR_HEIGHT 50
-#define BAR_FONT &lv_font_montserrat_38
+#define BAR_FONT &Discongnate_24
 #define BAR_LABEL_Y BAR_Y_OFFSET + BAR_HEIGHT + 5
 #endif
 
@@ -49,8 +49,8 @@ static void event_cb(lv_event_t * e)
 			lv_anim_start(&a);
 		}
 
-		// Update needle color immediately
-		lv_color_t needle_color = get_needle_color_from_value(data->pid->pid_value, data->pid->lower_limit, data->pid->upper_limit);
+		// Update needle color immediately - @cl_eav update to pass PID for specific colouring of ECT
+		lv_color_t needle_color = get_needle_color_from_value(data->pid->pid_value, data->pid->lower_limit, data->pid->upper_limit, data->pid);
 		lv_obj_set_style_bg_color(needle, needle_color, LV_PART_INDICATOR);
 
 		if( pid_value_label_changed(data) )
@@ -81,6 +81,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_obj_remove_flag(gauge, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_obj_set_user_data(gauge, data);
     lv_obj_add_event_cb(gauge, event_cb, LV_EVENT_REFRESH, data);
+
 	#if UI_CONTAINER_DEBUG
     lv_obj_set_style_border_width(gauge, 2, 0);                    // Thickness of the outline
     lv_obj_set_style_border_color(gauge, lv_color_white(), 0);    // White outline
@@ -108,28 +109,40 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
     lv_obj_set_style_bg_color(needle, lv_color_hex(0x00FF00), LV_PART_INDICATOR);
 
     lv_obj_set_style_outline_width(needle, 0, LV_PART_MAIN);
-    lv_obj_set_style_border_width(needle, 0, LV_PART_MAIN);
-    lv_obj_set_style_pad_all(needle, 0, LV_PART_MAIN);
+    // lv_obj_set_style_border_width(needle, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(needle, 3, LV_PART_MAIN);           // to make the indicator smaller
     lv_obj_set_style_pad_all(needle, 0, LV_PART_INDICATOR);
+
+    lv_obj_set_style_border_width(needle, 2, LV_PART_MAIN); // Set border thickness
+    lv_obj_set_style_border_color(needle, lv_color_hex(0xCCCCCC), LV_PART_MAIN); // Set border color
+    lv_obj_set_style_border_opa(needle, LV_OPA_COVER, LV_PART_MAIN); // Ensure it's fully visible
+    lv_obj_set_style_radius(needle, 10, LV_PART_MAIN);  // add radius to the outline
+
+    // Test - add a drop shadow
+    lv_obj_set_style_shadow_width(needle, 12, LV_PART_MAIN);
+    lv_obj_set_style_shadow_color(needle, lv_color_hex(0x000000), LV_PART_MAIN);
+    lv_obj_set_style_shadow_opa(needle, LV_OPA_40, LV_PART_MAIN);
+    // lv_obj_set_style_shadow_ofs_y(needle, 4, LV_PART_MAIN);
+
 
     // Create span group for value and unit
     lv_obj_t * span_group = lv_spangroup_create(gauge);
     lv_obj_set_size(span_group, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_align(span_group, LV_ALIGN_CENTER);
-    lv_obj_align(span_group, LV_ALIGN_TOP_MID, 0, BAR_LABEL_Y);
+    lv_obj_align(span_group, LV_ALIGN_TOP_MID, 0, BAR_LABEL_Y - 20);  // move text added -20
 
     // Create spans
     lv_span_t * span_val = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_val), &lv_font_montserrat_38);
-    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_white());
+    lv_style_set_text_font(lv_span_get_style(span_val), &Discongnate_52);      // value
+    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_hex(0x00DFFF));
 
     lv_span_t * span_unit = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_24);
-    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBB));
+    lv_style_set_text_font(lv_span_get_style(span_unit), &Discongnate_24);     // unit
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0x00DFFF));
 
-    lv_span_t * span_pid = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_pid), &lv_font_montserrat_24);
-    lv_style_set_text_color(lv_span_get_style(span_pid), lv_color_white());
+    lv_span_t * span_pid = lv_spangroup_new_span(span_group);                 //   pid
+    lv_style_set_text_font(lv_span_get_style(span_pid), &Discongnate_48);
+    lv_style_set_text_color(lv_span_get_style(span_pid), lv_color_hex(0x00DFFF));
 
     // Split value and unit (assuming value is number and unit is already stored)
     char buf[24];
@@ -147,7 +160,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
 		lv_obj_set_height(min, LV_SIZE_CONTENT);    /// 1
 		lv_obj_align(min, LV_ALIGN_TOP_LEFT, BAR_PADDING/2, BAR_LABEL_Y);
 		lv_label_set_text(min, "min");
-		lv_obj_set_style_text_color(min, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_text_color(min, lv_color_hex(0x00DFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_text_opa(min, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_text_font(min, BAR_FONT, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -156,7 +169,7 @@ lv_obj_t * add_linear_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj_
 		lv_obj_set_height(max, LV_SIZE_CONTENT);    /// 1
 		lv_obj_align(max, LV_ALIGN_TOP_RIGHT, -1*BAR_PADDING/2, BAR_LABEL_Y);
 		lv_label_set_text(max, "max");
-		lv_obj_set_style_text_color(max, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+		lv_obj_set_style_text_color(max, lv_color_hex(0x00DFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_text_opa(max, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 		lv_obj_set_style_text_font(max, BAR_FONT, LV_PART_MAIN | LV_STATE_DEFAULT);
     }

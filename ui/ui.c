@@ -168,6 +168,9 @@ PID_DATA * ui_dynamic_pid[MAX_DYNAMICS] = {0};
 PID_DATA * ui_alert_pid[MAX_ALERTS] = {0};
 static PID_DATA unsupported_pid_data[MAX_VIEWS][MAX_GAUGES_PER_VIEW] = {0};
 static lv_obj_t *build_info_overlay = NULL;
+static lv_obj_t *build_refresh_rate = NULL;
+static uint32_t displayed_refresh_period_ms = UINT32_MAX;
+static uint8_t displayed_refresh_pid_count = UINT8_MAX;
 static volatile bool ui_rebuild_requested = false;
 static bool ui_rebuild_in_progress = false;
 
@@ -395,6 +398,44 @@ void show_build_info_overlay(void)
     lv_obj_align(build_info_overlay, LV_ALIGN_BOTTOM_MID, 0 + X_OFFSET, -5);
 }
 
+void show_pid_refresh_rate(void)
+{
+	build_refresh_rate = lv_label_create(lv_layer_top());
+	lv_label_set_text(build_refresh_rate, "PID refresh: waiting...");
+	lv_obj_set_style_text_color(build_refresh_rate, lv_color_white(), 0);
+	lv_obj_set_style_text_opa(build_refresh_rate, LV_OPA_COVER, 0);
+	lv_obj_set_style_text_font(build_refresh_rate, &lv_font_montserrat_18, 0);
+	lv_obj_align(build_refresh_rate, LV_ALIGN_BOTTOM_MID, X_OFFSET, -28);
+}
+
+static void update_pid_refresh_rate(void)
+{
+	const uint32_t period_ms = DigitalDash_Get_PID_Refresh_Period_ms();
+	const uint8_t pid_count = DigitalDash_Get_PID_Refresh_Count();
+
+	if ((build_refresh_rate == NULL) || !lv_obj_is_valid(build_refresh_rate) ||
+		((period_ms == displayed_refresh_period_ms) &&
+		 (pid_count == displayed_refresh_pid_count)))
+		return;
+
+	displayed_refresh_period_ms = period_ms;
+	displayed_refresh_pid_count = pid_count;
+
+	if (period_ms == 0)
+	{
+		lv_label_set_text_fmt(build_refresh_rate, "PID refresh: waiting... (%u PIDs)", pid_count);
+	}
+	else
+	{
+		const uint32_t hz_tenths = (10000U + (period_ms / 2U)) / period_ms;
+		lv_label_set_text_fmt(build_refresh_rate, "PID refresh: %lu ms (%lu.%lu Hz, %u PIDs)",
+			(unsigned long)period_ms,
+			(unsigned long)(hz_tenths / 10U),
+			(unsigned long)(hz_tenths % 10U),
+			pid_count);
+	}
+}
+
 static void ui_release_pid_streams(void)
 {
 	for (uint8_t view = 0; view < MAX_VIEWS; view++)
@@ -424,8 +465,15 @@ void ui_rebuild(void)
 	uint8_t requested_view = active_view_idx;
 	lv_obj_t *temporary_screen = lv_obj_create(NULL);
 
+	if (temporary_screen == NULL)
+		return;
+
 	/* Never delete the currently active screen or a screen in transition. */
 	lv_screen_load(temporary_screen);
+
+	/* Loading the handoff screen resolves any pending screen transition. Now
+	 * stop the remaining gauge animations before their targets are freed. */
+	lv_anim_delete_all();
 
 	ui_release_pid_streams();
 	system_message_deinit();
@@ -434,6 +482,11 @@ void ui_rebuild(void)
 	if ((build_info_overlay != NULL) && lv_obj_is_valid(build_info_overlay))
 		lv_obj_delete(build_info_overlay);
 	build_info_overlay = NULL;
+	if ((build_refresh_rate != NULL) && lv_obj_is_valid(build_refresh_rate))
+		lv_obj_delete(build_refresh_rate);
+	build_refresh_rate = NULL;
+	displayed_refresh_period_ms = UINT32_MAX;
+	displayed_refresh_pid_count = UINT8_MAX;
 
 	if ((ui_screen != NULL) && lv_obj_is_valid(ui_screen))
 		lv_obj_delete(ui_screen);
@@ -500,7 +553,7 @@ void build_ui(void)
 	  lv_obj_set_width(splash_icon, LV_SIZE_CONTENT);   /// 1
 	  lv_obj_set_height(splash_icon, LV_SIZE_CONTENT);    /// 1
 	  lv_obj_set_x(splash_icon, 0 + X_OFFSET);
-	  lv_obj_set_y(splash_icon, 40);
+	  lv_obj_set_y(splash_icon, 5);
 	  lv_obj_set_align(splash_icon, LV_ALIGN_TOP_MID);
 	  lv_obj_remove_flag(splash_icon, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
@@ -567,23 +620,13 @@ void build_ui(void)
 				  width = (UI_HOR_RES - X_PADDING - (GAUGE_PADDING*(num_gauges-1)))/num_gauges;
 			  else
 				  width = UI_HOR_RES - X_PADDING;
-			  switch( num_gauges )
+			  const int gauge_spacing = width + GAUGE_PADDING;
+			  for (uint8_t gauge = 0; gauge < num_gauges; gauge++)
 			  {
-			  	  case 1:
-			  		  x_pos[0] = 0 + X_OFFSET;
-			  		  break;
-			  	  case 2:
-					  x_pos[0] = ((-1*width) + X_OFFSET - GAUGE_PADDING)/2;
-					  x_pos[1] = (width + X_OFFSET + GAUGE_PADDING)/2;
-					  break;
-			  	  case 3:
-			  	  default:
-					  x_pos[0] = (-1*width) + X_OFFSET - GAUGE_PADDING;
-					  x_pos[1] = 0 + X_OFFSET;
-					  x_pos[2] = width + X_OFFSET + GAUGE_PADDING;
-					  num_gauges = 3;
-					  break;
-
+				  // LVGL positions aligned children by their center. Spread every
+				  // supported gauge count evenly around the screen center.
+				  const int centered_index = (2 * (int)gauge) - ((int)num_gauges - 1);
+				  x_pos[gauge] = X_OFFSET + ((centered_index * gauge_spacing) / 2);
 			  }
 
 			  // Iterate through each gauge in the view
@@ -604,7 +647,15 @@ void build_ui(void)
 						// Start the PID stream and save the pointer
 						ui_gauge_data[view][gauge].pid = DigitalDash_Add_PID_To_Stream( &pid_req, DD_DEV_UI_VIEW );
 
-						DigitalDash_Pause_PID_In_Stream(ui_gauge_data[view][gauge].pid, DD_DEV_UI_VIEW);
+						if (ui_gauge_data[view][gauge].pid != NULL)
+						{
+							DigitalDash_Pause_PID_In_Stream(ui_gauge_data[view][gauge].pid, DD_DEV_UI_VIEW);
+						}
+						else
+						{
+							// Keep the gauge renderable if the shared PID stream is full.
+							ui_gauge_data[view][gauge].pid = init_unsupported_pid(view, gauge, pid_req.pid_uuid);
+						}
 					} else {
 						PID_DATA *unsupported_pid = init_unsupported_pid(view, gauge, pid_req.pid_uuid);
 						ui_gauge_data[view][gauge].pid = unsupported_pid;
@@ -662,6 +713,7 @@ void build_ui(void)
 
 	  add_alert(ui_screen);
 	  add_system_message(ui_screen);
+	  show_pid_refresh_rate();
 	  show_build_info_overlay();
 
 	  splash_screen_t = ui_tick_cnt + (get_general_splash(0) * SEC_TO_MILLI);
@@ -697,6 +749,7 @@ void ui_service(void)
 
 	lv_timer_handler();
 	system_message_service();
+	update_pid_refresh_rate();
 
 	// Determine which screen to show based on elapsed UI time
 	if (ui_tick_cnt <= splash_screen_t) {
@@ -752,7 +805,9 @@ void ui_service(void)
 	// Update gauges on current view
 	for( uint8_t i = 0; i < get_view_num_gauges(active_view_idx); i++)
 	{
-		if( get_view_enable(active_view_idx) == VIEW_STATE_ENABLED )
+		if( (get_view_enable(active_view_idx) == VIEW_STATE_ENABLED) &&
+			(ui_gauge_data[active_view_idx][i].pid != NULL) &&
+			(ui_gauge[active_view_idx][i] != NULL) )
 		{
 			// Check if new pid data has been received.
 			if( ui_gauge_data[active_view_idx][i].timestamp != ui_gauge_data[active_view_idx][i].pid->timestamp )

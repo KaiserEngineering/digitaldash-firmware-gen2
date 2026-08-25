@@ -32,10 +32,7 @@ static uint8_t * const USER_BACKGROUND_DATA[BACKGROUND_IMAGE_COUNT] = {
 };
 #endif
 /**
- * @brief Switch to the specified screen with a fade-in animation.
- *
- * If the given screen is not currently active, this function performs
- * a screen transition using a fade-in animation for the specified duration.
+ * @brief Gets the background data
  *
  * @param idx Offset index to the user background table
  */
@@ -45,7 +42,7 @@ uint8_t *get_background_data(uint8_t idx)
 }
 
 /**
- * @brief Get;s the address of background
+ * @brief Get's the address of background
  *
  * Flash address of a slot. This is a programming offset, not a actual pointer, so it
  * is derived from arithmetic rather than from USER_BACKGROUND_DATA.

@@ -14,8 +14,8 @@ LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 // Define background address macro
 #define BG_ADDR(n) (BACKGROUND_BASE_ADDRESS + ((n) * BACKGROUND_IMAGE_SIZE))
 
-// On the ESP32, this is all memory mapped, but for the SIM we need it writeable
-#if defined(__arm__) || defined(__thumb__)
+// On the STM32, this is all memory mapped, but for the SIM we need it writeable
+#if defined(STM32U5G9xx)
 static uint8_t * const USER_BACKGROUND_DATA[BACKGROUND_IMAGE_COUNT] = {
     (uint8_t *)BG_ADDR(0),  (uint8_t *)BG_ADDR(1),  (uint8_t *)BG_ADDR(2),
     (uint8_t *)BG_ADDR(3),  (uint8_t *)BG_ADDR(4),  (uint8_t *)BG_ADDR(5),

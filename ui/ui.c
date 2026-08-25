@@ -14,19 +14,55 @@ LV_IMG_DECLARE(ui_img_ford_performance_logo_png);
 // Define background address macro
 #define BG_ADDR(n) (BACKGROUND_BASE_ADDRESS + ((n) * BACKGROUND_IMAGE_SIZE))
 
-// Start addresses of backgrounds (computed for BACKGROUND_IMAGE_SIZE)
-static const uint32_t USER_BACKGROUND_ADDRESSES[BACKGROUND_IMAGE_COUNT] = {
-    BG_ADDR(0), BG_ADDR(1), BG_ADDR(2), BG_ADDR(3), BG_ADDR(4),
-    BG_ADDR(5), BG_ADDR(6), BG_ADDR(7), BG_ADDR(8), BG_ADDR(9),
-    BG_ADDR(10), BG_ADDR(11), BG_ADDR(12), BG_ADDR(13), BG_ADDR(14)
+// On the ESP32, this is all memory mapped, but for the SIM we need it writeable
+#if defined(__arm__) || defined(__thumb__)
+static uint8_t * const USER_BACKGROUND_DATA[BACKGROUND_IMAGE_COUNT] = {
+    (uint8_t *)BG_ADDR(0),  (uint8_t *)BG_ADDR(1),  (uint8_t *)BG_ADDR(2),
+    (uint8_t *)BG_ADDR(3),  (uint8_t *)BG_ADDR(4),  (uint8_t *)BG_ADDR(5),
+    (uint8_t *)BG_ADDR(6),  (uint8_t *)BG_ADDR(7),  (uint8_t *)BG_ADDR(8),
+    (uint8_t *)BG_ADDR(9),  (uint8_t *)BG_ADDR(10), (uint8_t *)BG_ADDR(11),
+    (uint8_t *)BG_ADDR(12), (uint8_t *)BG_ADDR(13), (uint8_t *)BG_ADDR(14)
 };
+#else
+static LV_ATTRIBUTE_MEM_ALIGN uint8_t sim_ospi[BACKGROUND_IMAGE_COUNT][BACKGROUND_IMAGE_SIZE];
+static uint8_t * const USER_BACKGROUND_DATA[BACKGROUND_IMAGE_COUNT] = {
+    sim_ospi[0],  sim_ospi[1],  sim_ospi[2],  sim_ospi[3],  sim_ospi[4],
+    sim_ospi[5],  sim_ospi[6],  sim_ospi[7],  sim_ospi[8],  sim_ospi[9],
+    sim_ospi[10], sim_ospi[11], sim_ospi[12], sim_ospi[13], sim_ospi[14]
+};
+#endif
+/**
+ * @brief Switch to the specified screen with a fade-in animation.
+ *
+ * If the given screen is not currently active, this function performs
+ * a screen transition using a fade-in animation for the specified duration.
+ *
+ * @param idx Offset index to the user background table
+ */
+uint8_t *get_background_data(uint8_t idx)
+{
+	return USER_BACKGROUND_DATA[idx];
+}
 
+/**
+ * @brief Get;s the address of background
+ *
+ * Flash address of a slot. This is a programming offset, not a actual pointer, so it
+ * is derived from arithmetic rather than from USER_BACKGROUND_DATA.
+ * 
+ * TODO: On the ESP32 side, we need to start prefixing the size, maybe as a seperate table?
+ *
+ * @param idx  Offset index to the user background table
+ * @param mode Duration of the fade-in animation in milliseconds. Use 0 for immediate switch.
+ */
 uint32_t get_background_addr(uint8_t idx, ADDR_MEMORYMAPPED_MODE mode)
 {
+	const uint32_t addr = BG_ADDR(idx);
+
 	if( mode )
-		return USER_BACKGROUND_ADDRESSES[idx];
+		return addr;
 	else
-		return USER_BACKGROUND_ADDRESSES[idx] - OSPI_BASE_ADDRESS;
+		return addr - OSPI_BASE_ADDRESS;
 }
 
 #define BACKGROUND_COLOR_FORMAT LV_COLOR_FORMAT_NATIVE_WITH_ALPHA
@@ -38,7 +74,7 @@ const lv_image_dsc_t ui_background_user##n = { \
     .data_size = UI_HOR_RES * UI_VER_RES * UI_BYTES_PER_PIXEL, \
     .header.cf = BACKGROUND_COLOR_FORMAT, \
     .header.magic = LV_IMAGE_HEADER_MAGIC, \
-    .data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[VIEW_BACKGROUND_USER##n] \
+    .data = USER_BACKGROUND_DATA[VIEW_BACKGROUND_USER##n] \
 }
 
 DEFINE_BACKGROUND_USER(1);
@@ -130,8 +166,7 @@ static uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len) {
 uint32_t calc_crc32(uint8_t idx, uint32_t reserved) {
     if (idx >= BACKGROUND_IMAGE_COUNT) return 0;
 
-    // Cast address to data pointer
-    const uint8_t *data = (const uint8_t *)USER_BACKGROUND_ADDRESSES[idx];
+    const uint8_t *data = USER_BACKGROUND_DATA[idx];
     uint32_t size = BACKGROUND_RAW_SIZE;
 
     // Ensure the lookup table is initialized

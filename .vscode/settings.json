@@ -1,3 +1,4 @@
 {
-    "idf.pythonInstallPath": "C:\\Users\\Matth\\.espressif\\tools\\idf-python\\3.11.2\\python.exe"
+    "idf.pythonInstallPath": "C:\\Users\\Matth\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "cmake.sourceDirectory": "C:/Users/mail/OneDrive/OneDrive/ProjectsGeneral/digitaldash-firmware-gen2/lvgl"
 }

@@ -43,7 +43,7 @@ lv_obj_t * add_alert(lv_obj_t * parent) {
     lv_obj_set_height(ui_alert, LV_SIZE_CONTENT);
     lv_obj_set_align(ui_alert, LV_ALIGN_CENTER);
     lv_label_set_text(ui_alert, "No error set");
-    lv_obj_set_style_text_font(ui_alert, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_alert, &Discongnate_30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_add_flag(ui_alert_container, LV_OBJ_FLAG_HIDDEN);
     return ui_alert_container;

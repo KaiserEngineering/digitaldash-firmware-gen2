@@ -126,7 +126,8 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
     lv_obj_set_height(pid_label, LV_SIZE_CONTENT);    /// 1
     lv_obj_align(pid_label, LV_ALIGN_CENTER, 0, 35-Y_ADJUST);
     lv_label_set_text(pid_label, data->pid->label);
-    lv_obj_set_style_text_font(pid_label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(pid_label, &Discongnate_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(pid_label, lv_color_hex(0x00DFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /*
     lv_obj_t * outter_arc = lv_arc_create(gauge);
@@ -178,12 +179,12 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
 
     // Create spans
     lv_span_t * span_val = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_val), &lv_font_montserrat_38);
-    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_white());
+    lv_style_set_text_font(lv_span_get_style(span_val), &Discongnate_38);
+    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_hex(0X00DFFF));
 
     lv_span_t * span_unit = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_24);
-    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBB));
+    lv_style_set_text_font(lv_span_get_style(span_unit), &Discongnate_24);
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0x00DFFF));
 
     // Split value and unit (assuming value is number and unit is already stored)
     char value_buf[16];
@@ -203,20 +204,20 @@ static lv_obj_t * add_stock_gauge( STOCK_GAUGE type, int32_t x, int32_t y, int32
     lv_obj_t * min = lv_label_create(gauge);
     lv_obj_set_width(min, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(min, LV_SIZE_CONTENT);    /// 1
-    lv_obj_align(min, LV_ALIGN_CENTER, -100, 36-Y_ADJUST);
+    lv_obj_align(min, LV_ALIGN_CENTER, -100, 41-Y_ADJUST); // move the min down slightly (was 36)
     lv_label_set_text(min, "min");
-	lv_obj_set_style_text_color(min, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_text_color(min, lv_color_hex(0x00DFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 	lv_obj_set_style_text_opa(min, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(min, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_text_font(min, &Discongnate_24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t * max = lv_label_create(gauge);
     lv_obj_set_width(max, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(max, LV_SIZE_CONTENT);    /// 1
-    lv_obj_align(max, LV_ALIGN_CENTER, 100, 36-Y_ADJUST);
+    lv_obj_align(max, LV_ALIGN_CENTER, 100, 41-Y_ADJUST); // move the max down slightly (was 36)
     lv_label_set_text(max, "max");
-	lv_obj_set_style_text_color(max, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_text_color(max, lv_color_hex(0x00DFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 	lv_obj_set_style_text_opa(max, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(max, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+	lv_obj_set_style_text_font(max, &Discongnate_24, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     return gauge;
 }

@@ -38,7 +38,7 @@ static void event_cb(lv_event_t * e)
 		if( pid_value_label_changed(data) )
 		{
 			// Update needle color immediately
-			lv_color_t needle_color = get_needle_color_from_value(data->pid->pid_value, data->pid->lower_limit, data->pid->upper_limit);
+			lv_color_t needle_color = get_needle_color_from_value(data->pid->pid_value, data->pid->lower_limit, data->pid->upper_limit, data->pid);
 			lv_obj_set_style_arc_color(needle, needle_color, LV_PART_INDICATOR | LV_STATE_DEFAULT);
 
 			// Update text value immediately

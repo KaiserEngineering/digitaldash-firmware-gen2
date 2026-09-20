@@ -22,7 +22,6 @@
 
 #define USE_KE_PROTOCOL 1
 #define USB_LIB_DIGITALDASH_CONFIG 1
-#define USE_UNIT_CONVERSION 1
 #define USE_LIB_OBDII 1
 #define USE_LIB_CAN_BUS_SNIFFER 1
 #define USE_LIB_VEHICLE_DATA 1
@@ -66,9 +65,6 @@
 #define LCD_MIN_BRIGHTNESS 4
 #define LCD_BKLT_TIMEOUT 1000
 
-/* How long to wait in ms until resuming CAN communication */
-#define TESTER_PRESENT_DELAY 10000
-
 /* How long to wait in ms to shutdown if the engine is OFF */
 #define ENGINE_OFF_SHUTDOWN_TIME 1000
 
@@ -76,8 +72,9 @@
 
 #define DD_MAX_PIDS 25
 
-#define KE_MAX_TX_PAYLOAD             6000
+#define KE_MAX_TX_PAYLOAD             (8U * 1024U)
 #define KE_MAX_RX_PAYLOAD             819200 + 128
+#define CJSON_BUFFER_SIZE             (64U * 1024U)
 
 #define DIGITALDASH_DATA_ACQ 1
 #define DIGITALDASH_GRAPHICS 1
@@ -120,6 +117,7 @@ typedef enum _ecu_comm {
 	#define UI_HOR_RES    1024 // UI horizontal Resolution (This can be different from screen resolution)
 	#define UI_VER_RES    200  // UI vertical Resolution (This can be different from screen resolution)
 	#define UI_BYTES_PER_PIXEL 4 // Number of bytes per pixel (RGBA = 4)
+	#define UI_DISPLAY_BYTES_PER_PIXEL 3 // LTDC layer is RGB888; background assets still use UI_BYTES_PER_PIXEL
 	#define ACT_HOR_RES    1024 // Screen horizontal resolution
 	#define ACT_VER_RES    600  // Screen vertical resolution
 	#define DISP_PARTIAL 0 // Enable/disable partial rendering

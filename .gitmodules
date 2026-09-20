@@ -10,9 +10,6 @@
 [submodule "lib/lib_obdii"]
 	path = lib/lib_obdii
 	url = https://github.com/KaiserEngineering/lib_obdii.git
-[submodule "lib/lib_unit_conversion"]
-	path = lib/lib_unit_conversion
-	url = https://github.com/KaiserEngineering/lib_unit_conversion.git
 [submodule "lib/lib_vehicle_data"]
 	path = lib/lib_vehicle_data
 	url = https://github.com/KaiserEngineering/lib_vehicle_data.git

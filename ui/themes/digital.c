@@ -53,19 +53,19 @@ lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj
 	#endif
 
     // Create span group for value and unit
-    lv_obj_t * span_group = lv_spangroup_create(gauge);
+    lv_obj_t * span_group = lv_spangroup_create(gauge);            // gauge container
     lv_obj_set_size(span_group, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_align(span_group, LV_ALIGN_CENTER, 0, 0);
     lv_spangroup_set_align(span_group, LV_TEXT_ALIGN_CENTER);
 
     // Create spans
     lv_span_t * span_val = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_val), &lv_font_montserrat_48);
-    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_white());
+    lv_style_set_text_font(lv_span_get_style(span_val), &Discongnate_52);         // Value
+    lv_style_set_text_color(lv_span_get_style(span_val), lv_color_hex(0x00DFFF));
 
     lv_span_t * span_unit = lv_spangroup_new_span(span_group);
-    lv_style_set_text_font(lv_span_get_style(span_unit), &lv_font_montserrat_32);
-    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0xBBBBBB));
+    lv_style_set_text_font(lv_span_get_style(span_unit), &Discongnate_48);        // unit
+    lv_style_set_text_color(lv_span_get_style(span_unit), lv_color_hex(0x00DFFF));
 
     // Split value and unit (assuming value is number and unit is already stored)
     char value_buf[16];
@@ -77,17 +77,18 @@ lv_obj_t * add_digital_gauge( int32_t x, int32_t y, int32_t w, int32_t h, lv_obj
     lv_obj_t * minmax = lv_label_create(gauge);
     lv_obj_set_width(minmax, LV_SIZE_CONTENT);
     lv_obj_set_height(minmax, LV_SIZE_CONTENT);
-    lv_obj_align(minmax, LV_ALIGN_CENTER, 0, 40);
+    lv_obj_align(minmax, LV_ALIGN_CENTER, 0, 45);  // move min/max down by 5px
     lv_label_set_text(minmax, "min/max");
-    lv_obj_set_style_text_font(minmax, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(minmax, &Discongnate_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(minmax, lv_color_hex(0x00DFFF), LV_PART_MAIN);
 
     lv_obj_t * label = lv_label_create(gauge);
     lv_obj_set_width(label, LV_SIZE_CONTENT);
     lv_obj_set_height(label, LV_SIZE_CONTENT);
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, -40);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, -45);  // move label up by 5px
     lv_label_set_text(label, data->pid->label);
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xBBBBBB), LV_PART_MAIN);
+    lv_obj_set_style_text_font(label, &Discongnate_24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x00DFFF), LV_PART_MAIN);
 
     return gauge;
 }

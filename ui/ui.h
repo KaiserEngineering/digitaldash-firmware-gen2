@@ -20,7 +20,9 @@
 #define X_PADDING 124
 #define ANIM_SPEED 50
 
+#ifndef OSPI_BASE_ADDRESS
 #define OSPI_BASE_ADDRESS           0xA0000000u
+#endif
 #define BACKGROUND_OFFSET           0x00400000u
 #define BACKGROUND_IMAGE_COUNT      (15U)
 #define BACKGROUND_BLOCK_SIZE       (0x10000U) // 64KB

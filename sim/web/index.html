@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Digital Dash Simulator</title>
+<style>
+  body { background: #111; color: #ddd; font: 14px system-ui; padding: 16px; }
+  canvas { width: 1024px; height: 200px; image-rendering: pixelated; border: 1px solid #333; }
+</style>
+</head>
+<body>
+<canvas id="screen"></canvas>
+<p id="status">loading…</p>
+<script type="module">
+import createDigitalDashSim from '../build/dd_sim.js';
+
+const sim = await createDigitalDashSim();
+sim._sim_init();
+
+const w = sim._sim_width(), h = sim._sim_height();
+const canvas = document.getElementById('screen');
+canvas.width = w; canvas.height = h;
+const ctx = canvas.getContext('2d');
+const image = ctx.createImageData(w, h);
+
+const rpm = sim.ccall('sim_pid_by_name', 'number', ['string'], ['Engine speed']);
+let last = performance.now();
+
+function frame(now) {
+  const elapsed = Math.max(1, Math.round(now - last));
+  last = now;
+  sim._sim_set_pid(rpm, 3500 + 3000 * Math.sin(now / 800));
+  sim._sim_step(elapsed);
+  if (sim._sim_frame_dirty()) {
+    const src = sim.HEAPU8.subarray(sim._sim_framebuffer(), sim._sim_framebuffer() + w * h * 4);
+    const dst = image.data;
+    for (let i = 0; i < dst.length; i += 4) {
+      dst[i] = src[i + 2]; dst[i + 1] = src[i + 1]; dst[i + 2] = src[i]; dst[i + 3] = 255;
+    }
+    ctx.putImageData(image, 0, 0);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+document.getElementById('status').textContent = `running · rpm pid uuid 0x${rpm.toString(16)}`;
+window.sim = sim;
+</script>
+</body>
+</html>
